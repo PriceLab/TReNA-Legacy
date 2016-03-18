@@ -4,6 +4,8 @@
 To build and test:
 
  - clone this repository
+ - install R 3.2.3 or later
+ - install glmnet R package 2.0.3 or later
  - cd TReNA
  - R CMD BUILD .
  - open an R session
