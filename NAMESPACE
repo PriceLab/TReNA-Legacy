@@ -1,0 +1,9 @@
+export(
+   TReNA
+)
+
+exportMethods(
+    getAssayData,
+    getModel,
+    fit
+    )
