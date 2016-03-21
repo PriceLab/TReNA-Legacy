@@ -41,7 +41,7 @@ setMethod("fit", "TReNA",
      cv.out <- cv.glmnet(features, target, grouped=FALSE)
      lambda.min <- cv.out$lambda.min
 
-     if(!obj@quiet) printf("glmnet fit with labmda %f", lambda.min)
+     if(!obj@quiet) printf("glmnet fit with lambda %f", lambda.min)
      fit = glmnet(features, target, lambda=lambda.min)
 
        # extract the exponents of the fit
