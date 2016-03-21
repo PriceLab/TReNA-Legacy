@@ -45,12 +45,16 @@ setMethod("fit", "TReNA",
      fit = glmnet(features, target, lambda=lambda.min)
 
        # extract the exponents of the fit
-     browser()
      mtx.beta <- as.matrix(coef(fit, s="lambda.min"))
      deleters <- as.integer(which(mtx.beta[,1] == 0))
      if(length(deleters) > 0)
         mtx.beta <- mtx.beta[-deleters, , drop=FALSE]
-     return(mtx.beta)
+
+     predicted <- predict(fit, features)
+     SSE <- (predicted-target)^2;
+     SST <- (target-mean(target))^2
+     R.squared <- 1-(SSE/SST)
+     return(list(beta=mtx.beta, rSquared=R.squared))
      })
 
 #------------------------------------------------------------------------------------------------------------------------

@@ -106,7 +106,10 @@ test_fitDummyData <- function()
      # we expect an intercept and a coef for tfs gene.02 and gene.03
      # which predict the value of the target.gene
 
-   betas <- fit(trena, target.gene, tfs)
+   result <- fit(trena, target.gene, tfs)
+   checkEquals(sort(names(result)), c("beta", "rSquared"))
+   betas <- result$beta
+   rSquared <- result$rSquared
    checkTrue(all(c("(Intercept)", tf1, tf2) %in% rownames(betas)))
    intercept <- betas["(Intercept)", 1]
    coef.tf1  <- betas[tf1, 1]
@@ -119,6 +122,8 @@ test_fitDummyData <- function()
 
       # but there is lots of slop in the prediction: no overfitting here!
    checkTrue(sum(abs(actual-predicted)) > 30)
+
+   checkTrue(mean(rSquared[, "s0"]) > 0.98)
 
 } # test_fitDummyData
 #----------------------------------------------------------------------------------------------------
