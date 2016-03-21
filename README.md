@@ -12,4 +12,7 @@ To build and test:
  - source("inst/unitTests/test_TReNA.R")
  - runTests()
 
-The unitTests perform double duty: they ensure the package performs as (currently) expected; they introduce the package to the user and developer.  Thus [test_TReNA.R](https://github.com/PriceLab/TReNA/blob/master/inst/unitTests/test_TReNA.R) is your entry point into this project.
+The unitTests perform double duty: they ensure the package performs as (currently) expected;
+they introduce the package to the user and developer.  
+Thus [test_TReNA.R](https://github.com/PriceLab/TReNA/blob/master/inst/unitTests/test_TReNA.R)
+is your entry point into this project.
