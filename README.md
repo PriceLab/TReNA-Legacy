@@ -7,7 +7,7 @@ To build and test:
  - install R 3.2.3 or later
  - install glmnet R package 2.0.3 or later
  - cd TReNA
- - R CMD BUILD .
+ - R CMD INSTALL .
  - open an R session
  - source("inst/unitTests/test_TReNA.R")
  - runTests()
