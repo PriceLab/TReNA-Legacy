@@ -127,3 +127,70 @@ test_fitDummyData <- function()
 
 } # test_fitDummyData
 #----------------------------------------------------------------------------------------------------
+test_fitDREAM4_01 <- function()
+{
+   print("--- test_fitDREAM4_01")
+   library(DREAM4)
+   data(dream4_010_01)
+      # genes are rownames, samples colnames.  reverse them:
+   mtx <- t(assays(dream4_010_01)$simulated)
+
+   # goldStandardMatrix <- metadata(dream4_010_01)$goldStandardAdjacencyMatrix
+   #   goldStandardMatrix
+   #     G1 G2 G3 G4 G5 G6 G7 G8 G9 G10
+   # G1   0  0  1  1  1  0  0  0  0   0
+   # G2   0  0  0  0  0  0  0  0  0   0
+   # G3   0  0  0  1  0  0  1  0  0   0
+   # G4   0  0  1  0  0  0  0  0  0   0
+   # G5   0  0  0  0  0  0  0  0  0   0
+   # G6   0  1  0  0  0  0  0  0  0   0
+   # G7   0  0  1  1  0  0  0  0  0   0
+   # G8   0  1  0  0  0  1  0  0  0   0
+   # G9   0  0  0  0  0  0  0  0  0   1
+   # G10  0  0  1  1  0  0  0  0  0   0
+
+  # G7 appears to be regulated by G3 and G4.  can we find that?
+
+   trena <- TReNA(mtx.assay=mtx, quiet=FALSE)
+   target.gene <- "G7"
+   tfs <- sprintf("G%d", c(1:6, 8:10))
+   tfs <- sprintf("G%d", c(3:4))
+   result <- fit(trena, target.gene, tfs)
+
+} # test_fitDREAM4_01
+#----------------------------------------------------------------------------------------------------
+test_fitDREAM5_yeast <- function()
+{
+   printf("--- test_fitDREAM5_yeast")
+   file <- system.file(package="TReNA", "extdata", "yeast-53genes-536-samples.RData")
+   load(file)
+   checkEquals(dim(mtx), c(53, 536))
+
+   trena <- TReNA(mtx.assay=t(mtx), quiet=FALSE)
+   target.gene <- "CLN1"
+   tfs <- c("SWI4", "SWI6")
+
+     # cor(mtx[ "SWI4", ], mtx["CLN1",]) # [1] 0.4148201
+     # cor(mtx[ "SWI6", ], mtx["CLN1",]) # [1] 0.5979725
+
+   result <- fit(trena, target.gene, tfs)
+   result <- fit(trena, target.gene, tfs)
+
+   checkEquals(sort(names(result)), c("beta", "rSquared"))
+
+   betas <- result$beta
+   checkEqualsNumeric(betas["SWI4", 1], 0.1698811, tol=1e-6)
+   checkEqualsNumeric(betas["SWI6", 1], 1.0004682, tol=1e-6)
+
+   rSquared <- result$rSquared
+   checkTrue(all(c("(Intercept)", tf1, tf2) %in% rownames(betas)))
+   intercept <- betas["(Intercept)", 1]
+   coef.tf1  <- betas[tf1, 1]
+   coef.tf2  <- betas[tf2, 1]
+   predicted <- intercept + (coef.tf1 * assay[, tf1]) + (coef.tf2 * assay[, tf2])
+   actual    <- assay[, target.gene]
+
+
+
+} # test_fitDREAM5_yeast
+#----------------------------------------------------------------------------------------------------
