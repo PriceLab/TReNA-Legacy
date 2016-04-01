@@ -9,7 +9,8 @@ export(
 exportMethods(
     getSolverName,
     getAssayData,
-    getModel,
     solve,
-    run
+    run,
+    trainModel,
+    predictFromModel
     )

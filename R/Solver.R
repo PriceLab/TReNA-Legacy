@@ -9,9 +9,8 @@
 printf <- function(...) print(noquote(sprintf(...)))
 #------------------------------------------------------------------------------------------------------------------------
 setGeneric("getSolverName",   signature="obj", function(obj, target.gene, tfs) standardGeneric ("getSolverName"))
-setGeneric("run",             signature="obj", function(obj, target.gene, tfs,
-                                                        splitDataPercentage=100.0) standardGeneric ("run"))
 setGeneric("getAssayData",    signature="obj", function(obj) standardGeneric ("getAssayData"))
+setGeneric("run",             signature="obj", function(obj, target.gene, tfs) standardGeneric ("run"))
 #------------------------------------------------------------------------------------------------------------------------
 Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 {

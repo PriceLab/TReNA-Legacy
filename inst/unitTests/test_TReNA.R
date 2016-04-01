@@ -11,6 +11,7 @@ runTests <- function()
    test_fitDummyData()
    test_fitDREAM5_yeast.lasso()
    test_fitDREAM5_yeast.randomForest()
+   test_trainAndPredict_DREAM5_yeast.lasso()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -121,10 +122,10 @@ test_fitDummyData <- function()
      # we expect an intercept and a coef for tfs gene.02 and gene.03
      # which predict the value of the target.gene
 
-   result <- solve(trena, target.gene, tfs)
-   checkEquals(sort(names(result)), c("rSquared", "scores"))
-   betas <- result$scores
-   rSquared <- result$rSquared
+   betas <- solve(trena, target.gene, tfs)
+   #checkEquals(sort(names(result)), c("rSquared", "scores"))
+   #betas <- result$scores
+   #rSquared <- result$rSquared
    checkTrue(all(c("(Intercept)", tf1, tf2) %in% rownames(betas)))
    intercept <- betas["(Intercept)", 1]
    coef.tf1  <- betas[tf1, 1]
@@ -138,7 +139,7 @@ test_fitDummyData <- function()
       # but there is lots of slop in the prediction: no overfitting here!
    checkTrue(sum(abs(actual-predicted)) > 30)
 
-   checkTrue(mean(rSquared[, "s0"]) > 0.98)
+   #checkTrue(mean(rSquared[, "s0"]) > 0.98)
 
 } # test_fitDummyData
 #----------------------------------------------------------------------------------------------------
@@ -167,7 +168,7 @@ test_fitDREAM5_yeast.lasso <- function()
 
    result <- solve(trena, target.gene, tfs)
 
-   tbl.betas <- as.data.frame(result$scores)
+   tbl.betas <- as.data.frame(result)
    tbl.betas$cor <- c(NA, tbl.gold.met2$cor)
    colnames (tbl.betas) <- c("beta", "cor")
 
@@ -210,4 +211,36 @@ test_fitDREAM5_yeast.randomForest <- function()
    checkTrue(cor(tbl.purity$IncNodePurity, tbl.gold.met2$cor) > 0.7)
 
 } # test_fitDREAM5_yeast.randomForest
+#----------------------------------------------------------------------------------------------------
+test_trainAndPredict_DREAM5_yeast.lasso <- function()
+{
+   printf("--- test_trainAndPredict_DREAM5_yeast.lasso")
+   load(system.file(package="TReNA", "extdata", "dream5.net4.yeast.RData"))
+   checkTrue(exists("mtx"))
+   checkTrue(exists("tbl.gold"))
+   checkTrue(exists("tbl.ids"))
+
+   checkEquals(dim(mtx), c(5950, 536))
+
+   trena <- TReNA(mtx.assay=mtx, solver="lasso", quiet=FALSE)
+   target.gene <- "MET2"
+   tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
+   tfs <- tbl.gold.met2$TF
+
+   count <- as.integer(0.80 * ncol(mtx))
+   set.seed(31)
+   training.samples <- sample(colnames(mtx), count)
+   test.samples <- setdiff(colnames(mtx), training.samples)
+
+   model <- trainModel(trena, target.gene, tfs, training.sampls)
+   prediction <- predictFromModel(trena, model, tfs, test.samples)
+
+   agreement <- cor(mtx["MET2", test.samples], as.numeric(prediction))
+   checkTrue(agreement > 0.8)
+
+   #fit <- train(trena, target.gene, tfs, training.samples)
+   #
+   #prediction <- predict.glmnet(fit, t(mtx[tfs,test.samples]))
+
+} # test_trainAndPredict_DREAM5_yeast.lasso
 #----------------------------------------------------------------------------------------------------
