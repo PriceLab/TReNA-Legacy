@@ -1,12 +1,16 @@
 Package: TReNA
 Type: Package
 Title: Fit transcriptional regulatory networks using gene expression, priors, machine learning
-Version: 0.99.6
-Date: 2016-03-30
+Version: 0.99.7
+Date: 2016-03-31
 Author: Seth Ament <seth.ament@systemsbiology.org>
 Maintainer: Seth Ament <seth.ament@systemsbiology.org>, Paul Shannon <pshannon@systemsbioloyg.org>
-Depends: R (>= 3.2.3), glmnet (>= 2.0.3)
+Depends: R (>= 3.2.3), glmnet (>= 2.0.3), randomForest
 Suggests: RUnit
 Description:  Methods for reconstructing transcriptional regulatory networks, especially in species
   for which genome-wide TF binding site information is available.
 License: GPL-3
+Collate:  Solver.R
+          LassoSolver.R
+          RandomForestSolver.R
+          TReNA.R

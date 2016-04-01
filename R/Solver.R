@@ -1,0 +1,20 @@
+#------------------------------------------------------------------------------------------------------------------------
+.Solver <- setClass ("Solver",
+                     representation = representation(mtx.assay="matrix",
+                                                     quiet="logical",
+                                                     state="environment")
+                     )
+
+#------------------------------------------------------------------------------------------------------------------------
+printf <- function(...) print(noquote(sprintf(...)))
+#------------------------------------------------------------------------------------------------------------------------
+setGeneric("getSolverName",   signature="obj", function(obj, target.gene, tfs) standardGeneric ("getSolverName"))
+setGeneric("run",             signature="obj", function(obj, target.gene, tfs) standardGeneric ("run"))
+#------------------------------------------------------------------------------------------------------------------------
+Solver <- function(mtx.assay=matrix(), quiet=TRUE)
+{
+   env <- new.env(parent=emptyenv())
+  .Solver(mtx.assay=mtx.assay, quiet=quiet, state=env)
+
+} # TReNA, the constructor
+#------------------------------------------------------------------------------------------------------------------------

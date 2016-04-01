@@ -1,9 +1,15 @@
+exportClasses(TReNA, Solver, LassoSolver)
+
 export(
-   TReNA
+    TReNA,
+    Solver,
+    LassoSolver
 )
 
 exportMethods(
+    getSolverName,
     getAssayData,
     getModel,
-    fit
+    solve,
+    run
     )

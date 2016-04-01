@@ -1,6 +1,7 @@
 #------------------------------------------------------------------------------------------------------------------------
 .TReNA <- setClass ("TReNA",
                     representation = representation(mtx.assay="matrix",
+                                                    solver="Solver",
                                                     quiet="logical")
                     )
 
@@ -8,12 +9,19 @@
 printf <- function(...) print(noquote(sprintf(...)))
 #------------------------------------------------------------------------------------------------------------------------
 setGeneric("getAssayData",             signature="obj", function(obj) standardGeneric ("getAssayData"))
-setGeneric("fit",                      signature="obj", function(obj, target.gene, tfs) standardGeneric ("fit"))
 setGeneric("getModel",                 signature="obj", function(obj) standardGeneric ("getModel"))
+setGeneric("solve",                    signature="obj", function(obj, target.gene, tfs) standardGeneric ("solve"))
 #------------------------------------------------------------------------------------------------------------------------
-TReNA <- function(mtx.assay=matrix(), quiet=TRUE)
+TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 {
-  .TReNA(mtx.assay=mtx.assay, quiet=quiet)
+  stopifnot(solver %in% c("lasso", "randomForest"))
+
+  if(solver == "lasso")
+      solver <- LassoSolver(mtx.assay)
+  else if(solver == "randomForest")
+      solver <- RandomForestSolver(mtx.assay)
+
+  .TReNA(mtx.assay=mtx.assay, solver=solver, quiet=quiet)
 
 } # TReNA, the constructor
 #------------------------------------------------------------------------------------------------------------------------
@@ -24,37 +32,10 @@ setMethod("getAssayData", "TReNA",
      })
 
 #------------------------------------------------------------------------------------------------------------------------
-setMethod("fit", "TReNA",
+setMethod("solve", "TReNA",
 
-  function (obj, target.gene, tfs){
-
-     mtx <- getAssayData(obj)
-     tfs.of.interest <- intersect(tfs, colnames(mtx))
-     features <- mtx[, tfs.of.interest]
-     stopifnot(target.gene %in% colnames(mtx))
-
-     target <- mtx[, target.gene]
-
-     if(!obj@quiet)
-         printf("begining cross-validation for glmnet, using %d tfs, target %s", length(tfs), target.gene)
-
-     cv.out <- cv.glmnet(features, target, grouped=FALSE)
-     lambda.min <- cv.out$lambda.min
-
-     if(!obj@quiet) printf("glmnet fit with lambda %f", lambda.min)
-     fit = glmnet(features, target, lambda=lambda.min)
-
-       # extract the exponents of the fit
-     mtx.beta <- as.matrix(coef(fit, s="lambda.min"))
-     deleters <- as.integer(which(mtx.beta[,1] == 0))
-     if(length(deleters) > 0)
-        mtx.beta <- mtx.beta[-deleters, , drop=FALSE]
-
-     predicted <- predict(fit, features)
-     SSE <- (predicted-target)^2;
-     SST <- (target-mean(target))^2
-     R.squared <- 1-(SSE/SST)
-     return(list(beta=mtx.beta, rSquared=R.squared))
-     })
+   function (obj, target.gene, tfs){
+       run(obj@solver, target.gene, tfs)
+   })
 
 #------------------------------------------------------------------------------------------------------------------------
