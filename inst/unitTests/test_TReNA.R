@@ -18,11 +18,12 @@ test_emptyConstructor <- function()
 {
    printf("--- test_emptyConstructor")
    trena <- TReNA()
+   checkEquals(is(trena), "TReNA")
 
-   mtx <- getAssayData(trena)
-   checkTrue("matrix" %in% is(mtx))
-   checkEquals(dim(mtx), c(1,1))   # the default (and implicilty empty) matrix
-   checkTrue(is.na(mtx[1,1]))
+   #mtx <- getAssayData(trena)
+   #checkTrue("matrix" %in% is(mtx))
+   #checkEquals(dim(mtx), c(1,1))   # the default (and implicilty empty) matrix
+   #checkTrue(is.na(mtx[1,1]))
 
    #mtx.priors <- getPriors(trena)
    #checkTrue("matrix" %in% is(mtx.priors))
@@ -152,6 +153,7 @@ test_fitDREAM5_yeast.lasso <- function()
    checkEquals(dim(mtx), c(5950, 536))
 
    trena <- TReNA(mtx.assay=mtx, solver="lasso", quiet=FALSE)
+
      # subset(tbl.gold, target=="MET2")
      #     TF target score        cor
      #   CBF1   MET2     1 -0.4746397
@@ -162,7 +164,9 @@ test_fitDREAM5_yeast.lasso <- function()
    target.gene <- "MET2"
    tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
    tfs <- tbl.gold.met2$TF
+
    result <- solve(trena, target.gene, tfs)
+
    tbl.betas <- as.data.frame(result$scores)
    tbl.betas$cor <- c(NA, tbl.gold.met2$cor)
    colnames (tbl.betas) <- c("beta", "cor")

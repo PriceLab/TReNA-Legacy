@@ -18,7 +18,7 @@ setMethod("getSolverName", "LassoSolver",
 #----------------------------------------------------------------------------------------------------
 setMethod("run", "LassoSolver",
 
-  function (obj, target.gene, tfs){
+  function (obj, target.gene, tfs, splitDataPercentage=100.0){
      mtx <- obj@mtx.assay
      stopifnot(target.gene %in% rownames(mtx))
      stopifnot(all(tfs %in% rownames(mtx)))
