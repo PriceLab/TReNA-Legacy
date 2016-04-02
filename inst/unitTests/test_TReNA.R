@@ -10,6 +10,7 @@ runTests <- function()
    test_LassoSolverConstructor()
    test_fitDummyData()
    test_fitDREAM5_yeast.lasso()
+   test_fitDREAM5_yeast.lasso_weighted.tfs()
    test_fitDREAM5_yeast.randomForest()
    test_trainAndPredict_DREAM5_yeast.lasso()
 
@@ -83,7 +84,8 @@ test_developAndFitDummyTestData <- function(quiet=FALSE)
    cv.out <- cv.glmnet(features, target, grouped=FALSE)
    #suppressWarnings(cv.out <- cv.glmnet(features, target, grouped=FALSE))
    lambda.min <- cv.out$lambda.min
-   fit = glmnet(features, target, lambda=lambda.min)
+   weights <- rep(1, nrow(features))
+   fit = glmnet(features, target, weights=weights, lambda=lambda.min)
        # extract the exponents of the fit
    betas <- as.matrix(t(coef(cv.out, s="lambda.min")))
 
@@ -178,6 +180,46 @@ test_fitDREAM5_yeast.lasso <- function()
 
 } # test_fitDREAM5_yeast.lasso
 #----------------------------------------------------------------------------------------------------
+test_fitDREAM5_yeast.lasso_weighted.tfs <- function()
+{
+   printf("--- test_fitDREAM5_yeast.lasso_weighted.tfs")
+
+   load(system.file(package="TReNA", "extdata", "dream5.net4.yeast.RData"))
+   checkTrue(exists("mtx"))
+   checkTrue(exists("tbl.gold"))
+   checkTrue(exists("tbl.ids"))
+
+   checkEquals(dim(mtx), c(5950, 536))
+
+   trena <- TReNA(mtx.assay=mtx, solver="lasso", quiet=FALSE)
+
+     # subset(tbl.gold, target=="MET2")
+     #     TF target score        cor
+     #   CBF1   MET2     1 -0.4746397
+     #  MET32   MET2     1  0.8902950
+     #  MET31   MET2     1  0.1245628
+     #   MET4   MET2     1  0.5301484
+
+   target.gene <- "MET2"
+   tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
+   tfs <- tbl.gold.met2$TF
+
+   tf.weights <- c(0.0001, 1.0, 1.0, 0.0001)
+   result <- solve(trena, target.gene, tfs, tf.weights)
+
+   tbl.betas <- as.data.frame(result)
+   significant.tfs <- rownames(tbl.betas)[2:nrow(tbl.betas)]
+   tbl.gold.met2.trimmed <- subset(tbl.gold.met2, TF %in% significant.tfs)
+   tbl.betas$cor <- c(NA, tbl.gold.met2.trimmed$cor)
+   colnames (tbl.betas) <- c("beta", "cor")
+
+     # is there some rough correlation between the calculated betas and the
+     # measured correlation?
+   tbl.betas.trimmed <- tbl.betas[2:nrow(tbl.betas),]
+   checkTrue(any(tbl.betas.trimmed$cor > 0.8))
+
+} # test_fitDREAM5_yeast.lasso_weighted.tfs
+#----------------------------------------------------------------------------------------------------
 test_fitDREAM5_yeast.randomForest <- function()
 {
    printf("--- test_fitDREAM5_yeast.randomForest")
@@ -232,15 +274,12 @@ test_trainAndPredict_DREAM5_yeast.lasso <- function()
    training.samples <- sample(colnames(mtx), count)
    test.samples <- setdiff(colnames(mtx), training.samples)
 
-   model <- trainModel(trena, target.gene, tfs, training.sampls)
+   weights <- rep(1, length(tfs))
+   model <- trainModel(trena, target.gene, tfs, tf.weightstraining.samples)
    prediction <- predictFromModel(trena, model, tfs, test.samples)
 
    agreement <- cor(mtx["MET2", test.samples], as.numeric(prediction))
    checkTrue(agreement > 0.8)
-
-   #fit <- train(trena, target.gene, tfs, training.samples)
-   #
-   #prediction <- predict.glmnet(fit, t(mtx[tfs,test.samples]))
 
 } # test_trainAndPredict_DREAM5_yeast.lasso
 #----------------------------------------------------------------------------------------------------

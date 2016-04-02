@@ -18,7 +18,9 @@ setMethod("getSolverName", "LassoSolver",
 #----------------------------------------------------------------------------------------------------
 setMethod("run", "LassoSolver",
 
-  function (obj, target.gene, tfs){
+  function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs))){
+
+     tf.weights <- 1/tf.weights
 
      mtx <- obj@mtx.assay
      stopifnot(target.gene %in% rownames(mtx))
@@ -29,11 +31,10 @@ setMethod("run", "LassoSolver",
      if(!obj@quiet)
          printf("begining cross-validation for glmnet, using %d tfs, target %s", length(tfs), target.gene)
 
-     cv.out <- cv.glmnet(features, target, grouped=FALSE)
+     cv.out <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE)
      lambda.min <- cv.out$lambda.min
 
-     if(!obj@quiet) printf("glmnet fit with lambda %f", lambda.min)
-     fit = glmnet(features, target, lambda=lambda.min)
+     fit = glmnet(features, target, penalty.factor=tf.weights, lambda=lambda.min)
 
        # extract the exponents of the fit
      mtx.beta <- as.matrix(coef(fit, s="lambda.min"))
@@ -55,21 +56,23 @@ setMethod("run", "LassoSolver",
 #----------------------------------------------------------------------------------------------------
 setMethod("trainModel", "LassoSolver",
 
-   function (obj, target.gene, tfs, training.samples){
+   function (obj, target.gene, tfs, training.samples, tf.weights=rep(1, length(tfs))){
 
-      mtx <- obj@mtx.assay
-      stopifnot(target.gene %in% rownames(mtx))
-      stopifnot(all(tfs %in% rownames(mtx)))
-      features <- t(mtx[tfs, ])
-      target <- t(mtx[target.gene, , drop=FALSE])
+       # transform to the 1..infinity range penalty.factor expects,
+       # where infinity indicates "exclude this tf"
 
-      if(!obj@quiet)
-          printf("begining cross-validation for glmnet, using %d tfs, target %s", length(tfs), target.gene)
+     tf.weights <- 1/tf.weights
 
-      cv.out <- cv.glmnet(features, target, grouped=FALSE)
-      lambda.min <- cv.out$lambda.min
-      glmnet(features, target, lambda=lambda.min)
-      })
+     mtx <- obj@mtx.assay
+     stopifnot(target.gene %in% rownames(mtx))
+     stopifnot(all(tfs %in% rownames(mtx)))
+     features <- t(mtx[tfs, ])
+     target <- t(mtx[target.gene, , drop=FALSE])
+
+     cv.out <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE)
+     lambda.min <- cv.out$lambda.min
+     glmnet(features, target, penalty.factor=tf.weights, lambda=lambda.min)
+     })
 
 #----------------------------------------------------------------------------------------------------
 setMethod("predictFromModel", "LassoSolver",

@@ -18,7 +18,8 @@ setMethod("getSolverName", "RandomForestSolver",
 #----------------------------------------------------------------------------------------------------
 setMethod("run", "RandomForestSolver",
 
-  function (obj, target.gene, tfs){
+  function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs))){
+
      mtx <- obj@mtx.assay
      stopifnot(target.gene %in% rownames(mtx))
      stopifnot(all(tfs %in% rownames(mtx)))
