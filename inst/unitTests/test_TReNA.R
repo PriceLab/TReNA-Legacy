@@ -1,7 +1,9 @@
 library(TReNA)
 library(RUnit)
+library(biomaRt)
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
+source("~/github/snpFoot/inst/misc/constrainTFs/lasso/go.R")
 #----------------------------------------------------------------------------------------------------
 runTests <- function()
 {
@@ -9,10 +11,15 @@ runTests <- function()
    test_developAndFitDummyTestData()
    test_LassoSolverConstructor()
    test_fitDummyData()
+
    test_fitDREAM5_yeast.lasso()
    test_fitDREAM5_yeast.lasso_weighted.tfs()
    test_fitDREAM5_yeast.randomForest()
    test_trainAndPredict_DREAM5_yeast.lasso()
+   test_scalePredictorPenalties.lasso()
+
+   test_fitDREAM5_yeast.bayesSpike()
+   test_ampAD.met2c.154tfs.278samples.bayesSpike()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -107,11 +114,16 @@ test_fitDummyData <- function()
    printf("--- test_fitDummyData")
 
    x <- test_developAndFitDummyTestData(quiet=TRUE)
-   assay <- x$assay
+   mtx <- x$assay
+
+     # log transform the data
+
+   mtx <- mtx - min(mtx) + 0.001
+   mtx <- log2(mtx)
    target.gene <- x$correlated.target
    tfs <- x$tf.genes
 
-   trena <- TReNA(mtx.assay=assay, solver="lasso", quiet=FALSE)
+   trena <- TReNA(mtx.assay=mtx, solver="lasso", quiet=FALSE)
 
    tf1 <- x$correlated.tfs[1]
    tf2 <- x$correlated.tfs[2]
@@ -132,16 +144,11 @@ test_fitDummyData <- function()
    intercept <- betas["(Intercept)", 1]
    coef.tf1  <- betas[tf1, 1]
    coef.tf2  <- betas[tf2, 1]
-   predicted <- intercept + (coef.tf1 * assay[tf1,]) + (coef.tf2 * assay[tf2,])
-   actual    <- assay[target.gene, ]
+   predicted <- intercept + (coef.tf1 * mtx[tf1,]) + (coef.tf2 * mtx[tf2,])
+   actual    <- mtx[target.gene, ]
 
       # on average, the prediction should be reasonable
    checkEqualsNumeric(sum(actual - predicted), 0, tol=1e-8)
-
-      # but there is lots of slop in the prediction: no overfitting here!
-   checkTrue(sum(abs(actual-predicted)) > 30)
-
-   #checkTrue(mean(rSquared[, "s0"]) > 0.98)
 
 } # test_fitDummyData
 #----------------------------------------------------------------------------------------------------
@@ -149,6 +156,7 @@ test_fitDREAM5_yeast.lasso <- function()
 {
    printf("--- test_fitDREAM5_yeast.lasso")
    load(system.file(package="TReNA", "extdata", "dream5.net4.yeast.RData"))
+
    checkTrue(exists("mtx"))
    checkTrue(exists("tbl.gold"))
    checkTrue(exists("tbl.ids"))
@@ -171,12 +179,13 @@ test_fitDREAM5_yeast.lasso <- function()
    result <- solve(trena, target.gene, tfs)
 
    tbl.betas <- as.data.frame(result)
-   tbl.betas$cor <- c(NA, tbl.gold.met2$cor)
+     # 1st row of tbl.betas is the intercept, give it an NA correlation
+   tbl.betas$cor <- c(NA, unlist(lapply(rownames(tbl.betas)[-1], function(tf) subset(tbl.gold.met2, TF==tf)$cor)))
    colnames (tbl.betas) <- c("beta", "cor")
 
      # is there some rough correlation between the calculated betas and the
      # measured correlation?
-   checkTrue(with(tbl.betas[2:5, ], cor(beta,cor)) > 0.9)
+   checkTrue(with(tbl.betas[-1, ], cor(beta,cor)) > 0.7)
 
 } # test_fitDREAM5_yeast.lasso
 #----------------------------------------------------------------------------------------------------
@@ -283,3 +292,147 @@ test_trainAndPredict_DREAM5_yeast.lasso <- function()
 
 } # test_trainAndPredict_DREAM5_yeast.lasso
 #----------------------------------------------------------------------------------------------------
+# one possible source of down-weighting data from TFs is the frequency of their putative
+# binding sites across the genome.  the SP1-n family has a motif-in-footprint about every
+# 5k, for example.
+# db <- dbConnect(dbDriver("SQLite"), "~/github/snpFoot/inst/misc/sqlite.explorations/fpTf.sqlite")
+# tbl.fpTfFreqs <- dbGetQuery(db, "select * from fpTfFreqs")
+# as.integer(fivenum(values))  # [1]    241   4739   9854  22215 658334
+test_scalePredictorPenalties.lasso <- function()
+{
+   printf("--- test_scalePredictorPenalties.lasso")
+   raw.values <-  c(241, 4739, 9854, 22215, 658334)
+   ls <- LassoSolver(matrix())
+   min.observed <- 1        # just one footprint in the genome for some possible gene
+   max.observed <- 658334   # max observed putative binding sites for SPx family of tfs
+
+   cooked.values <- rescalePredictorWeights(ls, rawValue.min=1, rawValue.max=1000000, raw.values)
+   checkEqualsNumeric(cooked.values[1], 0.99976, tol=1e-3)
+   checkEqualsNumeric(cooked.values[2], 0.99526, tol=1e-3)
+   checkEqualsNumeric(cooked.values[3], 0.99015, tol=1e-3)
+   checkEqualsNumeric(cooked.values[4], 0.97778, tol=1e-3)
+   checkEqualsNumeric(cooked.values[5], 0.34166, tol=1e-3)
+
+} # test_scalePredictorPenalties.lasso
+#----------------------------------------------------------------------------------------------------
+# locate all tfs mapped within 3k bases of MEF2C's transcription start site
+# get their expression data
+prepare_predict.mef2c.regulators <- function()
+{
+   print("--- prepare_predict.mef2c.regulators")
+   tbl.candidates <- getFootprints("MEF2C", 10000, 10000)[, c("chr", "mfpStart", "mfpEnd", "motif", "tfs")] # 59 x 5
+   table(tbl.candidates$motif)
+       #  MA0103.2  MA0715.1 ZBTB16.p2
+       #        14        43         2
+   candidates <- sort(c(unique(tbl.candidates$tfs), "MEF2C"))
+
+       # need ENSG ids for these gene symbols, in order to extract a small
+       # expression matrix for testing
+
+   if(!exists("ensembl.hg38"))
+      ensembl.hg38 <<- useMart("ensembl", dataset="hsapiens_gene_ensembl")
+
+    tbl.ids <- getBM(attributes=c("ensembl_gene_id", "hgnc_symbol"),
+                   filters="hgnc_symbol", values=candidates, mart=ensembl.hg38)
+    deleters <- which(duplicated(tbl.ids$hgnc_symbol))
+    if(length(deleters) > 0)
+       tbl.ids <- tbl.ids[-deleters,]
+
+    print(load("~/s/data/priceLab/AD/ampADMayo.64253genes.278samples.RData"))  # "mtx"
+    gene.medians <- apply(mtx, 1, median)
+    gene.sds     <- apply(mtx, 1, sd)
+    median.keepers <- which(gene.medians > 0.4)
+    sd.keepers     <- which(gene.sds > 0.1)
+    keepers <- sort(c(median.keepers, sd.keepers))
+    mtx.keep <- mtx[keepers,]
+    ens.goi <- intersect(tbl.ids$ensembl_gene_id, rownames(mtx.keep)) # 154
+    mtx.sub <- mtx.keep[ens.goi,]   # 154 genes, 278 samples
+    tbl.ids <- subset(tbl.ids, ensembl_gene_id %in% ens.goi)
+    rownames(mtx.sub) <- tbl.ids$hgnc_symbol
+    filename <- sprintf("../extdata/ampAD.%dgenes.mef2cTFs.%dsamples.RData", nrow(mtx.sub),
+                        ncol(mtx.sub))
+    printf("saving mtx.sub to %s", filename)
+    save(mtx.sub, file=filename)
+
+} # prepare_predict.mef2c.regulators
+#----------------------------------------------------------------------------------------------------
+test_predict.mef2c.regulators <- function()
+{
+   print("--- test_predict.mef2c.regulators")
+   if(!exists("mtx.sub"))
+       load(system.file(package="TReNA", "extdata/ampAD.58genes.mef2cTFs.278samples.RData"))
+   if(!exists("tbl.mef2c.candidates"))
+      tbl.mef2c.candidates <<- getFootprints("MEF2C", 3000, 0)[, c("chr", "mfpStart", "mfpEnd", "motif", "tfs")] # 59 x 5
+   #candidates.sub <- subset(tbl.mef2c.candidates, motif != "MA0715.1")$tfs
+   #mtx.sub <- mtx.sub[c(candidates.sub, "MEF2C"),]
+   mtx.sub <- log10(mtx.sub + 0.001)
+
+   target.gene <- "MEF2C"
+
+   trena <- TReNA(mtx.assay=mtx.sub, solver="lasso", quiet=FALSE)
+   tfs <- setdiff(rownames(mtx.sub), "MEF2C")
+   result <- solve(trena, target.gene, tfs)
+
+} # test_predict.mef2c.regulators
+#----------------------------------------------------------------------------------------------------
+test_fitDREAM5_yeast.bayesSpike <- function()
+{
+   printf("--- test_fitDREAM5_yeast.bayesSpike")
+   load(system.file(package="TReNA", "extdata", "dream5.net4.yeast.RData"))
+   checkTrue(exists("mtx"))
+   checkTrue(exists("tbl.gold"))
+   checkTrue(exists("tbl.ids"))
+
+   checkEquals(dim(mtx), c(5950, 536))
+
+   trena <- TReNA(mtx.assay=mtx, solver="bayesSpike", quiet=FALSE)
+
+     # subset(tbl.gold, target=="MET2")
+     #     TF target score        cor
+     #   CBF1   MET2     1 -0.4746397
+     #  MET32   MET2     1  0.8902950
+     #  MET31   MET2     1  0.1245628
+     #   MET4   MET2     1  0.5301484
+
+   target.gene <- "MET2"
+   tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
+   tfs <- tbl.gold.met2$TF
+
+   result <- solve(trena, target.gene, tfs)
+   tbl.betas <- data.frame(beta=result$beta, pval=result$pval, z=result$z, post=result$post)
+   rownames(tbl.betas) <- tfs
+   tbl.betas$score <- -log10(tbl.betas$pval)
+   tbl.betas$cor <- tbl.gold.met2$cor
+
+     # is there some rough correlation between the calculated betas and the
+     # measured correlation?
+   checkTrue(with(tbl.betas, cor(beta,cor)) > 0.9)
+
+} # test_fitDREAM5_yeast.bayesSpike
+#----------------------------------------------------------------------------------------------------
+test_ampAD.met2c.154tfs.278samples.bayesSpike <- function()
+{
+   printf("--- test_ampAD.met2c.154tfs.278samples.bayesSpike")
+   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+   mtx.sub <- log2(mtx.sub + 0.001)
+   target.gene <- "MEF2C"
+
+   trena <- TReNA(mtx.assay=mtx.sub, solver="bayesSpike", quiet=FALSE)
+
+
+   tfs <- setdiff(rownames(mtx.sub), "MEF2C")
+   result <- solve(trena, target.gene, tfs)
+   tbl.betas <- data.frame(beta=result$beta, pval=result$pval, z=result$z, post=result$post)
+   rownames(tbl.betas) <- tfs
+   tbl.betas$score <- -log10(tbl.betas$pval)
+   tbl.betas <- tbl.betas[order(tbl.betas$score, decreasing=TRUE),]
+   mef2c.cor <- sapply(rownames(tbl.betas), function(tf) cor(mtx.sub[tf,], mtx.sub["MEF2C",]))
+   tbl.betas$mef2c.cor <- as.numeric(mef2c.cor)
+        # keep only those with pval < 0.05
+   tbl.betas <- subset(tbl.betas, pval < 0.05)
+        # how do these beta coefficients correlate with each tf/gene expression correlation?
+   checkTrue(cor(tbl.betas$beta, tbl.betas$mef2c.cor) > 0.85)
+
+} # test_ampAD.met2c.154tfs.278samples.bayesSpike
+#----------------------------------------------------------------------------------------------------
+

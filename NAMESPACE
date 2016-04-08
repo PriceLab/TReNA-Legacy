@@ -12,5 +12,6 @@ exportMethods(
     solve,
     run,
     trainModel,
-    predictFromModel
+    predictFromModel,
+    rescalePredictorWeights
     )

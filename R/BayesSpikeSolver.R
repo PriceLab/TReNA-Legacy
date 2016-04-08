@@ -1,76 +1,38 @@
 #------------------------------------------------------------------------------------------------------------------------
-.LassoSolver <- setClass ("LassoSolver", contains="Solver")
+.BayesSpikeSolver <- setClass ("BayesSpikeSolver", contains="Solver")
 #------------------------------------------------------------------------------------------------------------------------
-LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
+BayesSpikeSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
-    obj <- .LassoSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
+    obj <- .BayesSpikeSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
 
     obj
 
 } # TReNA, the constructor
 #------------------------------------------------------------------------------------------------------------------------
-setMethod("getSolverName", "LassoSolver",
+setMethod("getSolverName", "BayesSpikeSolver",
 
   function (obj){
-     return("LassoSolver")
+     return("BayesSpikeSolver")
      })
 
 #----------------------------------------------------------------------------------------------------
-setMethod("run", "LassoSolver",
+setMethod("run", "BayesSpikeSolver",
 
   function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs))){
-
-     tf.weights <- 1/tf.weights
 
      mtx <- obj@mtx.assay
      stopifnot(target.gene %in% rownames(mtx))
      stopifnot(all(tfs %in% rownames(mtx)))
      features <- t(mtx[tfs, ])
      target <- as.numeric(mtx[target.gene,])
+     result <- vbsr(target, features, family='normal')
 
-     #sample.sd.fivenum <- fivenum(apply(mtx, 2, sd))
-     #sample.sd.range <- as.numeric(sample.sd.fivenum[5] - sample.sd.fivenum [1])
-
-     #gene.sd.fivenum <- fivenum(apply(mtx, 1, sd))
-     #gene.sd.range <- as.numeric(gene.sd.fivenum[5] - gene.sd.fivenum [1])
-     #message(sprintf("sample.sd.range: %8.2f   gene.sd.range:  %8.2f", sample.sd.range, gene.sd.range))
-     #stopifnot(gene.sd.range < 2)
-     #stopifnot(sample.ad.range < 2)
-
-     #target <- t(mtx[target.gene, , drop=FALSE])
-
-     if(!obj@quiet)
-         printf("begining cross-validation for glmnet, using %d tfs, target %s", length(tfs), target.gene)
-
-     cv.out <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE)
-     lambda.min <- cv.out$lambda.min
-     lambda.1se <-cv.out$lambda.1se
-
-     fit.nolambda = glmnet(features, target, penalty.factor=tf.weights)
-     fit = glmnet(features, target, penalty.factor=tf.weights, lambda=lambda.1se)
-
-
-       # extract the exponents of the fit
-     mtx.beta <- as.matrix(coef(fit, s="lambda.min"))
-     deleters <- as.integer(which(mtx.beta[,1] == 0))
-     if(length(deleters) > 0)
-        mtx.beta <- mtx.beta[-deleters, , drop=FALSE]
-
-     plot(fit.nolambda, xvar='lambda', label=TRUE)
-     #
-     return(mtx.beta)
-     # for sake of speed, no longer calculatining r-squared here
-     # the test it provides can now be accomplished via trainModel and predictFromModel
-     #predicted <- predict.glmnet(fit, features)
-     #SSE <- (predicted-target)^2;
-     #SST <- (target-mean(target))^2
-     #R.squared <- 1-(SSE/SST)
-     #return(list(scores=mtx.beta, rSquared=R.squared))
+     result
      })
 
 
 #----------------------------------------------------------------------------------------------------
-setMethod("trainModel", "LassoSolver",
+setMethod("trainModel", "BayesSpikeSolver",
 
    function (obj, target.gene, tfs, training.samples, tf.weights=rep(1, length(tfs))){
 
@@ -91,7 +53,7 @@ setMethod("trainModel", "LassoSolver",
      })
 
 #----------------------------------------------------------------------------------------------------
-setMethod("predictFromModel", "LassoSolver",
+setMethod("predictFromModel", "BayesSpikeSolver",
 
    function (obj, model, tfs, test.samples){
       mtx <- obj@mtx.assay
@@ -105,10 +67,10 @@ setMethod("predictFromModel", "LassoSolver",
 # we have empirical evidence that <large but non-infinite number> functions as a full penalty
 # without distorting the scale so much that even good rawValues get reduced to nothing
 # which is what .Machine$double.xmax would do
-setMethod("rescalePredictorWeights", "LassoSolver",
+setMethod("rescalePredictorWeights", "BayesSpikeSolver",
 
    function (obj, rawValue.min, rawValue.max, rawValues){
-      1 - ((rawValues-rawValue.min)/(rawValue.max-rawValue.min))
+      rawValues
       })
 
 #----------------------------------------------------------------------------------------------------
