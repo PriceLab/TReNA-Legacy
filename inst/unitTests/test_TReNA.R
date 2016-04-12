@@ -398,15 +398,15 @@ test_fitDREAM5_yeast.bayesSpike <- function()
    tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
    tfs <- tbl.gold.met2$TF
 
-   result <- solve(trena, target.gene, tfs)
-   tbl.betas <- data.frame(beta=result$beta, pval=result$pval, z=result$z, post=result$post)
-   rownames(tbl.betas) <- tfs
-   tbl.betas$score <- -log10(tbl.betas$pval)
-   tbl.betas$cor <- tbl.gold.met2$cor
+   tbl <- solve(trena, target.gene, tfs)
+   #tbl.betas <- data.frame(beta=result$beta, pval=result$pval, z=result$z, post=result$post)
+   #rownames(tbl.betas) <- tfs
+   #tbl.betas$score <- -log10(tbl.betas$pval)
+   #tbl.betas$cor <- tbl.gold.met2$cor
 
      # is there some rough correlation between the calculated betas and the
      # measured correlation?
-   checkTrue(with(tbl.betas, cor(beta,cor)) > 0.9)
+   checkTrue(with(tbl, cor(beta,gene.cor)) > 0.9)
 
 } # test_fitDREAM5_yeast.bayesSpike
 #----------------------------------------------------------------------------------------------------
@@ -421,17 +421,17 @@ test_ampAD.met2c.154tfs.278samples.bayesSpike <- function()
 
 
    tfs <- setdiff(rownames(mtx.sub), "MEF2C")
-   result <- solve(trena, target.gene, tfs)
-   tbl.betas <- data.frame(beta=result$beta, pval=result$pval, z=result$z, post=result$post)
-   rownames(tbl.betas) <- tfs
-   tbl.betas$score <- -log10(tbl.betas$pval)
-   tbl.betas <- tbl.betas[order(tbl.betas$score, decreasing=TRUE),]
-   mef2c.cor <- sapply(rownames(tbl.betas), function(tf) cor(mtx.sub[tf,], mtx.sub["MEF2C",]))
-   tbl.betas$mef2c.cor <- as.numeric(mef2c.cor)
+   tbl <- solve(trena, target.gene, tfs)
+   #tbl.betas <- data.frame(beta=result$beta, pval=result$pval, z=result$z, post=result$post)
+   #rownames(tbl.betas) <- tfs
+   #tbl.betas$score <- -log10(tbl.betas$pval)
+   #tbl.betas <- tbl.betas[order(tbl.betas$score, decreasing=TRUE),]
+   #mef2c.cor <- sapply(rownames(tbl.betas), function(tf) cor(mtx.sub[tf,], mtx.sub["MEF2C",]))
+   #tbl.betas$mef2c.cor <- as.numeric(mef2c.cor)
         # keep only those with pval < 0.05
-   tbl.betas <- subset(tbl.betas, pval < 0.05)
+   tbl <- subset(tbl, pval < 0.05)
         # how do these beta coefficients correlate with each tf/gene expression correlation?
-   checkTrue(cor(tbl.betas$beta, tbl.betas$mef2c.cor) > 0.85)
+   checkTrue(cor(tbl$beta, tbl$gene.cor) > 0.85)
 
 } # test_ampAD.met2c.154tfs.278samples.bayesSpike
 #----------------------------------------------------------------------------------------------------

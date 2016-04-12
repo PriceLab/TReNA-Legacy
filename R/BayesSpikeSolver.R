@@ -26,8 +26,14 @@ setMethod("run", "BayesSpikeSolver",
      features <- t(mtx[tfs, ])
      target <- as.numeric(mtx[target.gene,])
      result <- vbsr(target, features, family='normal')
-
-     result
+     tbl.out <- data.frame(beta=result$beta, pval=result$pval, z=result$z, post=result$post)
+     rownames(tbl.out) <- tfs
+     tbl.out$score <- -log10(tbl.out$pval)
+     tbl.out <- tbl.out[order(tbl.out$score, decreasing=TRUE),]
+     #browser()
+     gene.cor <- sapply(rownames(tbl.out), function(tf) cor(mtx[tf,], mtx[target.gene,]))
+     tbl.out$gene.cor <- as.numeric(gene.cor)
+     tbl.out
      })
 
 

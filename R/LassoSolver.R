@@ -28,17 +28,6 @@ setMethod("run", "LassoSolver",
      features <- t(mtx[tfs, ])
      target <- as.numeric(mtx[target.gene,])
 
-     #sample.sd.fivenum <- fivenum(apply(mtx, 2, sd))
-     #sample.sd.range <- as.numeric(sample.sd.fivenum[5] - sample.sd.fivenum [1])
-
-     #gene.sd.fivenum <- fivenum(apply(mtx, 1, sd))
-     #gene.sd.range <- as.numeric(gene.sd.fivenum[5] - gene.sd.fivenum [1])
-     #message(sprintf("sample.sd.range: %8.2f   gene.sd.range:  %8.2f", sample.sd.range, gene.sd.range))
-     #stopifnot(gene.sd.range < 2)
-     #stopifnot(sample.ad.range < 2)
-
-     #target <- t(mtx[target.gene, , drop=FALSE])
-
      if(!obj@quiet)
          printf("begining cross-validation for glmnet, using %d tfs, target %s", length(tfs), target.gene)
 
@@ -56,16 +45,10 @@ setMethod("run", "LassoSolver",
      if(length(deleters) > 0)
         mtx.beta <- mtx.beta[-deleters, , drop=FALSE]
 
-     plot(fit.nolambda, xvar='lambda', label=TRUE)
-     #
+      if(!obj@quiet)
+         plot(fit.nolambda, xvar='lambda', label=TRUE)
+
      return(mtx.beta)
-     # for sake of speed, no longer calculatining r-squared here
-     # the test it provides can now be accomplished via trainModel and predictFromModel
-     #predicted <- predict.glmnet(fit, features)
-     #SSE <- (predicted-target)^2;
-     #SST <- (target-mean(target))^2
-     #R.squared <- 1-(SSE/SST)
-     #return(list(scores=mtx.beta, rSquared=R.squared))
      })
 
 
