@@ -365,7 +365,8 @@ test_predict.mef2c.regulators <- function()
       tbl.mef2c.candidates <<- getFootprints("MEF2C", 3000, 0)[, c("chr", "mfpStart", "mfpEnd", "motif", "tfs")] # 59 x 5
    #candidates.sub <- subset(tbl.mef2c.candidates, motif != "MA0715.1")$tfs
    #mtx.sub <- mtx.sub[c(candidates.sub, "MEF2C"),]
-   mtx.sub <- log10(mtx.sub + 0.001)
+
+   # mtx.sub <- log10(mtx.sub + 0.001)
 
    target.gene <- "MEF2C"
 
@@ -413,25 +414,42 @@ test_fitDREAM5_yeast.bayesSpike <- function()
 test_ampAD.met2c.154tfs.278samples.bayesSpike <- function()
 {
    printf("--- test_ampAD.met2c.154tfs.278samples.bayesSpike")
+
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-   mtx.sub <- log2(mtx.sub + 0.001)
    target.gene <- "MEF2C"
+   # print(fivenum(mtx.sub))   # 0.000000    1.753137   12.346965   43.247467 1027.765854
+
+    print("note!  without log transform of the data")
+    print("bayesSpike model is quite useless, even after")
+    print("filtering for abs(beta) and pval")
 
    trena <- TReNA(mtx.assay=mtx.sub, solver="bayesSpike", quiet=FALSE)
-
-
    tfs <- setdiff(rownames(mtx.sub), "MEF2C")
    tbl <- solve(trena, target.gene, tfs)
-   #tbl.betas <- data.frame(beta=result$beta, pval=result$pval, z=result$z, post=result$post)
-   #rownames(tbl.betas) <- tfs
-   #tbl.betas$score <- -log10(tbl.betas$pval)
-   #tbl.betas <- tbl.betas[order(tbl.betas$score, decreasing=TRUE),]
-   #mef2c.cor <- sapply(rownames(tbl.betas), function(tf) cor(mtx.sub[tf,], mtx.sub["MEF2C",]))
-   #tbl.betas$mef2c.cor <- as.numeric(mef2c.cor)
-        # keep only those with pval < 0.05
-   tbl <- subset(tbl, pval < 0.05)
-        # how do these beta coefficients correlate with each tf/gene expression correlation?
-   checkTrue(cor(tbl$beta, tbl$gene.cor) > 0.85)
+   tbl.trimmed <- subset(tbl, abs(beta) > 0.1 & pval < 0.01)
+   betas <- tbl.trimmed$beta
+   big.abs.betas <- betas[abs(betas) > 1]
+   checkTrue(length(big.abs.betas) > 20)
+
+   checkTrue(nrow(tbl) > 10)
+   checkTrue(cor(tbl.trimmed$beta, tbl.trimmed$gene.cor) < 0.2)
+
+      # with log transform, justified how?
+      # good results are returned, as loosely checked
+      # by correlating betas against  expression
+
+   mtx.tmp <- mtx.sub - min(mtx.sub) + 0.001
+   mtx.log2 <- log2(mtx.tmp)
+   fivenum(mtx.log2)  # [1] -9.9657843  0.8107618  3.6262014  5.4345771 10.0052973
+
+   trena <- TReNA(mtx.assay=mtx.log2, solver="bayesSpike", quiet=FALSE)
+   tfs <- setdiff(rownames(mtx.log2), "MEF2C")
+   tbl2 <- solve(trena, target.gene, tfs)
+   tbl2.trimmed <- subset(tbl2, abs(beta) > 0.1 & pval < 0.01)
+   betas2 <- tbl2.trimmed$beta
+   big.abs.betas2 <- betas2[abs(betas2) > 1]
+   checkEquals(length(big.abs.betas2), 0)
+   checkTrue(cor(tbl2.trimmed$beta, tbl2.trimmed$gene.cor) > 0.6)
 
 } # test_ampAD.met2c.154tfs.278samples.bayesSpike
 #----------------------------------------------------------------------------------------------------
