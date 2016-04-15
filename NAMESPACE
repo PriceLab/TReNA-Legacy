@@ -3,7 +3,8 @@ exportClasses(TReNA, Solver, LassoSolver)
 export(
     TReNA,
     Solver,
-    LassoSolver
+    LassoSolver,
+    Footprints
 )
 
 exportMethods(
@@ -13,5 +14,8 @@ exportMethods(
     run,
     trainModel,
     predictFromModel,
-    rescalePredictorWeights
+    rescalePredictorWeights,
+    getGenes,
+    getPromoterRegion,
+    getFootprints
     )
