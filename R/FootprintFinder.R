@@ -1,10 +1,12 @@
 printf <- function(...) print(noquote(sprintf(...)))
 #------------------------------------------------------------------------------------------------------------------------
-.Footprints <- setClass("Footprints",
+.FootprintFinder <- setClass("FootprintFinder",
                         slots = c(biomart="Mart",
                                   footprint.database.initializer="character",
                                   genes="character",
-                                  state="environment")
+                                  tbl.locs="data.frame",
+                                  state="environment",
+                                  quiet="logical")
                         )
 #------------------------------------------------------------------------------------------------------------------------
 setGeneric("getGenes", signature="obj", function(obj) standardGeneric ("getGenes"))
@@ -13,7 +15,7 @@ setGeneric("getPromoterRegion", signature="obj", function(obj,  geneSymbol, size
 setGeneric("getFootprints", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0)
                                                       standardGeneric("getFootprints"))
 #------------------------------------------------------------------------------------------------------------------------
-Footprints <- function(biomart, footprint.database.initializer, genes=genes)
+FootprintFinder <- function(biomart, footprint.database.initializer, genes, quiet=TRUE)
 {
    tokens <- strsplit(footprint.database.initializer, ":")[[1]]
    fp.db.protocol <- tokens[1]
@@ -21,11 +23,13 @@ Footprints <- function(biomart, footprint.database.initializer, genes=genes)
    fullpath <- tokens[2]
    stopifnot(file.exists(fullpath))
 
+   tbl.locs <- .getGeneLocations (biomart, genes, quiet)
+
    state <- new.env(parent=emptyenv())
    state[["fp.db"]] == NULL
 
    if(fp.db.protocol == "sqlite"){
-      printf("opening sqlite connection to %s", fullpath)
+      if(!quiet) printf("FootprintFinder ctor opening sqlite connection to %s", fullpath)
       fp.db <- dbConnect(dbDriver("SQLite"), fullpath)
       state[["fp.db"]] <- fp.db
       } # sqlite
@@ -33,30 +37,50 @@ Footprints <- function(biomart, footprint.database.initializer, genes=genes)
    if(is.null(state[["fp.db"]]))
        stop(sprintf("failed to connect to '%s'", footprint.database.initializer))
 
-   .Footprints(biomart=biomart,
+   .FootprintFinder(biomart=biomart,
                footprint.database.initializer=footprint.database.initializer,
                genes=genes,
-               state=state)
+               tbl.locs=tbl.locs,
+               state=state,
+               quiet=quiet)
 
-} # Footprints, the constructor
+} # FootprintFinder, the constructor
 #------------------------------------------------------------------------------------------------------------------------
-setMethod("getGenes", "Footprints",
+.getGeneLocations <- function(biomart, genes, quiet=TRUE)
+{
+    columns.desired <- c("entrezgene", "chromosome_name", "start_position", "end_position", "strand", "hgnc_symbol")
+    if(!quiet)
+       printf("biomart query for %d genes", length(genes))
+    tbl.locs <- getBM(attributes=columns.desired, filters="hgnc_symbol", values=genes, mart=biomart)
+    duplicates <- which(duplicated(tbl.locs$hgnc_symbol))
+    if(length(duplicates) > 0)
+       tbl.locs <- tbl.locs[-duplicates,]
+
+    tbl.locs
+
+} # .getGeneLocations
+#------------------------------------------------------------------------------------------------------------------------
+setMethod("getGenes", "FootprintFinder",
 
    function (obj){
       obj@genes
       })
 
 #------------------------------------------------------------------------------------------------------------------------
-setMethod("getPromoterRegion", "Footprints",
+setMethod("getPromoterRegion", "FootprintFinder",
 
    function(obj,  geneSymbol, size.upstream=1000, size.downstream=0){
 
-      columns.desired <- c("entrezgene", "chromosome_name", "start_position", "end_position", "strand", "hgnc_symbol")
-      tbl.loc <- getBM(attributes=columns.desired, filters="hgnc_symbol", values=geneSymbol, mart=obj@biomart)[1,]
-      chrom <- sprintf("chr%s", tbl.loc$chromosome_name)
-      start.orig <- tbl.loc$start_position
-      end.orig   <- tbl.loc$end_position
-      if(tbl.loc$strand == -1){ # reverse (minus) strand.  TSS is at "end" position
+      tbl.locs <- obj@tbl.locs
+
+      stopifnot(geneSymbol %in% tbl.locs$hgnc_symbol)
+      index <- grep(geneSymbol, tbl.locs$hgnc_symbol)
+
+      chrom <- sprintf("chr%s", tbl.locs$chromosome_name[index])
+      start.orig <- tbl.locs$start_position[index]
+      end.orig   <- tbl.locs$end_position[index]
+
+      if(tbl.locs$strand[index] == -1){ # reverse (minus) strand.  TSS is at "end" position
          start.loc <- end.orig - size.downstream
          end.loc   <- end.orig + size.upstream
          }
@@ -69,7 +93,7 @@ setMethod("getPromoterRegion", "Footprints",
      })
 
 #------------------------------------------------------------------------------------------------------------------------
-setMethod("getFootprints", "Footprints",
+setMethod("getFootprints", "FootprintFinder",
 
     function(obj,  geneSymbol, size.upstream=1000, size.downstream=0){
        stopifnot(length(geneSymbol) == 1)
@@ -85,7 +109,3 @@ setMethod("getFootprints", "Footprints",
        })
 
 #----------------------------------------------------------------------------------------------------
-
-# result <- getBM(attributes=c("entrezgene", "chromosome_name", "start_position", "end_position", "strand", "hgnc_symbol"),
-#                   filters="hgnc_symbol", values=geneSymbol, mart=ensembl.hg38)
-

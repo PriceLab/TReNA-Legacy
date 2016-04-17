@@ -1,10 +1,10 @@
-exportClasses(TReNA, Solver, LassoSolver)
+exportClasses(TReNA, Solver, LassoSolver, FootprintFinder)
 
 export(
     TReNA,
     Solver,
     LassoSolver,
-    Footprints
+    FootprintFinder
 )
 
 exportMethods(
