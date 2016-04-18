@@ -3,7 +3,7 @@ library(RUnit)
 library(biomaRt)
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
-source("~/github/snpFoot/inst/misc/constrainTFs/lasso/go.R")
+#source("~/github/snpFoot/inst/misc/constrainTFs/lasso/go.R")
 #----------------------------------------------------------------------------------------------------
 runTests <- function()
 {
@@ -136,14 +136,12 @@ test_fitDummyData <- function()
      # we expect an intercept and a coef for tfs gene.02 and gene.03
      # which predict the value of the target.gene
 
-   betas <- solve(trena, target.gene, tfs)
-   #checkEquals(sort(names(result)), c("rSquared", "scores"))
-   #betas <- result$scores
-   #rSquared <- result$rSquared
-   checkTrue(all(c("(Intercept)", tf1, tf2) %in% rownames(betas)))
-   intercept <- betas["(Intercept)", 1]
-   coef.tf1  <- betas[tf1, 1]
-   coef.tf2  <- betas[tf2, 1]
+   tbl.betas <- solve(trena, target.gene, tfs)
+   checkTrue(all(c(tf1, tf2) %in% rownames(tbl.betas)))
+   checkEquals(colnames(tbl.betas), c("beta", "intercept", "gene.cor"))
+   intercept <- tbl.betas[1, "intercept"]
+   coef.tf1  <- tbl.betas[tf1, "beta"]
+   coef.tf2  <- tbl.betas[tf2, "beta"]
    predicted <- intercept + (coef.tf1 * mtx[tf1,]) + (coef.tf2 * mtx[tf2,])
    actual    <- mtx[target.gene, ]
 
@@ -176,16 +174,16 @@ test_fitDREAM5_yeast.lasso <- function()
    tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
    tfs <- tbl.gold.met2$TF
 
-   result <- solve(trena, target.gene, tfs)
+   tbl.betas <- as.data.frame(solve(trena, target.gene, tfs))
 
-   tbl.betas <- as.data.frame(result)
+   #tbl.betas <- as.data.frame(result)
      # 1st row of tbl.betas is the intercept, give it an NA correlation
-   tbl.betas$cor <- c(NA, unlist(lapply(rownames(tbl.betas)[-1], function(tf) subset(tbl.gold.met2, TF==tf)$cor)))
-   colnames (tbl.betas) <- c("beta", "cor")
+   #tbl.betas$cor <- c(NA, unlist(lapply(rownames(tbl.betas)[-1], function(tf) subset(tbl.gold.met2, TF==tf)$cor)))
+   #colnames (tbl.betas) <- c("beta", "cor")
 
      # is there some rough correlation between the calculated betas and the
      # measured correlation?
-   checkTrue(with(tbl.betas[-1, ], cor(beta,cor)) > 0.7)
+   checkTrue(cor(tbl.betas$beta, tbl.betas$gene.cor) > 0.7)
 
 } # test_fitDREAM5_yeast.lasso
 #----------------------------------------------------------------------------------------------------
@@ -213,19 +211,16 @@ test_fitDREAM5_yeast.lasso_weighted.tfs <- function()
    tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
    tfs <- tbl.gold.met2$TF
 
-   tf.weights <- c(0.0001, 1.0, 1.0, 0.0001)
-   result <- solve(trena, target.gene, tfs, tf.weights)
+   tf.weights <- c(0.0001, 1.0, 0.0001, 1.0)
+   mtx.betas <- solve(trena, target.gene, tfs, tf.weights)
 
-   tbl.betas <- as.data.frame(result)
-   significant.tfs <- rownames(tbl.betas)[2:nrow(tbl.betas)]
+   tbl.betas <- as.data.frame(mtx.betas)
+   significant.tfs <- rownames(tbl.betas)
    tbl.gold.met2.trimmed <- subset(tbl.gold.met2, TF %in% significant.tfs)
-   tbl.betas$cor <- c(NA, tbl.gold.met2.trimmed$cor)
-   colnames (tbl.betas) <- c("beta", "cor")
 
      # is there some rough correlation between the calculated betas and the
      # measured correlation?
-   tbl.betas.trimmed <- tbl.betas[2:nrow(tbl.betas),]
-   checkTrue(any(tbl.betas.trimmed$cor > 0.8))
+   checkTrue(any(tbl.betas$gene.cor > 0.8))
 
 } # test_fitDREAM5_yeast.lasso_weighted.tfs
 #----------------------------------------------------------------------------------------------------
@@ -250,10 +245,7 @@ test_fitDREAM5_yeast.randomForest <- function()
    target.gene <- "MET2"
    tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
    tfs <- tbl.gold.met2$TF
-   result <- solve(trena, target.gene, tfs)
-
-
-   tbl.purity <- as.data.frame(result$scores)
+   tbl.purity  <- as.data.frame(solve(trena, target.gene, tfs))
 
      # is there some rough correlation between the importance
      # values returned by randomforest, and the directly

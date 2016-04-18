@@ -38,15 +38,28 @@ setMethod("run", "LassoSolver",
      fit.nolambda = glmnet(features, target, penalty.factor=tf.weights)
      fit = glmnet(features, target, penalty.factor=tf.weights, lambda=lambda.1se)
 
-
        # extract the exponents of the fit
+     #tbl.out <- as.matrix(fit$beta)
+     #deleters <- as.integer(which(tbl.out[,1] == 0))
+     #if(length(deleters) > 0)
+     #   tbl.out <- tbl.out[-deleters, , drop=FALSE]
+     #colnames(tbl.out) <- "beta"
+
      mtx.beta <- as.matrix(coef(fit, s="lambda.min"))
+     colnames(mtx.beta) <- "beta"
      deleters <- as.integer(which(mtx.beta[,1] == 0))
      if(length(deleters) > 0)
         mtx.beta <- mtx.beta[-deleters, , drop=FALSE]
 
-      if(!obj@quiet)
-         plot(fit.nolambda, xvar='lambda', label=TRUE)
+        # put the intercept, admittedly with much redundancy, into its owh column
+     intercept <- mtx.beta[1,1]
+     mtx.beta <- mtx.beta[-1, , drop=FALSE]
+     mtx.beta <- cbind(mtx.beta, intercept=rep(intercept, nrow(mtx.beta)))
+     correlations.of.betas.to.targetGene <- unlist(lapply(rownames(mtx.beta), function(x) cor(mtx[x,], mtx[target.gene,])))
+     #browser()
+     mtx.beta <- cbind(mtx.beta, gene.cor=correlations.of.betas.to.targetGene)
+     if(!obj@quiet)
+        plot(fit.nolambda, xvar='lambda', label=TRUE)
 
      return(mtx.beta)
      })
