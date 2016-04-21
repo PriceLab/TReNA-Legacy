@@ -20,6 +20,14 @@ setMethod("run", "LassoSolver",
 
   function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs))){
 
+        # we don't try to handle tf self-regulation
+    deleters <- grep(target.gene, tfs)
+    if(length(deleters) > 0){
+       tfs <- tfs[-deleters]
+       tf.weights <- tf.weights[-deleters]
+       message(sprintf("LassoSolver removing target.gene from candidate regulators: %s", target.gene))
+       }
+
      tf.weights <- 1/tf.weights
 
      mtx <- obj@mtx.assay
@@ -61,7 +69,9 @@ setMethod("run", "LassoSolver",
      if(!obj@quiet)
         plot(fit.nolambda, xvar='lambda', label=TRUE)
 
-     return(mtx.beta)
+     ordered.indices <- order(abs(mtx.beta[, "beta"]), decreasing=TRUE)
+     mtx.beta <- mtx.beta[ordered.indices,]
+     return(as.data.frame(mtx.beta))
      })
 
 

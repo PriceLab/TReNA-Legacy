@@ -74,7 +74,7 @@ setMethod("getPromoterRegion", "FootprintFinder",
       tbl.locs <- obj@tbl.locs
 
       stopifnot(geneSymbol %in% tbl.locs$hgnc_symbol)
-      index <- grep(geneSymbol, tbl.locs$hgnc_symbol)
+      index <- grep(geneSymbol, tbl.locs$hgnc_symbol)[1]
 
       chrom <- sprintf("chr%s", tbl.locs$chromosome_name[index])
       start.orig <- tbl.locs$start_position[index]

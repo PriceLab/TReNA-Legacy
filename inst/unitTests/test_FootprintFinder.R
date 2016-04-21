@@ -103,3 +103,4 @@ test_constructWithAllChromosome5genes <- function()
 
 } # test_constructWithAllChromosome5genes
 #----------------------------------------------------------------------------------------------------
+if(!interactive()) runTests()

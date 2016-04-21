@@ -20,21 +20,29 @@ setMethod("run", "BayesSpikeSolver",
 
   function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs))){
 
-     mtx <- obj@mtx.assay
-     stopifnot(target.gene %in% rownames(mtx))
-     stopifnot(all(tfs %in% rownames(mtx)))
-     features <- t(mtx[tfs, ])
-     target <- as.numeric(mtx[target.gene,])
-     result <- vbsr(target, features, family='normal')
-     tbl.out <- data.frame(beta=result$beta, pval=result$pval, z=result$z, post=result$post)
-     rownames(tbl.out) <- tfs
-     tbl.out$score <- -log10(tbl.out$pval)
-     tbl.out <- tbl.out[order(tbl.out$score, decreasing=TRUE),]
-     #browser()
-     gene.cor <- sapply(rownames(tbl.out), function(tf) cor(mtx[tf,], mtx[target.gene,]))
-     tbl.out$gene.cor <- as.numeric(gene.cor)
-     tbl.out
-     })
+        # we don't try to handle tf self-regulation
+    deleters <- grep(target.gene, tfs)
+    if(length(deleters) > 0){
+       tfs <- tfs[-deleters]
+       tf.weights <- tf.weights[-deleters]
+       message(sprintf("BayesSpikeSolver removing target.gene from candidate regulators: %s", target.gene))
+       }
+
+    mtx <- obj@mtx.assay
+    stopifnot(target.gene %in% rownames(mtx))
+    stopifnot(all(tfs %in% rownames(mtx)))
+    features <- t(mtx[tfs, ])
+    target <- as.numeric(mtx[target.gene,])
+    result <- vbsr(target, features, family='normal')
+    tbl.out <- data.frame(beta=result$beta, pval=result$pval, z=result$z, post=result$post)
+    rownames(tbl.out) <- tfs
+    tbl.out$score <- -log10(tbl.out$pval)
+    tbl.out <- tbl.out[order(tbl.out$score, decreasing=TRUE),]
+    #browser()
+    gene.cor <- sapply(rownames(tbl.out), function(tf) cor(mtx[tf,], mtx[target.gene,]))
+    tbl.out$gene.cor <- as.numeric(gene.cor)
+    tbl.out
+    })
 
 
 #----------------------------------------------------------------------------------------------------
