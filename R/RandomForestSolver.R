@@ -24,7 +24,7 @@ setMethod("run", "RandomForestSolver",
      stopifnot(target.gene %in% rownames(mtx))
      stopifnot(all(tfs %in% rownames(mtx)))
      result <- randomForest(t(mtx[tfs,]), t(mtx[target.gene,]))
-     return(list(scores=result$importance, rSquared=NA))
+     result
      })
 
 

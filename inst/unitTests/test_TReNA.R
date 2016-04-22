@@ -21,7 +21,9 @@ runTests <- function()
    test_eliminateSelfTFs()
 
    test_fitDREAM5_yeast.bayesSpike()
+   test_ampAD.met2c.154tfs.278samples.lasso()
    test_ampAD.met2c.154tfs.278samples.bayesSpike()
+   test_ampAD.met2c.154tfs.278samples.randomForest()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -247,13 +249,16 @@ test_fitDREAM5_yeast.randomForest <- function()
    target.gene <- "MET2"
    tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
    tfs <- tbl.gold.met2$TF
-   tbl.purity  <- as.data.frame(solve(trena, target.gene, tfs))
+      # RandomForest returns its own structured data object
+      # we respect that here rather than squeeze it into a lasso-like table of beta coefficients
+   rf.result <- solve(trena, target.gene, tfs)
+   tbl.importance  <- as.data.frame(rf.result$importance)
 
      # is there some rough correlation between the importance
      # values returned by randomforest, and the directly
-     # measured corrleation of the tfs to the tarte
+     # measured corrleation of the tfs to the target?
 
-   checkTrue(cor(tbl.purity$IncNodePurity, tbl.gold.met2$cor) > 0.7)
+   checkTrue(cor(tbl.importance$IncNodePurity, tbl.gold.met2$cor) > 0.7)
 
 } # test_fitDREAM5_yeast.randomForest
 #----------------------------------------------------------------------------------------------------
@@ -405,9 +410,9 @@ test_fitDREAM5_yeast.bayesSpike <- function()
 
 } # test_fitDREAM5_yeast.bayesSpike
 #----------------------------------------------------------------------------------------------------
-test_ampAD.met2c.154tfs.278samples.bayesSpike <- function()
+test_ampAD.met2c.154tfs.278samples.lasso <- function()
 {
-   printf("--- test_ampAD.met2c.154tfs.278samples.bayesSpike")
+   printf("--- test_ampAD.met2c.154tfs.278samples.lasso")
 
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    target.gene <- "MEF2C"
@@ -417,16 +422,12 @@ test_ampAD.met2c.154tfs.278samples.bayesSpike <- function()
     print("bayesSpike model is quite useless, even after")
     print("filtering for abs(beta) and pval")
 
-   trena <- TReNA(mtx.assay=mtx.sub, solver="bayesSpike", quiet=FALSE)
+   trena <- TReNA(mtx.assay=mtx.sub, solver="lasso", quiet=FALSE)
    tfs <- setdiff(rownames(mtx.sub), "MEF2C")
    tbl <- solve(trena, target.gene, tfs)
-   tbl.trimmed <- subset(tbl, abs(beta) > 0.1 & pval < 0.01)
-   betas <- tbl.trimmed$beta
-   big.abs.betas <- betas[abs(betas) > 1]
-   checkTrue(length(big.abs.betas) > 20)
-
-   checkTrue(nrow(tbl) > 10)
-   checkTrue(cor(tbl.trimmed$beta, tbl.trimmed$gene.cor) < 0.2)
+     # check for expected non-sensical values
+   checkTrue(min(tbl$beta) < -7)
+   checkTrue(max(tbl$beta) > 10)
 
       # with log transform, justified how?
       # good results are returned, as loosely checked
@@ -436,16 +437,14 @@ test_ampAD.met2c.154tfs.278samples.bayesSpike <- function()
    mtx.log2 <- log2(mtx.tmp)
    fivenum(mtx.log2)  # [1] -9.9657843  0.8107618  3.6262014  5.4345771 10.0052973
 
-   trena <- TReNA(mtx.assay=mtx.log2, solver="bayesSpike", quiet=FALSE)
+   trena <- TReNA(mtx.assay=mtx.log2, solver="lasso", quiet=FALSE)
    tfs <- setdiff(rownames(mtx.log2), "MEF2C")
    tbl2 <- solve(trena, target.gene, tfs)
-   tbl2.trimmed <- subset(tbl2, abs(beta) > 0.1 & pval < 0.01)
-   betas2 <- tbl2.trimmed$beta
-   big.abs.betas2 <- betas2[abs(betas2) > 1]
-   checkEquals(length(big.abs.betas2), 0)
-   checkTrue(cor(tbl2.trimmed$beta, tbl2.trimmed$gene.cor) > 0.6)
+   checkTrue(min(tbl2$beta) > -0.2)
+   checkTrue(max(tbl2$beta) < 1)
+   checkEquals(rownames(subset(tbl2, abs(beta) > 0.15)), c("CUX1", "FOXK2", "SATB2", "HLF", "STAT5B", "ATF2"))
 
-} # test_ampAD.met2c.154tfs.278samples.bayesSpike
+} # test_ampAD.met2c.154tfs.278samples.lasso
 #----------------------------------------------------------------------------------------------------
 test_ampAD.met2c.154tfs.278samples.bayesSpike <- function()
 {
@@ -488,6 +487,46 @@ test_ampAD.met2c.154tfs.278samples.bayesSpike <- function()
    checkTrue(cor(tbl2.trimmed$beta, tbl2.trimmed$gene.cor) > 0.6)
 
 } # test_ampAD.met2c.154tfs.278samples.bayesSpike
+#----------------------------------------------------------------------------------------------------
+test_ampAD.met2c.154tfs.278samples.randomForest <- function()
+{
+   printf("--- test_ampAD.met2c.154tfs.278samples.randomForest")
+
+   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+   target.gene <- "MEF2C"
+   # print(fivenum(mtx.sub))   # 0.000000    1.753137   12.346965   43.247467 1027.765854
+
+    print("note!  without log transform of the data")
+    print("bayesSpike model is quite useless, even after")
+    print("filtering for abs(beta) and pval")
+
+   trena <- TReNA(mtx.assay=mtx.sub, solver="randomForest", quiet=FALSE)
+   tfs <- setdiff(rownames(mtx.sub), "MEF2C")
+   rf.result <- solve(trena, target.gene, tfs)
+   tbl.scores <- as.data.frame(rf.result$importance)
+
+   tbl.scores <- tbl.scores[order(tbl.scores$IncNodePurity, decreasing=TRUE),, drop=FALSE]
+   checkEquals(rownames(subset(tbl.scores, IncNodePurity > 100000)),
+               c("HLF", "STAT4", "SATB1", "SATB2", "FOXP2", "FOXO4","ATF2"))
+                                        # with log transform, justified how?
+      # good results are returned, as loosely checked
+      # by correlating betas against  expression
+
+   mtx.tmp <- mtx.sub - min(mtx.sub) + 0.001
+   mtx.log2 <- log2(mtx.tmp)
+   fivenum(mtx.log2)  # [1] -9.9657843  0.8107618  3.6262014  5.4345771 10.0052973
+
+   trena <- TReNA(mtx.assay=mtx.log2, solver="randomForest", quiet=FALSE)
+   tfs <- setdiff(rownames(mtx.log2), "MEF2C")
+   rf.result.2 <- solve(trena, target.gene, tfs)
+   tbl.scores.2 <- as.data.frame(rf.result$importance)
+   tbl.scores.2 <- tbl.scores.2[order(tbl.scores.2$IncNodePurity, decreasing=TRUE),, drop=FALSE]
+   checkEquals(rownames(subset(tbl.scores.2, IncNodePurity > 100000)),
+               c("HLF", "STAT4", "SATB1", "SATB2", "FOXP2", "FOXO4","ATF2"))
+       # lasso reports, with log2 transformed data,
+       # rownames(subset(tbl2, abs(beta) > 0.15)) "CUX1"   "FOXK2"  "SATB2"  "HLF"    "STAT5B" "ATF2"
+
+} # test_ampAD.met2c.154tfs.278samples.randomForest
 #----------------------------------------------------------------------------------------------------
 test_eliminateSelfTFs <- function()
 {
