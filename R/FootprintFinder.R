@@ -38,25 +38,40 @@ FootprintFinder <- function(biomart, footprint.database.initializer, genes, quie
        stop(sprintf("failed to connect to '%s'", footprint.database.initializer))
 
    .FootprintFinder(biomart=biomart,
-               footprint.database.initializer=footprint.database.initializer,
-               genes=genes,
-               tbl.locs=tbl.locs,
-               state=state,
-               quiet=quiet)
+                    footprint.database.initializer=footprint.database.initializer,
+                    genes=genes,
+                    tbl.locs=tbl.locs,
+                    state=state,
+                    quiet=quiet)
 
 } # FootprintFinder, the constructor
 #------------------------------------------------------------------------------------------------------------------------
 .getGeneLocations <- function(biomart, genes, quiet=TRUE)
 {
-    columns.desired <- c("entrezgene", "chromosome_name", "start_position", "end_position", "strand", "hgnc_symbol")
+    columns.desired <- c("entrezgene", "chromosome_name", "start_position", "end_position", "strand", "hgnc_symbol",
+                         "ensembl_gene_id")
     if(!quiet)
        printf("biomart query for %d genes", length(genes))
-    tbl.locs <- getBM(attributes=columns.desired, filters="hgnc_symbol", values=genes, mart=biomart)
-    duplicates <- which(duplicated(tbl.locs$hgnc_symbol))
-    if(length(duplicates) > 0)
-       tbl.locs <- tbl.locs[-duplicates,]
 
-    tbl.locs
+        # identify ENSG ids.  lookup locations for them
+    tbl.locs.ensg <- data.frame()
+    tbl.locs.geneSymbol <- data.frame()
+
+    ensg.ids <- grep("^ENSG", genes)
+
+    if(length(ensg.ids) > 0){
+       tbl.locs.ensg <- getBM(attributes=columns.desired, filters="ensembl_gene_id", values=genes, mart=biomart)
+       }
+
+    non.ensg.ids <- setdiff(genes, ensg.ids)
+    if(length(non.ensg.ids) > 0){
+       tbl.locs.geneSymbol <- getBM(attributes=columns.desired, filters="hgnc_symbol", values=genes, mart=biomart)
+       duplicates <- which(duplicated(tbl.locs.geneSymbol$hgnc_symbol))
+       if(length(duplicates) > 0)
+          tbl.locs.geneSymbol <- tbl.locs.geneSymbol[-duplicates,]
+       }
+
+    rbind(tbl.locs.ensg, tbl.locs.geneSymbol)
 
 } # .getGeneLocations
 #------------------------------------------------------------------------------------------------------------------------
@@ -72,9 +87,14 @@ setMethod("getPromoterRegion", "FootprintFinder",
    function(obj,  geneSymbol, size.upstream=1000, size.downstream=0){
 
       tbl.locs <- obj@tbl.locs
-
-      stopifnot(geneSymbol %in% tbl.locs$hgnc_symbol)
-      index <- grep(geneSymbol, tbl.locs$hgnc_symbol)[1]
+      if(geneSymbol %in% tbl.locs$hgnc_symbol){
+          index <- grep(geneSymbol, tbl.locs$hgnc_symbol)[1]
+      } else if (geneSymbol %in% tbl.locs$ensembl_gene_id){
+          index <- grep(geneSymbol, tbl.locs$ensembl_gene_id)
+      } else {
+          stop(sprintf("FootprintFinder:getPromoterRegion does not recognize geneSymbol '%s'",
+                       geneSymbol))
+      }
 
       chrom <- sprintf("chr%s", tbl.locs$chromosome_name[index])
       start.orig <- tbl.locs$start_position[index]

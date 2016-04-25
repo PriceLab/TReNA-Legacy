@@ -1,6 +1,8 @@
 library(TReNA)
 library(RUnit)
 library(biomaRt)
+library(TReNA.brain)  # sqlite footprint database and expession data
+library(TReNA.lymphoblast)
 #----------------------------------------------------------------------------------------------------
 if(!exists("ensembl.hg38"))
     ensembl.hg38 <- useMart("ensembl", dataset="hsapiens_gene_ensembl")
@@ -12,13 +14,14 @@ runTests <- function()
    test_getPromoterRegion()
    test_getFootprints()
    test_constructWithAllChromosome5genes()
+   test_getFootprintsForEnsemblGenes()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
 test_constructor <- function()
 {
    printf("--- test_constructor")
-   db.uri <- "sqlite:~/github/snpFoot/inst/misc/sqlite.explorations/fpTf.sqlite"
+   db.uri <- sprintf("sqlite:%s", system.file(package="TReNA.brain", "extdata", "fpTf.sqlite"))
    genes <- c("MEF2C", "ZNF454")
    fp <- FootprintFinder(ensembl.hg38, db.uri, genes)
    checkEquals(getGenes(fp), genes)
@@ -29,7 +32,8 @@ test_constructor <- function()
 test_getPromoterRegion <- function()
 {
    printf("--- test_getPromoterRegion")
-   db.uri <- "sqlite:~/github/snpFoot/inst/misc/sqlite.explorations/fpTf.sqlite"
+   #db.uri <- "sqlite:~/github/snpFoot/inst/misc/sqlite.explorations/fpTf.sqlite"
+   db.uri <- sprintf("sqlite:%s", system.file(package="TReNA.brain", "extdata", "fpTf.sqlite"))
    genes <- c("SP1", "TREM2")
    fp <- FootprintFinder(ensembl.hg38, db.uri, genes)
 
@@ -59,7 +63,7 @@ test_getPromoterRegion <- function()
 test_getFootprints <- function()
 {
    printf("--- test_getFootprints")
-   db.uri <- "sqlite:~/github/snpFoot/inst/misc/sqlite.explorations/fpTf.sqlite"
+   db.uri <- sprintf("sqlite:%s", system.file(package="TReNA.brain", "extdata", "fpTf.sqlite"))
    genes <- c("MEF2C", "ZNF454")
    fp <- FootprintFinder(ensembl.hg38, db.uri, genes)
    tbl.fp <- getFootprints(fp, "MEF2C", 1000, 1000)
@@ -95,12 +99,38 @@ test_constructWithAllChromosome5genes <- function()
    if(length(missing) > 0)
       genes.chr5 <- genes.chr5[-missing]  # 1515
 
-   db.uri <- "sqlite:~/github/snpFoot/inst/misc/sqlite.explorations/fpTf.sqlite"
+   #db.uri <- "sqlite:~/github/snpFoot/inst/misc/sqlite.explorations/fpTf.sqlite"
+   db.uri <- sprintf("sqlite:%s", system.file(package="TReNA.brain", "extdata", "fpTf.sqlite"))
    fp <- FootprintFinder(ensembl.hg38, db.uri, genes.chr5)
    goi <- genes.chr5[length(genes.chr5)]
    tbl.fp <- getFootprints(fp, goi, 1000, 1000)
    checkTrue(nrow(tbl.fp) > 200)
 
 } # test_constructWithAllChromosome5genes
+#----------------------------------------------------------------------------------------------------
+# FootprintFinder originally accepted only HUGO gene symbols, which is still the expected case
+# however, ensembl reports, and we currently have expression data for, a variety of DNA elements
+# including miRNA, linkRNA, antisense genes, pseudogenes of various sorts, etc.
+# these each have a unique ENSG id, which we test out here
+# the constructor of FootprintFinder needs to recognise these identifiers, and make a corresponding
+# call to biomart
+test_getFootprintsForEnsemblGenes <- function()
+{
+   printf("--- test_getFootprintsForEnsemblGenes")
+   db.uri <- sprintf("sqlite:%s", system.file(package="TReNA.brain", "extdata", "fpTf.sqlite"))
+   genes <- c("ENSG00000267051", "ENSG00000264503", "ENSG00000273141", "ENSG00000212712",
+              "ENSG00000236396", "ENSG00000154889", "ENSG00000267794",  "ENSG00000264843",
+              "ENSG00000260759", "ENSG00000154856")
+   fp <- FootprintFinder(ensembl.hg38, db.uri, genes)
+   checkEquals(getGenes(fp), genes)
+   goi <- genes[3]
+   loc <- getPromoterRegion(fp, goi, 250, 0)
+   tbl <- getFootprints(fp, goi, 250, 0)
+   checkTrue(all(tbl$mfpStart >= loc$start))
+   checkTrue(all(tbl$mfpStart <= loc$end))
+   checkTrue(all(tbl$mfpEnd >= loc$start))
+   checkTrue(all(tbl$mfpEnd <= loc$end))
+
+} # test_getFootprintsForEnsemblGenes
 #----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()
