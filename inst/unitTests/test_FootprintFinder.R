@@ -1,6 +1,7 @@
 library(TReNA)
 library(RUnit)
 library(biomaRt)
+library(RPostgreSQL)
 library(TReNA.brain)  # sqlite footprint database and expession data
 library(TReNA.lymphoblast)
 #----------------------------------------------------------------------------------------------------
@@ -10,6 +11,7 @@ if(!exists("ensembl.hg38"))
 #----------------------------------------------------------------------------------------------------
 runTests <- function()
 {
+   test_footprintDatabase()
    test_constructor()
    test_getPromoterRegion()
    test_getFootprints()
@@ -17,6 +19,23 @@ runTests <- function()
    test_getFootprintsForEnsemblGenes()
 
 } # runTests
+#----------------------------------------------------------------------------------------------------
+test_footprintDatabase <- function()
+{
+   printf("--- test_footprintDatabase")
+   db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="wholeBrain", host="whovian")
+   query <- "select count(*) from footprints"
+   tbl <- dbGetQuery(db, query)
+   row.count <- tbl[1, "count"]
+   checkTrue(row.count > 4e6)
+
+   tbl <- dbGetQuery(db, "select * from footprints limit 2")
+   checkEquals(nrow(tbl), 2)
+   checkTrue(ncol(tbl) > 10)
+
+   dbDisconnect(db)
+
+} # test_footprintDatabase
 #----------------------------------------------------------------------------------------------------
 test_constructor <- function()
 {
