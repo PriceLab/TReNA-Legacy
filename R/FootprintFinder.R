@@ -118,7 +118,7 @@ setMethod("getFootprints", "FootprintFinder",
     function(obj,  geneSymbol, size.upstream=1000, size.downstream=0){
        stopifnot(length(geneSymbol) == 1)
        loc <- getPromoterRegion(obj, geneSymbol, size.upstream, size.downstream)
-       query <- paste(c("select fp.chr, fp.mfpStart, fp.mfpEnd, fp.motifName, fp.pvalue, mg.motif, mg.tfs",
+       query <- paste(c("select fp.chr, fp.mfpStart, fp.mfpEnd, fp.motifName, fp.pvalue, mg.motif, mg.tf",
                         "from footprints fp",
                         "inner join motifsGenes mg",
                         "on fp.motifName=mg.motif",

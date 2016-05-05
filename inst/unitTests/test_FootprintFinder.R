@@ -5,14 +5,22 @@ library(RPostgreSQL)
 library(TReNA.brain)  # sqlite footprint database and expession data
 library(TReNA.lymphoblast)
 #----------------------------------------------------------------------------------------------------
-if(!exists("ensembl.hg38"))
-    ensembl.hg38 <- useMart("ensembl", dataset="hsapiens_gene_ensembl")
+#http://uswest.ensembl.org/
+#if(!exists("ensembl.hg38"))
+#    ensembl.hg38 <- useMart("ensembl", dataset="hsapiens_gene_ensembl", host="www.ensembl.org")
 
 #----------------------------------------------------------------------------------------------------
 runTests <- function()
 {
-   test_footprintDatabase()
+   test_privateWholeBrainFootprintDatabaseOnWhovian()
+   test_privateLymphoblastFootprintDatabaseOnWhovian()
+   test_privateWholeBrainFootprintDatabaseOnWhovian_manualJoin()
+   test_privateLymphoblastFootprintDatabaseOnWhovian_manualJoin()
+
    test_constructor()
+
+   test_.getGeneLocations()
+
    test_getPromoterRegion()
    test_getFootprints()
    test_constructWithAllChromosome5genes()
@@ -20,10 +28,29 @@ runTests <- function()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
-test_footprintDatabase <- function()
+# make sure that the gtf tables can be read and queried by the trena user
+test_privateGtfDatabaseOnWhovian <- function()
 {
-   printf("--- test_footprintDatabase")
+   printf("--- test_privateGtfDatabaseOnWhovian")
+
+   db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="gtf", host="whovian")
+
+     # two tables at present: footprints and motifsGenes.  footprints first
+   checkEquals(sort(dbListTables(db)), c("footprints", "motifsgenes"))
+
+} # test_privateGtfDatabaseOnWhovian
+#----------------------------------------------------------------------------------------------------
+# make sure that the wholeBrain tables can be read and queried by the trena user
+test_privateWholeBrainFootprintDatabaseOnWhovian <- function()
+{
+   printf("--- test_privateWholeBrainFootprintDatabaseOnWhovian")
+
    db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="wholeBrain", host="whovian")
+
+     # two tables at present: footprints and motifsGenes.  footprints first
+   checkEquals(sort(dbListTables(db)), c("footprints", "motifsgenes"))
+
+   checkTrue(dbExistsTable(db, "footprints"))
    query <- "select count(*) from footprints"
    tbl <- dbGetQuery(db, query)
    row.count <- tbl[1, "count"]
@@ -33,9 +60,89 @@ test_footprintDatabase <- function()
    checkEquals(nrow(tbl), 2)
    checkTrue(ncol(tbl) > 10)
 
+     # now motifsGenes
+   checkTrue(dbExistsTable(db, "motifsgenes"))
+   query <- "select count(*) from motifsgenes"
+   tbl <- dbGetQuery(db, query)
+   row.count <- tbl[1, "count"]
+   checkTrue(row.count > 9000)
+
    dbDisconnect(db)
 
-} # test_footprintDatabase
+} # test_privateWholeBrainFootprintDatabaseOnWhovian
+#----------------------------------------------------------------------------------------------------
+# make sure that the lymphoblast tables can be read and queried by the trena user
+test_privateLymphoblastFootprintDatabaseOnWhovian <- function()
+{
+   printf("--- test_privateLymphoblastFootprintDatabaseOnWhovian")
+
+   db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="lymphoblast", host="whovian")
+
+     # two tables at present: footprints and motifsGenes.  footprints first
+   checkEquals(sort(dbListTables(db)), c("footprints", "motifsgenes"))
+
+   checkTrue(dbExistsTable(db, "footprints"))
+   query <- "select count(*) from footprints"
+   tbl <- dbGetQuery(db, query)
+   row.count <- tbl[1, "count"]
+   checkTrue(row.count > 4e6)
+
+   tbl <- dbGetQuery(db, "select * from footprints limit 2")
+   checkEquals(nrow(tbl), 2)
+   checkTrue(ncol(tbl) > 10)
+
+     # now motifsGenes
+   checkTrue(dbExistsTable(db, "motifsgenes"))
+   query <- "select count(*) from motifsgenes"
+   tbl <- dbGetQuery(db, query)
+   row.count <- tbl[1, "count"]
+   checkTrue(row.count > 9000)
+
+   dbDisconnect(db)
+
+} # test_privateLymphoblastFootprintDatabaseOnWhovian
+#----------------------------------------------------------------------------------------------------
+# emulate the join which takes place behind the scenes in FootprintFinder
+test_privateWholeBrainFootprintDatabaseOnWhovian_manualJoin <- function()
+{
+   printf("--- test_privateWholeBrainFootprintDatabaseOnWhovian_manualJoin")
+   db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="wholeBrain", host="whovian")
+   loc <- list(chr="chr5", start=88824783, end=88825650)
+
+   query <- paste(c("select fp.chr, fp.mfpStart, fp.mfpEnd, fp.motifName, fp.pval, mg.motif, mg.tf",
+                    "from footprints fp",
+                    "inner join motifsgenes mg",
+                     "on fp.motifName=mg.motif",
+                     sprintf("where fp.chr = '%s' and  fp.mfpStart > %d and fp.mfpEnd < %d",
+                             loc$chr, loc$start, loc$end)),
+                    collapse=" ")
+
+   tbl <- dbGetQuery(db, query)
+   checkEquals(ncol(tbl), 7)
+   checkTrue(nrow(tbl) > 100)
+
+} # test_privateWholeBrainFootprintDatabaseOnWhovian_manualJoin
+#----------------------------------------------------------------------------------------------------
+# emulate the join which takes place behind the scenes in FootprintFinder
+test_privateLymphoblastFootprintDatabaseOnWhovian_manualJoin <- function()
+{
+   printf("--- test_privateLymphoblastFootprintDatabaseOnWhovian_manualJoin")
+   db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="lymphoblast", host="whovian")
+   loc <- list(chr="chr5", start=88824783, end=88825650)
+
+   query <- paste(c("select fp.chr, fp.mfpStart, fp.mfpEnd, fp.motifName, fp.pval, mg.motif, mg.tf",
+                    "from footprints fp",
+                    "inner join motifsgenes mg",
+                     "on fp.motifName=mg.motif",
+                     sprintf("where fp.chr = '%s' and  fp.mfpStart > %d and fp.mfpEnd < %d",
+                             loc$chr, loc$start, loc$end)),
+                    collapse=" ")
+
+   tbl <- dbGetQuery(db, query)
+   checkEquals(ncol(tbl), 7)
+   checkTrue(nrow(tbl) > 30)
+
+} # test_privateLymphoblastFootprintDatabaseOnWhovian_manualJoin
 #----------------------------------------------------------------------------------------------------
 test_constructor <- function()
 {
@@ -54,7 +161,8 @@ test_getPromoterRegion <- function()
    #db.uri <- "sqlite:~/github/snpFoot/inst/misc/sqlite.explorations/fpTf.sqlite"
    db.uri <- sprintf("sqlite:%s", system.file(package="TReNA.brain", "extdata", "fpTf.sqlite"))
    genes <- c("SP1", "TREM2")
-   fp <- FootprintFinder(ensembl.hg38, db.uri, genes)
+
+   fp <- FootprintFinder(orgdb, txdb, fpdb.uri, genes)
 
    region <- getPromoterRegion(fp, "TREM2", 0, 0)
    checkEquals(region$chr, "chr6")
