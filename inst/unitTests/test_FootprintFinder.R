@@ -2,8 +2,6 @@ library(TReNA)
 library(RUnit)
 library(biomaRt)
 library(RPostgreSQL)
-library(TReNA.brain)  # sqlite footprint database and expession data
-library(TReNA.lymphoblast)
 #----------------------------------------------------------------------------------------------------
 #http://uswest.ensembl.org/
 #if(!exists("ensembl.hg38"))
