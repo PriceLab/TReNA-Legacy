@@ -1,46 +1,70 @@
 printf <- function(...) print(noquote(sprintf(...)))
 #------------------------------------------------------------------------------------------------------------------------
+# a FootprintFinder needs, at present, this sort of information
+#
+#   1) a complete table of genome features, for which our current model is ensembl's Homo_sapiens.GRCh38.84.chr.gtf
+#   2) a footprint table, the output from cory's pipeline
+#   3) a motif/TF map, with scores & etc
+# 
+#------------------------------------------------------------------------------------------------------------------------
 .FootprintFinder <- setClass("FootprintFinder",
-                        slots = c(biomart="Mart",
-                                  footprint.database.initializer="character",
-                                  genes="character",
-                                  tbl.locs="data.frame",
+                        slots = c(database.uri="character",
                                   state="environment",
                                   quiet="logical")
                         )
 #------------------------------------------------------------------------------------------------------------------------
-setGeneric("getGenes", signature="obj", function(obj) standardGeneric ("getGenes"))
 setGeneric("getPromoterRegion", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0)
                                                       standardGeneric("getPromoterRegion"))
 setGeneric("getFootprints", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0)
                                                       standardGeneric("getFootprints"))
 #------------------------------------------------------------------------------------------------------------------------
-FootprintFinder <- function(biomart, footprint.database.initializer, genes, quiet=TRUE)
+FootprintFinder <- function(database.uri, quiet=TRUE)
 {
-   tokens <- strsplit(footprint.database.initializer, ":")[[1]]
-   fp.db.protocol <- tokens[1]
-   stopifnot(fp.db.protocol %in% c("sqlite"))
-   fullpath <- tokens[2]
-   stopifnot(file.exists(fullpath))
-
-   tbl.locs <- .getGeneLocations (biomart, genes, quiet)
+   tokens <- strsplit(database.initializer, ":")[[1]]
+   stopifnot(length(tokens) == 2)
+   db.protocol <- tokens[1]
+   db.description <- tokens[2]
+   stopifnot(db.protocol %in% c("sqlite", "postgres"))
+   tbl.locs <- .getGeneLocations (, genes, quiet)
 
    state <- new.env(parent=emptyenv())
-   state[["fp.db"]] == NULL
+   state[["db"]] == NULL
+ 
+  if(!quiet) printf("FootprintFinder ctor opening database connection to %s", fullpath)
 
-   if(fp.db.protocol == "sqlite"){
-      if(!quiet) printf("FootprintFinder ctor opening sqlite connection to %s", fullpath)
-      fp.db <- dbConnect(dbDriver("SQLite"), fullpath)
-      state[["fp.db"]] <- fp.db
+   if(db.protocol == "sqlite"){
+      fullpath <- db.description
+      stopifnot(file.exists(fullpath))
+      db <- dbConnect(dbDriver("SQLite"), fullpath)
+      state[["db"]] <- db
       } # sqlite
 
-   if(is.null(state[["fp.db"]]))
-       stop(sprintf("failed to connect to '%s'", footprint.database.initializer))
+   if(db.protocol == "postgres"){ 
+      postgres.tokens <- strsplit(db.description, "/")[[1]]
+      stopifnot(length(postgres.tokens) == 3)
+      db.host <- tokens[1]
+      db.databaseName <- tokens[2]
+      genome.assembly <- tokens[3]
+      driver <- PostgreSQL()
+      db.fp <- dbConnect(driver, user= "trena", password="trena", host=db.host)
+      existing.databases <- dbGetQuery(db, "select datname from pg_database")[,1]      
+      stopifnot(db.databaseName %in% existing.databases)
+      dbDisconnect(db.fp)
+      db.fp <- dbConnect(driver, user="trena", password="trena", dbname=db.databaseName, host=db.host)
+      stopifnot("gtf" %in% existing.databases)
+      db.gtf <- dbConnect(driver, user="trena", password="trena", dbname="gtf", host=db.host)
+      stage[["db.fp"]] <- db.fp
+      stage[["db.gtf"]] <- db.gtf
+      }
 
-   .FootprintFinder(biomart=biomart,
-                    footprint.database.initializer=footprint.database.initializer,
-                    genes=genes,
-                    tbl.locs=tbl.locs,
+   if(is.null(state[["db.fp"]]))
+     stop(sprintf("failed to connect to footprint database specified in '%s'", db.description)
+
+   if(is.null(state[["db.gtf"]]))
+     stop(sprintf("failed to connect to gtf (genome) information specified in '%s'", db.description)
+
+
+   .FootprintFinder(database.initializer=database.initializer,
                     state=state,
                     quiet=quiet)
 
@@ -125,7 +149,7 @@ setMethod("getFootprints", "FootprintFinder",
                           sprintf("where fp.chr = '%s' and  fp.mfpStart > %d and fp.mfpEnd < %d",
                                   loc$chr, loc$start, loc$end)),
                         collapse=" ")
-       dbGetQuery(obj@state[["fp.db"]], query)
+       dbGetQuery(obj@state[["db"]], query)
        })
 
 #----------------------------------------------------------------------------------------------------

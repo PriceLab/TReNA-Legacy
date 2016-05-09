@@ -26,6 +26,16 @@ runTests <- function()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
+test_database.hg38.whovian <- function()
+{
+   printf("--- test_database.hg38.whovian")
+   db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="hg38", host="whovian")
+   checkTrue("gtf" %in% dbListTables(db))
+   rowCount <-  dbGetQuery(db, "select count(*) from gtf")[1, 1]
+   checkTrue(rowCount >  2.5 * 10^6)
+
+} # test_database.hg38.whovian
+#----------------------------------------------------------------------------------------------------
 # make sure that the gtf tables can be read and queried by the trena user
 test_privateGtfDatabaseOnWhovian <- function()
 {
@@ -34,7 +44,8 @@ test_privateGtfDatabaseOnWhovian <- function()
    db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="gtf", host="whovian")
 
      # two tables at present: footprints and motifsGenes.  footprints first
-   checkEquals(sort(dbListTables(db)), c("footprints", "motifsgenes"))
+   checkTrue("hg38human" %in% dbListTables(db))
+   
 
 } # test_privateGtfDatabaseOnWhovian
 #----------------------------------------------------------------------------------------------------
