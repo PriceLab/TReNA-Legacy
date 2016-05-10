@@ -5,68 +5,79 @@ printf <- function(...) print(noquote(sprintf(...)))
 #   1) a complete table of genome features, for which our current model is ensembl's Homo_sapiens.GRCh38.84.chr.gtf
 #   2) a footprint table, the output from cory's pipeline
 #   3) a motif/TF map, with scores & etc
-# 
+#
 #------------------------------------------------------------------------------------------------------------------------
 .FootprintFinder <- setClass("FootprintFinder",
-                        slots = c(database.uri="character",
-                                  state="environment",
-                                  quiet="logical")
-                        )
+                             slots = c(genome.db="DBIConnection",
+                                       project.db="DBIConnection",
+                                       quiet="logical")
+                            )
 #------------------------------------------------------------------------------------------------------------------------
 setGeneric("getPromoterRegion", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0)
                                                       standardGeneric("getPromoterRegion"))
 setGeneric("getFootprints", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0)
                                                       standardGeneric("getFootprints"))
 #------------------------------------------------------------------------------------------------------------------------
-FootprintFinder <- function(database.uri, quiet=TRUE)
+.parseDatabaseUri <- function(database.uri)
 {
-   tokens <- strsplit(database.initializer, ":")[[1]]
-   stopifnot(length(tokens) == 2)
-   db.protocol <- tokens[1]
-   db.description <- tokens[2]
-   stopifnot(db.protocol %in% c("sqlite", "postgres"))
-   tbl.locs <- .getGeneLocations (, genes, quiet)
+   topLevel.tokens <- strsplit(database.uri, "://")[[1]]
+   database.brand <- topLevel.tokens[1]
+   secondLevel.tokens <- strsplit(topLevel.tokens[2], "/")[[1]]
+   host <- secondLevel.tokens[1]
+   database.name <- secondLevel.tokens[2]
 
-   state <- new.env(parent=emptyenv())
-   state[["db"]] == NULL
- 
-  if(!quiet) printf("FootprintFinder ctor opening database connection to %s", fullpath)
+   list(brand=database.brand, host=host, name=database.name)
 
-   if(db.protocol == "sqlite"){
-      fullpath <- db.description
-      stopifnot(file.exists(fullpath))
-      db <- dbConnect(dbDriver("SQLite"), fullpath)
-      state[["db"]] <- db
-      } # sqlite
+} # .parseDatabaseUri
+#------------------------------------------------------------------------------------------------------------------------
+FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRUE)
+{
+   genome.db.info <- .parseDatabaseUri(genome.database.uri)
+   project.db.info <- .parseDatabaseUri(project.database.uri)
+   stopifnot(genome.db.info$brand %in% c("postgres"))
 
-   if(db.protocol == "postgres"){ 
-      postgres.tokens <- strsplit(db.description, "/")[[1]]
-      stopifnot(length(postgres.tokens) == 3)
-      db.host <- tokens[1]
-      db.databaseName <- tokens[2]
-      genome.assembly <- tokens[3]
+
+      # open the genome database
+   if(genome.db.info$brand == "postgres"){
+      host <- genome.db.info$host
+      dbName <- genome.db.info$name
       driver <- PostgreSQL()
-      db.fp <- dbConnect(driver, user= "trena", password="trena", host=db.host)
-      existing.databases <- dbGetQuery(db, "select datname from pg_database")[,1]      
-      stopifnot(db.databaseName %in% existing.databases)
-      dbDisconnect(db.fp)
-      db.fp <- dbConnect(driver, user="trena", password="trena", dbname=db.databaseName, host=db.host)
-      stopifnot("gtf" %in% existing.databases)
-      db.gtf <- dbConnect(driver, user="trena", password="trena", dbname="gtf", host=db.host)
-      stage[["db.fp"]] <- db.fp
-      stage[["db.gtf"]] <- db.gtf
-      }
+      genome.db <- dbConnect(driver, user= "trena", password="trena", host=host)
+      existing.databases <- dbGetQuery(genome.db, "select datname from pg_database")[,1]
+      stopifnot(dbName %in% existing.databases)
+      dbDisconnect(genome.db)
+      genome.db <- dbConnect(driver, user="trena", password="trena", dbname=dbName, host=host)
+      expected.tables <- c("gtf", "motifsgenes")
+      stopifnot(all(expected.tables %in% dbListTables(genome.db)))
+      if(!quiet){
+         row.count <- dbGetQuery(genome.db, "select count(*) from gtf")[1,1]
+         printf("%s: %d rows", sprintf("%s/gtf", genome.database.uri), row.count)
+         row.count <- dbGetQuery(genome.db, "select count(*) from motifsgenes")[1,1]
+         printf("%s: %d rows", sprintf("%s/motifsgenes", genome.database.uri), row.count)
 
-   if(is.null(state[["db.fp"]]))
-     stop(sprintf("failed to connect to footprint database specified in '%s'", db.description)
+         }
+      } # if postgres
 
-   if(is.null(state[["db.gtf"]]))
-     stop(sprintf("failed to connect to gtf (genome) information specified in '%s'", db.description)
+      # open the project database
+   if(project.db.info$brand == "postgres"){
+      host <- project.db.info$host
+      dbName <- project.db.info$name
+      driver <- PostgreSQL()
+      project.db <- dbConnect(driver, user= "trena", password="trena", host=host)
+      existing.databases <- dbGetQuery(project.db, "select datname from pg_database")[,1]
+      stopifnot(dbName %in% existing.databases)
+      dbDisconnect(project.db)
+      project.db <- dbConnect(driver, user="trena", password="trena", host=host, dbname=dbName)
+      expected.tables <- c("footprints")
+      stopifnot(all(expected.tables %in% dbListTables(project.db)))
+      if(!quiet){
+         row.count <- dbGetQuery(project.db, "select count(*) from footprints")[1,1]
+         printf("%s: %d rows", sprintf("%s/footprints", project.database.uri), row.count)
+         }
+     } # if postgres
 
 
-   .FootprintFinder(database.initializer=database.initializer,
-                    state=state,
-                    quiet=quiet)
+   .FootprintFinder(genome.db=genome.db, project.db=project.db, quiet=quiet)
 
 } # FootprintFinder, the constructor
 #------------------------------------------------------------------------------------------------------------------------
@@ -99,32 +110,24 @@ FootprintFinder <- function(database.uri, quiet=TRUE)
 
 } # .getGeneLocations
 #------------------------------------------------------------------------------------------------------------------------
-setMethod("getGenes", "FootprintFinder",
-
-   function (obj){
-      obj@genes
-      })
-
-#------------------------------------------------------------------------------------------------------------------------
 setMethod("getPromoterRegion", "FootprintFinder",
 
    function(obj,  geneSymbol, size.upstream=1000, size.downstream=0){
 
-      tbl.locs <- obj@tbl.locs
-      if(geneSymbol %in% tbl.locs$hgnc_symbol){
-          index <- grep(geneSymbol, tbl.locs$hgnc_symbol)[1]
-      } else if (geneSymbol %in% tbl.locs$ensembl_gene_id){
-          index <- grep(geneSymbol, tbl.locs$ensembl_gene_id)
-      } else {
-          stop(sprintf("FootprintFinder:getPromoterRegion does not recognize geneSymbol '%s'",
-                       geneSymbol))
-      }
+       query <- paste("select gene_name, chr, start, endpos, strand from gtf where ",
+                      sprintf("gene_name='%s' ", geneSymbol),
+                      "and gene_biotype='protein_coding' and moleculetype='gene'",
+                      collapse=" ")
 
-      chrom <- sprintf("chr%s", tbl.locs$chromosome_name[index])
-      start.orig <- tbl.locs$start_position[index]
-      end.orig   <- tbl.locs$end_position[index]
+      tbl.loc <-dbGetQuery(obj@genome.db, query)
+      stopifnot(nrow(tbl.loc) == 1)
 
-      if(tbl.locs$strand[index] == -1){ # reverse (minus) strand.  TSS is at "end" position
+      chrom <- tbl.loc$chr[1]
+      start.orig <- tbl.loc$start[1]
+      end.orig   <- tbl.loc$endpos[1]
+      strand     <- tbl.loc$strand[1]
+
+      if(strand == "-"){ # reverse (minus) strand.  TSS is at "end" position
          start.loc <- end.orig - size.downstream
          end.loc   <- end.orig + size.upstream
          }
@@ -132,7 +135,6 @@ setMethod("getPromoterRegion", "FootprintFinder",
         start.loc <- start.orig - size.upstream
         end.loc   <- start.orig + size.downstream
         }
-
      return(list(chr=chrom, start=start.loc, end=end.loc))
      })
 
@@ -142,14 +144,16 @@ setMethod("getFootprints", "FootprintFinder",
     function(obj,  geneSymbol, size.upstream=1000, size.downstream=0){
        stopifnot(length(geneSymbol) == 1)
        loc <- getPromoterRegion(obj, geneSymbol, size.upstream, size.downstream)
-       query <- paste(c("select fp.chr, fp.mfpStart, fp.mfpEnd, fp.motifName, fp.pvalue, mg.motif, mg.tf",
+       print(loc)
+       query <- paste(c("select fp.chr, fp.mfpstart, fp.mfpend, fp.motifname, fp.pval, mg.motif, mg.tf",
                         "from footprints fp",
-                        "inner join motifsGenes mg",
+                        "inner join motifsgenes mg",
                         "on fp.motifName=mg.motif",
-                          sprintf("where fp.chr = '%s' and  fp.mfpStart > %d and fp.mfpEnd < %d",
+                          sprintf("where fp.chr = '%s' and  fp.mfpstart > %d and fp.mfpend < %d",
                                   loc$chr, loc$start, loc$end)),
                         collapse=" ")
-       dbGetQuery(obj@state[["db"]], query)
+       print(query)
+       dbGetQuery(obj@project.db, query)
        })
 
 #----------------------------------------------------------------------------------------------------

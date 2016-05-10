@@ -16,7 +16,6 @@ exportMethods(
     trainModel,
     predictFromModel,
     rescalePredictorWeights,
-    getGenes,
     getPromoterRegion,
     getFootprints
     )
