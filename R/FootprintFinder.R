@@ -13,10 +13,16 @@ printf <- function(...) print(noquote(sprintf(...)))
                                        quiet="logical")
                             )
 #------------------------------------------------------------------------------------------------------------------------
-setGeneric("getPromoterRegion", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0)
-                                                      standardGeneric("getPromoterRegion"))
-setGeneric("getFootprints", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0)
-                                                      standardGeneric("getFootprints"))
+setGeneric("getChromLoc", signature="obj", function(obj, name, biotype="protein_coding",
+                                                    moleculetype="gene") standardGeneric("getChromLoc"))
+setGeneric("getGenePromoterRegion", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0)
+                                                      standardGeneric("getGenePromoterRegion"))
+setGeneric("getFootprintsForGeneSymbol", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0)
+                                                      standardGeneric("getFootprintsForGeneSymbol"))
+setGeneric("getFootprintsInRegion", signature="obj", function(obj, chromosome, start, end) standardGeneric("getFootprintsInRegion"))
+setGeneric("getGtfGeneBioTypes", signature="obj", function(obj) standardGeneric("getGtfGeneBioTypes"))
+setGeneric("getGtfMoleculeTypes", signature="obj", function(obj) standardGeneric("getGtfMoleculeTypes"))
+setGeneric("closeDatabaseConnections", signature="obj", function(obj) standardGeneric("closeDatabaseConnections"))
 #------------------------------------------------------------------------------------------------------------------------
 .parseDatabaseUri <- function(database.uri)
 {
@@ -29,6 +35,7 @@ setGeneric("getFootprints", signature="obj", function(obj,  geneSymbol, size.ups
    list(brand=database.brand, host=host, name=database.name)
 
 } # .parseDatabaseUri
+#------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------
 FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRUE)
 {
@@ -81,45 +88,47 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
 
 } # FootprintFinder, the constructor
 #------------------------------------------------------------------------------------------------------------------------
-.getGeneLocations <- function(biomart, genes, quiet=TRUE)
-{
-    columns.desired <- c("entrezgene", "chromosome_name", "start_position", "end_position", "strand", "hgnc_symbol",
-                         "ensembl_gene_id")
-    if(!quiet)
-       printf("biomart query for %d genes", length(genes))
+setMethod("closeDatabaseConnections", "FootprintFinder",
 
-        # identify ENSG ids.  lookup locations for them
-    tbl.locs.ensg <- data.frame()
-    tbl.locs.geneSymbol <- data.frame()
+     function(obj){
+        if("DBIConnection" %in% is(obj@genome.db))
+          dbDisconnect(obj@genome.db)
+        if("DBIConnection" %in% is(obj@project.db))
+          dbDisconnect(obj@project.db)
+          })
 
-    ensg.ids <- grep("^ENSG", genes)
-
-    if(length(ensg.ids) > 0){
-       tbl.locs.ensg <- getBM(attributes=columns.desired, filters="ensembl_gene_id", values=genes, mart=biomart)
-       }
-
-    non.ensg.ids <- setdiff(genes, ensg.ids)
-    if(length(non.ensg.ids) > 0){
-       tbl.locs.geneSymbol <- getBM(attributes=columns.desired, filters="hgnc_symbol", values=genes, mart=biomart)
-       duplicates <- which(duplicated(tbl.locs.geneSymbol$hgnc_symbol))
-       if(length(duplicates) > 0)
-          tbl.locs.geneSymbol <- tbl.locs.geneSymbol[-duplicates,]
-       }
-
-    rbind(tbl.locs.ensg, tbl.locs.geneSymbol)
-
-} # .getGeneLocations
 #------------------------------------------------------------------------------------------------------------------------
-setMethod("getPromoterRegion", "FootprintFinder",
+setMethod("getGtfGeneBioTypes", "FootprintFinder",
 
-   function(obj,  geneSymbol, size.upstream=1000, size.downstream=0){
+     function(obj){
+        sort(dbGetQuery(obj@genome.db, "select distinct gene_biotype from gtf")[,1])
+        })
 
-       query <- paste("select gene_name, chr, start, endpos, strand from gtf where ",
-                      sprintf("gene_name='%s' ", geneSymbol),
-                      "and gene_biotype='protein_coding' and moleculetype='gene'",
-                      collapse=" ")
+#------------------------------------------------------------------------------------------------------------------------
+setMethod("getGtfMoleculeTypes", "FootprintFinder",
 
-      tbl.loc <-dbGetQuery(obj@genome.db, query)
+     function(obj){
+        sort(dbGetQuery(obj@genome.db, "select distinct moleculetype from gtf")[,1])
+        })
+
+#------------------------------------------------------------------------------------------------------------------------
+setMethod("getChromLoc", "FootprintFinder",
+
+   function(obj, name, biotype="protein_coding", moleculetype="gene"){
+      query <- paste("select gene_name, chr, start, endpos, strand from gtf where ",
+                     sprintf("gene_name='%s' ", name),
+                     sprintf("and gene_biotype='%s' and moleculetype='%s'", biotype, moleculetype),
+                     collapse=" ")
+
+     dbGetQuery(obj@genome.db, query)
+     })
+
+#------------------------------------------------------------------------------------------------------------------------
+setMethod("getGenePromoterRegion", "FootprintFinder",
+
+   function(obj, geneSymbol, size.upstream=1000, size.downstream=0){
+
+      tbl.loc <- getChromLoc(obj, geneSymbol, biotype="protein_coding", moleculetype="gene")
       stopifnot(nrow(tbl.loc) == 1)
 
       chrom <- tbl.loc$chr[1]
@@ -139,21 +148,28 @@ setMethod("getPromoterRegion", "FootprintFinder",
      })
 
 #------------------------------------------------------------------------------------------------------------------------
-setMethod("getFootprints", "FootprintFinder",
+setMethod("getFootprintsForGeneSymbol", "FootprintFinder",
 
     function(obj,  geneSymbol, size.upstream=1000, size.downstream=0){
        stopifnot(length(geneSymbol) == 1)
-       loc <- getPromoterRegion(obj, geneSymbol, size.upstream, size.downstream)
-       print(loc)
+       loc <- getGenePromoterRegion(obj, geneSymbol, size.upstream, size.downstream)
+       if(!obj@quiet) print(loc)
+       getFootprintsInRegion(obj, loc$chr, loc$start, loc$end)
+       }) # getFootprintsForGeneSymbol
+
+#----------------------------------------------------------------------------------------------------
+setMethod("getFootprintsInRegion", "FootprintFinder",
+
+    function(obj, chromosome, start, end){
        query <- paste(c("select fp.chr, fp.mfpstart, fp.mfpend, fp.motifname, fp.pval, mg.motif, mg.tf",
                         "from footprints fp",
                         "inner join motifsgenes mg",
                         "on fp.motifName=mg.motif",
-                          sprintf("where fp.chr = '%s' and  fp.mfpstart > %d and fp.mfpend < %d",
-                                  loc$chr, loc$start, loc$end)),
+                          sprintf("where fp.chr = '%s' and  fp.mfpstart >= %d and fp.mfpend <= %d",
+                                  chromosome, start, end)),
                         collapse=" ")
-       print(query)
+       if(!obj@quiet) print(query)
        dbGetQuery(obj@project.db, query)
-       })
+       }) # getFootprintsInRegion
 
 #----------------------------------------------------------------------------------------------------

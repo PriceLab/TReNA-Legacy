@@ -16,6 +16,11 @@ exportMethods(
     trainModel,
     predictFromModel,
     rescalePredictorWeights,
-    getPromoterRegion,
-    getFootprints
+    getGtfGeneBioTypes,
+    getGtfMoleculeTypes,
+    getChromLoc,
+    getGenePromoterRegion,
+    getFootprintsForGeneSymbol,
+    getFootprintsInRegion,
+    closeDatabaseConnections
     )
