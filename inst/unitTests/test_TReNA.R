@@ -1,6 +1,5 @@
 library(TReNA)
 library(RUnit)
-library(biomaRt)
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #source("~/github/snpFoot/inst/misc/constrainTFs/lasso/go.R")
@@ -607,5 +606,4 @@ test_ampAD.met2c.154tfs.278samples.bayesSpike.nonCodingGenes <- function()
 
 } # test_ampAD.met2c.154tfs.278samples.bayesSpike.nonCodingGenes
 #----------------------------------------------------------------------------------------------------
-
 if(!interactive()) runTests()
