@@ -182,7 +182,7 @@ test_getFootprintsInRegion <- function()
 
          # 3k up and downstream.  we expect more footprints upstream,  some downstream
    tbl <- getFootprintsInRegion(fp, chromosome, tss, tss + 3000)
-   checkTrue(nrow(tbl) > 50)   # 59
+   checkTrue(nrow(tbl) > 50)   # 59 before 10may16, 257 after
    closeDatabaseConnections(fp)
 
 } # test_getFootprintsInRegion
