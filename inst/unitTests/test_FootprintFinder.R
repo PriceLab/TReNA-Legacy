@@ -141,6 +141,16 @@ test_getGenePromoterRegion <- function()
    checkEquals(region$chr, "chr12")
    checkEquals(region$start, 53379176)
    checkEquals(region$end,   53380177)
+
+     # now try a lincRNA, with explicit biotype
+   region <- getGenePromoterRegion(fp, "LINC01254", 1000, 1000, biotype="lincRNA")
+   checkEquals(region$chr, "chr18")
+   checkEquals(region$start, 10413515)
+   checkEquals(region$end,   10415515)
+
+     # now try a lincRNA, with implicit biotype, "protein_coding"
+   suppressWarnings(checkTrue(is.na(getGenePromoterRegion(fp, "LINC01254", 1000, 1000))))
+
    closeDatabaseConnections(fp)
 
 } # test_getGenePromoterRegion

@@ -15,9 +15,11 @@ printf <- function(...) print(noquote(sprintf(...)))
 #------------------------------------------------------------------------------------------------------------------------
 setGeneric("getChromLoc", signature="obj", function(obj, name, biotype="protein_coding",
                                                     moleculetype="gene") standardGeneric("getChromLoc"))
-setGeneric("getGenePromoterRegion", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0)
+setGeneric("getGenePromoterRegion", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0,
+                                                              biotype="protein_coding", moleculetype="gene")
                                                       standardGeneric("getGenePromoterRegion"))
-setGeneric("getFootprintsForGeneSymbol", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0)
+setGeneric("getFootprintsForGeneSymbol", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0,
+                                                                   biotype="protein_coding", moleculetype="gene")
                                                       standardGeneric("getFootprintsForGeneSymbol"))
 setGeneric("getFootprintsInRegion", signature="obj", function(obj, chromosome, start, end) standardGeneric("getFootprintsInRegion"))
 setGeneric("getGtfGeneBioTypes", signature="obj", function(obj) standardGeneric("getGtfGeneBioTypes"))
@@ -126,10 +128,13 @@ setMethod("getChromLoc", "FootprintFinder",
 #------------------------------------------------------------------------------------------------------------------------
 setMethod("getGenePromoterRegion", "FootprintFinder",
 
-   function(obj, geneSymbol, size.upstream=1000, size.downstream=0){
+   function(obj, geneSymbol, size.upstream=1000, size.downstream=0, biotype="protein_coding", moleculetype="gene"){
 
-      tbl.loc <- getChromLoc(obj, geneSymbol, biotype="protein_coding", moleculetype="gene")
-      stopifnot(nrow(tbl.loc) == 1)
+      tbl.loc <- getChromLoc(obj, geneSymbol, biotype=biotype, moleculetype=moleculetype)
+      if(nrow(tbl.loc) != 1){
+          warning(sprintf("no chromosomal location for %s (%s, %s)", geneSymbol, biotype, moleculetype))
+          return(NA)
+          }
 
       chrom <- tbl.loc$chr[1]
       start.orig <- tbl.loc$start[1]
@@ -150,9 +155,10 @@ setMethod("getGenePromoterRegion", "FootprintFinder",
 #------------------------------------------------------------------------------------------------------------------------
 setMethod("getFootprintsForGeneSymbol", "FootprintFinder",
 
-    function(obj,  geneSymbol, size.upstream=1000, size.downstream=0){
+    function(obj,  geneSymbol, size.upstream=1000, size.downstream=0, biotype="protein_coding", moleculetype="gene"){
        stopifnot(length(geneSymbol) == 1)
-       loc <- getGenePromoterRegion(obj, geneSymbol, size.upstream, size.downstream)
+       loc <- getGenePromoterRegion(obj, geneSymbol, size.upstream, size.downstream,
+                                    biotype=biotype, moleculetype=moleculetype)
        if(!obj@quiet) print(loc)
        getFootprintsInRegion(obj, loc$chr, loc$start, loc$end)
        }) # getFootprintsForGeneSymbol
