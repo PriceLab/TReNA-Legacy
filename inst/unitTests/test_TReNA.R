@@ -20,9 +20,9 @@ runTests <- function()
    test_eliminateSelfTFs()
 
    test_fitDREAM5_yeast.bayesSpike()
-   test_ampAD.met2c.154tfs.278samples.lasso()
-   test_ampAD.met2c.154tfs.278samples.bayesSpike()
-   test_ampAD.met2c.154tfs.278samples.randomForest()
+   test_ampAD.mef2c.154tfs.278samples.lasso()
+   test_ampAD.mef2c.154tfs.278samples.bayesSpike()
+   test_ampAD.mef2c.154tfs.278samples.randomForest()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -409,9 +409,9 @@ test_fitDREAM5_yeast.bayesSpike <- function()
 
 } # test_fitDREAM5_yeast.bayesSpike
 #----------------------------------------------------------------------------------------------------
-test_ampAD.met2c.154tfs.278samples.lasso <- function()
+test_ampAD.mef2c.154tfs.278samples.lasso <- function()
 {
-   printf("--- test_ampAD.met2c.154tfs.278samples.lasso")
+   printf("--- test_ampAD.mef2c.154tfs.278samples.lasso")
 
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    target.gene <- "MEF2C"
@@ -443,11 +443,11 @@ test_ampAD.met2c.154tfs.278samples.lasso <- function()
    checkTrue(max(tbl2$beta) < 1)
    checkEquals(rownames(subset(tbl2, abs(beta) > 0.15)), c("CUX1", "FOXK2", "SATB2", "HLF", "STAT5B", "ATF2"))
 
-} # test_ampAD.met2c.154tfs.278samples.lasso
+} # test_ampAD.mef2c.154tfs.278samples.lasso
 #----------------------------------------------------------------------------------------------------
-test_ampAD.met2c.154tfs.278samples.bayesSpike <- function()
+test_ampAD.mef2c.154tfs.278samples.bayesSpike <- function()
 {
-   printf("--- test_ampAD.met2c.154tfs.278samples.bayesSpike")
+   printf("--- test_ampAD.mef2c.154tfs.278samples.bayesSpike")
 
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    target.gene <- "MEF2C"
@@ -485,11 +485,11 @@ test_ampAD.met2c.154tfs.278samples.bayesSpike <- function()
    checkEquals(length(big.abs.betas2), 0)
    checkTrue(cor(tbl2.trimmed$beta, tbl2.trimmed$gene.cor) > 0.6)
 
-} # test_ampAD.met2c.154tfs.278samples.bayesSpike
+} # test_ampAD.mef2c.154tfs.278samples.bayesSpike
 #----------------------------------------------------------------------------------------------------
-test_ampAD.met2c.154tfs.278samples.randomForest <- function()
+test_ampAD.mef2c.154tfs.278samples.randomForest <- function()
 {
-   printf("--- test_ampAD.met2c.154tfs.278samples.randomForest")
+   printf("--- test_ampAD.mef2c.154tfs.278samples.randomForest")
 
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    target.gene <- "MEF2C"
@@ -537,7 +537,7 @@ test_ampAD.met2c.154tfs.278samples.randomForest <- function()
        # lasso reports, with log2 transformed data,
        # rownames(subset(tbl2, abs(beta) > 0.15)) "CUX1"   "FOXK2"  "SATB2"  "HLF"    "STAT5B" "ATF2"
 
-} # test_ampAD.met2c.154tfs.278samples.randomForest
+} # test_ampAD.mef2c.154tfs.278samples.randomForest
 #----------------------------------------------------------------------------------------------------
 test_eliminateSelfTFs <- function()
 {
@@ -563,9 +563,9 @@ test_eliminateSelfTFs <- function()
 
 } # test_eliminateSelfTFs
 #----------------------------------------------------------------------------------------------------
-test_ampAD.met2c.154tfs.278samples.bayesSpike.nonCodingGenes <- function()
+test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes <- function()
 {
-   printf("--- test_ampAD.met2c.154tfs.278samples.bayesSpike.nonCodingGenes")
+   printf("--- test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes")
 
    print(load(system.file(package="TReNA", "extdata/mtx.AD.noncodingNearPiez02.RData")))
    target.genes <- genes.noncoding.near.piez02.active
@@ -604,6 +604,6 @@ test_ampAD.met2c.154tfs.278samples.bayesSpike.nonCodingGenes <- function()
    checkEquals(length(big.abs.betas2), 0)
    checkTrue(cor(tbl2.trimmed$beta, tbl2.trimmed$gene.cor) > 0.6)
 
-} # test_ampAD.met2c.154tfs.278samples.bayesSpike.nonCodingGenes
+} # test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes
 #----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()

@@ -1,6 +1,5 @@
 library(TReNA)
 
-
 db <- dbConnect(PostgreSQL(), host="whovian", user="trena", password="trena", dbname="hg38")
 
 # find the chrom loc for piez02
