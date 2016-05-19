@@ -20,7 +20,7 @@ exportMethods(
     getGtfMoleculeTypes,
     getChromLoc,
     getGenePromoterRegion,
-    getFootprintsForGeneSymbol,
+    getFootprintsForGene,
     getFootprintsInRegion,
     closeDatabaseConnections
     )

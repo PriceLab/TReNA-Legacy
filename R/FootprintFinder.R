@@ -15,12 +15,12 @@ printf <- function(...) print(noquote(sprintf(...)))
 #------------------------------------------------------------------------------------------------------------------------
 setGeneric("getChromLoc", signature="obj", function(obj, name, biotype="protein_coding",
                                                     moleculetype="gene") standardGeneric("getChromLoc"))
-setGeneric("getGenePromoterRegion", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0,
+setGeneric("getGenePromoterRegion", signature="obj", function(obj,  gene, size.upstream=1000, size.downstream=0,
                                                               biotype="protein_coding", moleculetype="gene")
                                                       standardGeneric("getGenePromoterRegion"))
-setGeneric("getFootprintsForGeneSymbol", signature="obj", function(obj,  geneSymbol, size.upstream=1000, size.downstream=0,
+setGeneric("getFootprintsForGene", signature="obj", function(obj,  gene, size.upstream=1000, size.downstream=0,
                                                                    biotype="protein_coding", moleculetype="gene")
-                                                      standardGeneric("getFootprintsForGeneSymbol"))
+                                                      standardGeneric("getFootprintsForGene"))
 setGeneric("getFootprintsInRegion", signature="obj", function(obj, chromosome, start, end) standardGeneric("getFootprintsInRegion"))
 setGeneric("getGtfGeneBioTypes", signature="obj", function(obj) standardGeneric("getGtfGeneBioTypes"))
 setGeneric("getGtfMoleculeTypes", signature="obj", function(obj) standardGeneric("getGtfMoleculeTypes"))
@@ -37,7 +37,6 @@ setGeneric("closeDatabaseConnections", signature="obj", function(obj) standardGe
    list(brand=database.brand, host=host, name=database.name)
 
 } # .parseDatabaseUri
-#------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------
 FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRUE)
 {
@@ -117,22 +116,21 @@ setMethod("getGtfMoleculeTypes", "FootprintFinder",
 setMethod("getChromLoc", "FootprintFinder",
 
    function(obj, name, biotype="protein_coding", moleculetype="gene"){
-      query <- paste("select gene_name, chr, start, endpos, strand from gtf where ",
-                     sprintf("gene_name='%s' ", name),
+      query <- paste("select gene_id, gene_name, chr, start, endpos, strand from gtf where ",
+                     sprintf("(gene_name='%s' or gene_id='%s') ", name, name),
                      sprintf("and gene_biotype='%s' and moleculetype='%s'", biotype, moleculetype),
                      collapse=" ")
-
      dbGetQuery(obj@genome.db, query)
      })
 
 #------------------------------------------------------------------------------------------------------------------------
 setMethod("getGenePromoterRegion", "FootprintFinder",
 
-   function(obj, geneSymbol, size.upstream=1000, size.downstream=0, biotype="protein_coding", moleculetype="gene"){
+   function(obj, gene, size.upstream=1000, size.downstream=0, biotype="protein_coding", moleculetype="gene"){
 
-      tbl.loc <- getChromLoc(obj, geneSymbol, biotype=biotype, moleculetype=moleculetype)
+      tbl.loc <- getChromLoc(obj, gene, biotype=biotype, moleculetype=moleculetype)
       if(nrow(tbl.loc) != 1){
-          warning(sprintf("no chromosomal location for %s (%s, %s)", geneSymbol, biotype, moleculetype))
+          warning(sprintf("no chromosomal location for %s (%s, %s)", gene, biotype, moleculetype))
           return(NA)
           }
 
@@ -153,21 +151,21 @@ setMethod("getGenePromoterRegion", "FootprintFinder",
      })
 
 #------------------------------------------------------------------------------------------------------------------------
-setMethod("getFootprintsForGeneSymbol", "FootprintFinder",
+setMethod("getFootprintsForGene", "FootprintFinder",
 
-    function(obj,  geneSymbol, size.upstream=1000, size.downstream=0, biotype="protein_coding", moleculetype="gene"){
-       stopifnot(length(geneSymbol) == 1)
-       loc <- getGenePromoterRegion(obj, geneSymbol, size.upstream, size.downstream,
+    function(obj,  gene, size.upstream=1000, size.downstream=0, biotype="protein_coding", moleculetype="gene"){
+       stopifnot(length(gene) == 1)
+       loc <- getGenePromoterRegion(obj, gene, size.upstream, size.downstream,
                                     biotype=biotype, moleculetype=moleculetype)
        if(!obj@quiet) print(loc)
        getFootprintsInRegion(obj, loc$chr, loc$start, loc$end)
-       }) # getFootprintsForGeneSymbol
+       }) # getFootprintsForGene
 
 #----------------------------------------------------------------------------------------------------
 setMethod("getFootprintsInRegion", "FootprintFinder",
 
     function(obj, chromosome, start, end){
-       query <- paste(c("select fp.chr, fp.mfpstart, fp.mfpend, fp.motifname, fp.pval, mg.motif, mg.tf",
+       query <- paste(c("select fp.chr, fp.mfpstart, fp.mfpend, fp.motifname, fp.pval, mg.motif, mg.tf_name, mg.tf_ensg",
                         "from footprints fp",
                         "inner join motifsgenes mg",
                         "on fp.motifName=mg.motif",

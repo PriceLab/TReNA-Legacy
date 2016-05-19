@@ -11,7 +11,7 @@ runTests <- function()
    test_getChromLoc()
    test_getGenePromoterRegion()
    test_getFootprintsInRegion()
-   test_getFootprintsForGeneSymbol()
+   test_getFootprintsForGene()
 
    #test_getFootprintsForEnsemblGenes()
 
@@ -99,17 +99,25 @@ test_getChromLoc <- function()
    project.db.uri <-  "postgres://whovian/lymphoblast"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
    tbl.loc <- getChromLoc(fp, "MEF2C", biotype="protein_coding", moleculetype="gene")
-   checkEquals(dim(tbl.loc), c(1, 5))
-   expected <- list(gene_name="MEF2C",
+   checkEquals(dim(tbl.loc), c(1, 6))
+   expected <- list(gene_id="ENSG00000081189",
+                    gene_name="MEF2C",
                     chr="chr5",
                     start=88717117,
                     endpos=88904257,
                     strand="-")
    checkEquals(as.list(tbl.loc), expected)
+      # now use default values for biotype and moleculetype
    tbl.loc <- getChromLoc(fp, "MEF2C")
    checkEquals(nrow(tbl.loc), 1)
    checkEquals(as.list(tbl.loc), expected)
+
+      # repeat with ensembl gene id
+   tbl.loc <- getChromLoc(fp, "ENSG00000081189")
+   checkEquals(nrow(tbl.loc), 1)
+   checkEquals(as.list(tbl.loc), expected)
    closeDatabaseConnections(fp)
+
 
 } # test_getChromLoc
 #------------------------------------------------------------------------------------------------------------------------
@@ -120,8 +128,19 @@ test_getGenePromoterRegion <- function()
    genome.db.uri <- "postgres://whovian/hg38"
    project.db.uri <-  "postgres://whovian/lymphoblast"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
-   region <- getGenePromoterRegion(fp, "TREM2", 0, 0)
 
+      # TREM2: prepare for test of both gene symbol and ensembl gene id
+   tbl.loc <- getChromLoc(fp, "TREM2")
+   ensg <- tbl.loc$gene_id[1]
+
+      # test this gene, two ids, zero length and 50 bp length regions
+
+   region <- getGenePromoterRegion(fp, "TREM2", 0, 0)
+   checkEquals(region$chr, "chr6")
+   checkEquals(region$start, 41163186)
+   checkEquals(region$end,   41163186)
+
+   region <- getGenePromoterRegion(fp, ensg, 0, 0)
    checkEquals(region$chr, "chr6")
    checkEquals(region$start, 41163186)
    checkEquals(region$end,   41163186)
@@ -130,6 +149,12 @@ test_getGenePromoterRegion <- function()
    checkEquals(region$chr, "chr6")
    checkEquals(region$start, 41163156)  #
    checkEquals(region$end,   41163206)  # 20 bases upstream from the "end" TSS
+
+   region <- getGenePromoterRegion(fp, ensg, 20, 30)
+   checkEquals(region$chr, "chr6")
+   checkEquals(region$start, 41163156)  #
+   checkEquals(region$end,   41163206)  # 20 bases upstream from the "end" TSS
+
 
      # now a plus strand gene
    region <- getGenePromoterRegion(fp, "SP1", 0, 0)
@@ -155,24 +180,35 @@ test_getGenePromoterRegion <- function()
 
 } # test_getGenePromoterRegion
 #----------------------------------------------------------------------------------------------------
-test_getFootprintsForGeneSymbol <- function()
+test_getFootprintsForGene <- function()
 {
-   printf("--- test_getFootprintsForGeneSymbol")
+   printf("--- test_getFootprintsForGene")
 
    genome.db.uri <- "postgres://whovian/hg38"
    project.db.uri <-  "postgres://whovian/wholeBrain"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
+      # get enembl gene id for MEF2C
+   tbl.loc <- getChromLoc(fp, "MEF2C")
+   mef2c.ensg <- tbl.loc$gene_id[1]
+
       # use MEF2C and the hg38 assembly
-   tbl.fp <- getFootprintsForGeneSymbol(fp, "MEF2C", size.upstream=0, size.downstream=0)
+   tbl.fp <- getFootprintsForGene(fp, "MEF2C", size.upstream=0, size.downstream=0)
+   checkEquals(dim(tbl.fp), c(0, 0))
+   tbl.fp <- getFootprintsForGene(fp, mef2c.ensg, size.upstream=0, size.downstream=0)
    checkEquals(dim(tbl.fp), c(0, 0))
 
          # 3k up and downstream.  we expect more footprints upstream,  some downstream
-   tbl <- getFootprintsForGeneSymbol(fp, "MEF2C", size.upstream=3000,  size.downstream=1000)
-   checkTrue(nrow(tbl) > 50)   #69
+   tbl <- getFootprintsForGene(fp, "MEF2C", size.upstream=3000,  size.downstream=1000)
+   checkEquals(colnames(tbl), c("chr", "mfpstart", "mfpend", "motifname", "pval", "motif", "tf_name", "tf_ensg"))
+   checkTrue(nrow(tbl) > 50)   # 1385
+
+   tbl.ensg <- getFootprintsForGene(fp, mef2c.ensg, size.upstream=3000,  size.downstream=1000)
+   checkEquals(dim(tbl), dim(tbl.ensg))
+
    closeDatabaseConnections(fp)
 
-} # test_getFootprintsForGeneSymbol
+} # test_getFootprintsForGene
 #----------------------------------------------------------------------------------------------------
 test_getFootprintsInRegion <- function()
 {
@@ -206,12 +242,15 @@ test_getFootprintsInRegion <- function()
 test_getFootprintsForEnsemblGenes <- function()
 {
    printf("--- test_getFootprintsForEnsemblGenes")
-   db.uri <- sprintf("sqlite:%s", system.file(package="TReNA.brain", "extdata", "fpTf.sqlite"))
+
+   genome.db.uri <- "postgres://whovian/hg38"
+   project.db.uri <-  "postgres://whovian/wholeBrain"
+   fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+
    genes <- c("ENSG00000267051", "ENSG00000264503", "ENSG00000273141", "ENSG00000212712",
               "ENSG00000236396", "ENSG00000154889", "ENSG00000267794",  "ENSG00000264843",
               "ENSG00000260759", "ENSG00000154856")
-   fp <- FootprintFinder(ensembl.hg38, db.uri, genes)
-   checkEquals(getGenes(fp), genes)
+
    goi <- genes[3]
    loc <- getGenePromoterRegion(fp, goi, 250, 0)
    tbl <- getFootprints(fp, goi, 250, 0)
