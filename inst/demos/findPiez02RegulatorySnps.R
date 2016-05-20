@@ -76,4 +76,11 @@ snp <- rep(-1, length(gr.fp))
 snp[tbl.overlaps$queryHits] <- tbl.bed[tbl.overlaps$subjectHits, "signature"]
 
 tbl.fpoi$snp <- snp
+
+# now add lasso beta and gene/tf expression correlation to the footprint table
+prediction.info <- tbl.lasso[tbl.fpoi$tf_ensg, c("beta", "gene.cor")]
+tbl.fpoi <- cbind(tbl.fpoi, prediction.info)
+
+
 print(subset(tbl.fpoi, snp != -1))
+
