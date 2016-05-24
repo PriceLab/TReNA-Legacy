@@ -18,7 +18,7 @@ setMethod("getSolverName", "LassoSolver",
 #----------------------------------------------------------------------------------------------------
 setMethod("run", "LassoSolver",
 
-  function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs))){
+  function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)) , alpha = 1 , lambda = NULL ){
 
         # we don't try to handle tf self-regulation
     deleters <- grep(target.gene, tfs)
@@ -38,13 +38,16 @@ setMethod("run", "LassoSolver",
 
      if(!obj@quiet)
          printf("begining cross-validation for glmnet, using %d tfs, target %s", length(tfs), target.gene)
+     
+     if( is.null(lambda) ) {
+         fit <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE , alpha = alpha )
+         lambda.min <- fit$lambda.min
+         lambda <-fit$lambda.1se
+     }
 
-     cv.out <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE)
-     lambda.min <- cv.out$lambda.min
-     lambda.1se <-cv.out$lambda.1se
-
-     fit.nolambda = glmnet(features, target, penalty.factor=tf.weights)
-     fit = glmnet(features, target, penalty.factor=tf.weights, lambda=lambda.1se)
+     if( is.numeric(lambda) ) {
+         fit = glmnet(features, target, penalty.factor=tf.weights, alpha = alpha )
+     }
 
        # extract the exponents of the fit
      #tbl.out <- as.matrix(fit$beta)
@@ -53,7 +56,7 @@ setMethod("run", "LassoSolver",
      #   tbl.out <- tbl.out[-deleters, , drop=FALSE]
      #colnames(tbl.out) <- "beta"
 
-     mtx.beta <- as.matrix(coef(fit, s="lambda.min"))
+     mtx.beta <- as.matrix( predict( fit , newx = features , type = "coef" , s = lambda ) )
      colnames(mtx.beta) <- "beta"
      deleters <- as.integer(which(mtx.beta[,1] == 0))
      if(length(deleters) > 0)
