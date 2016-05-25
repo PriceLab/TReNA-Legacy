@@ -20,6 +20,8 @@ setMethod("run", "LassoSolver",
 
   function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)) , alpha = 1 , lambda = NULL ){
 
+    if( length(tfs) == 0 ) return( NULL )
+
         # we don't try to handle tf self-regulation
     deleters <- grep(target.gene, tfs)
     if(length(deleters) > 0){
@@ -28,7 +30,7 @@ setMethod("run", "LassoSolver",
        message(sprintf("LassoSolver removing target.gene from candidate regulators: %s", target.gene))
        }
 
-     tf.weights <- 1/tf.weights
+     if( length(tfs) == 0 ) return( NULL )
 
      mtx <- obj@mtx.assay
      stopifnot(target.gene %in% rownames(mtx))
@@ -43,7 +45,7 @@ setMethod("run", "LassoSolver",
          fit <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE , alpha = alpha )
          lambda.min <- fit$lambda.min
          lambda <-fit$lambda.1se
-     }
+     } else
 
      if( is.numeric(lambda) ) {
          fit = glmnet(features, target, penalty.factor=tf.weights, alpha = alpha )
