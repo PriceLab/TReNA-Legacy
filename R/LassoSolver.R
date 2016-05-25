@@ -20,29 +20,39 @@ setMethod("run", "LassoSolver",
 
   function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)) , alpha = 1 , lambda = NULL ){
 
-    if( length(tfs) == 0 ) return( NULL )
+    if( length(tfs) == 0 ) return( data.frame() )
 
         # we don't try to handle tf self-regulation
     deleters <- grep(target.gene, tfs)
     if(length(deleters) > 0){
        tfs <- tfs[-deleters]
-       tf.weights <- tf.weights[-deleters]
-       message(sprintf("LassoSolver removing target.gene from candidate regulators: %s", target.gene))
+       tf.weights <- tf.weights[-deleters]       
+     if(!obj@quiet)
+	message(sprintf("LassoSolver removing target.gene from candidate regulators: %s", target.gene))
        }
 
-     if( length(tfs) == 0 ) return( NULL )
+     if( length(tfs) == 0 ) return( data.frame() )
 
      mtx <- obj@mtx.assay
      stopifnot(target.gene %in% rownames(mtx))
      stopifnot(all(tfs %in% rownames(mtx)))
-     features <- t(mtx[tfs, ])
+     stopifnot(class(lambda) %in% c("NULL","numeric"))
+     features <- t(mtx[tfs,,drop=F ])
      target <- as.numeric(mtx[target.gene,])
 
+     if( length(tfs) == 1 ) {
+       fit = lm( target ~ features )
+       mtx.beta = coef(fit)
+       cor.target.feature = cor( target , features )[1,1]
+       mtx.beta = data.frame( beta = mtx.beta[2] , intercept = mtx.beta[1] , gene.cor = cor.target.feature )
+       rownames(mtx.beta) = tfs
+       return( mtx.beta )
+     }
+
+     if( is.null(lambda) ) {
      if(!obj@quiet)
          printf("begining cross-validation for glmnet, using %d tfs, target %s", length(tfs), target.gene)
-     
-     if( is.null(lambda) ) {
-         fit <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE , alpha = alpha )
+	 fit <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE , alpha = alpha )
          lambda.min <- fit$lambda.min
          lambda <-fit$lambda.1se
      } else
@@ -61,21 +71,24 @@ setMethod("run", "LassoSolver",
      mtx.beta <- as.matrix( predict( fit , newx = features , type = "coef" , s = lambda ) )
      colnames(mtx.beta) <- "beta"
      deleters <- as.integer(which(mtx.beta[,1] == 0))
+     if( all( mtx.beta[,1] == 0 ) ) return( data.frame() )
      if(length(deleters) > 0)
         mtx.beta <- mtx.beta[-deleters, , drop=FALSE]
 
-        # put the intercept, admittedly with much redundancy, into its owh column
+        # put the intercept, admittedly with much redundancy, into its own column
      intercept <- mtx.beta[1,1]
      mtx.beta <- mtx.beta[-1, , drop=FALSE]
      mtx.beta <- cbind(mtx.beta, intercept=rep(intercept, nrow(mtx.beta)))
      correlations.of.betas.to.targetGene <- unlist(lapply(rownames(mtx.beta), function(x) cor(mtx[x,], mtx[target.gene,])))
      #browser()
-     mtx.beta <- cbind(mtx.beta, gene.cor=correlations.of.betas.to.targetGene)
+     mtx.beta <- as.matrix(cbind( mtx.beta, gene.cor=correlations.of.betas.to.targetGene))
      if(!obj@quiet)
         plot(fit.nolambda, xvar='lambda', label=TRUE)
 
-     ordered.indices <- order(abs(mtx.beta[, "beta"]), decreasing=TRUE)
-     mtx.beta <- mtx.beta[ordered.indices,]
+     if( nrow(mtx.beta) > 1 ) {
+       ordered.indices <- order(abs(mtx.beta[, "beta"]), decreasing=TRUE)
+       mtx.beta <- mtx.beta[ordered.indices,]
+     }
      return(as.data.frame(mtx.beta))
      })
 

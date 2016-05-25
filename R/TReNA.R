@@ -8,8 +8,7 @@
 printf <- function(...) print(noquote(sprintf(...)))
 #------------------------------------------------------------------------------------------------------------------------
 setGeneric("solve",                    signature="obj", function(obj, target.gene, tfs,
-                                                                 tf.weights=rep(1, length(tfs)) ,
-								 lambda = NULL , alpha = 1 )
+                                                                 tf.weights=rep(1, length(tfs)) , ... )
                                                            standardGeneric ("solve"))
 setGeneric("trainModel",               signature="obj", function(obj, target.gene, tfs, training.samples,
                                                                  tf.weights=rep(1, length(tfs)))
@@ -35,7 +34,7 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 setMethod("solve", "TReNA",
 
    function (obj, target.gene, tfs, tf.weights=rep(1, length(tfs))){
-      run(obj@solver, target.gene, tfs, tf.weights , lambda = NULL , alpha = 1 )
+      run(obj@solver, target.gene, tfs, tf.weights , ... )
       })
 
 #------------------------------------------------------------------------------------------------------------------------
