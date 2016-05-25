@@ -2,7 +2,6 @@ library(TReNA)
 library(RUnit)
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
-#source("~/github/snpFoot/inst/misc/constrainTFs/lasso/go.R")
 #----------------------------------------------------------------------------------------------------
 runTests <- function()
 {
@@ -139,7 +138,7 @@ test_fitDummyData <- function()
      # we expect an intercept and a coef for tfs gene.02 and gene.03
      # which predict the value of the target.gene
 
-   tbl.betas <- solve(trena, target.gene, tfs)
+   tbl.betas <- solve(trena, target.gene, tfs, list(alpha=1.0, lambda=5.0))
    checkTrue(all(c(tf1, tf2) %in% rownames(tbl.betas)))
    checkEquals(colnames(tbl.betas), c("beta", "intercept", "gene.cor"))
    intercept <- tbl.betas[1, "intercept"]

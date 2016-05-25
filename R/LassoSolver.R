@@ -18,15 +18,25 @@ setMethod("getSolverName", "LassoSolver",
 #----------------------------------------------------------------------------------------------------
 setMethod("run", "LassoSolver",
 
-  function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)) , alpha = 1 , lambda = NULL ){
+  function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
 
-    if( length(tfs) == 0 ) return( data.frame() )
+   if(length(tfs) == 0)
+       return(data.frame())
+
+   lambda <- 1.0
+   alpha <- 1.0
+
+   if("lambda" %in% names(extraArgs))
+     lambda <- extraArgs[["lambda"]]
+
+   if("alpha" %in% names(extraArgs))
+     alpha <- extraArgs[["alpha"]]
 
         # we don't try to handle tf self-regulation
     deleters <- grep(target.gene, tfs)
     if(length(deleters) > 0){
        tfs <- tfs[-deleters]
-       tf.weights <- tf.weights[-deleters]       
+       tf.weights <- tf.weights[-deleters]
      if(!obj@quiet)
 	message(sprintf("LassoSolver removing target.gene from candidate regulators: %s", target.gene))
        }

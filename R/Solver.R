@@ -10,7 +10,7 @@ printf <- function(...) print(noquote(sprintf(...)))
 #------------------------------------------------------------------------------------------------------------------------
 setGeneric("getSolverName",   signature="obj", function(obj, target.gene, tfs) standardGeneric ("getSolverName"))
 setGeneric("getAssayData",    signature="obj", function(obj) standardGeneric ("getAssayData"))
-setGeneric("run",             signature="obj", function(obj, target.gene, tfs, tf.weights,...) standardGeneric ("run"))
+setGeneric("run",             signature="obj", function(obj, target.gene, tfs, tf.weights, extraArgs=list()) standardGeneric ("run"))
 setGeneric("rescalePredictorWeights",
                               signature="obj", function(obj, rawValue.min, rawValue.max, rawValues)
                                                                              standardGeneric ("rescalePredictorWeights"))

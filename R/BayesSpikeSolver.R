@@ -18,7 +18,7 @@ setMethod("getSolverName", "BayesSpikeSolver",
 #----------------------------------------------------------------------------------------------------
 setMethod("run", "BayesSpikeSolver",
 
-  function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs))){
+  function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs), extraArgs=list())){
 
         # we don't try to handle tf self-regulation
     deleters <- grep(target.gene, tfs)
