@@ -34,7 +34,7 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 setMethod("solve", "TReNA",
 
    function (obj, target.gene, tfs, tf.weights=rep(1, length(tfs)), extraArgs=list()){
-      printf("entering TReNA::solve")
+      # printf("entering TReNA::solve")
       run(obj@solver, target.gene, tfs, tf.weights, extraArgs)
       })
 

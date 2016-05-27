@@ -23,14 +23,18 @@ setMethod("run", "LassoSolver",
    if(length(tfs) == 0)
        return(data.frame())
 
-   lambda <- 1.0
+   lambda <- NULL
    alpha <- 1.0
+   keep.metrics = FALSE
 
    if("lambda" %in% names(extraArgs))
      lambda <- extraArgs[["lambda"]]
 
    if("alpha" %in% names(extraArgs))
      alpha <- extraArgs[["alpha"]]
+
+   if("keep.metrics" %in% names(extraArgs))
+     keep.metrics <- extraArgs[["keep.metrics"]]
 
         # we don't try to handle tf self-regulation
     deleters <- grep(target.gene, tfs)
@@ -96,10 +100,20 @@ setMethod("run", "LassoSolver",
         plot(fit.nolambda, xvar='lambda', label=TRUE)
 
      if( nrow(mtx.beta) > 1 ) {
-       ordered.indices <- order(abs(mtx.beta[, "beta"]), decreasing=TRUE)
-       mtx.beta <- mtx.beta[ordered.indices,]
+        ordered.indices <- order(abs(mtx.beta[, "beta"]), decreasing=TRUE)
+        mtx.beta <- mtx.beta[ordered.indices,]
      }
-     return(as.data.frame(mtx.beta))
+
+     mtx.beta = as.data.frame(mtx.beta)
+
+     if( keep.metrics == TRUE ) {
+        pred.values = predict( fit , newx = features , s = lambda , type = "link" )
+        r2 = (cor( target , pred.values )[1,1])^2
+        return( list( mtx.beta = mtx.beta , lambda = lambda , r2 = r2 ) )
+     }
+
+     if( keep.metrics == FALSE )
+        return(as.data.frame(mtx.beta))
      })
 
 
