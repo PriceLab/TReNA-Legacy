@@ -60,7 +60,8 @@ setMethod("run", "LassoSolver",
        cor.target.feature = cor( target , features )[1,1]
        mtx.beta = data.frame( beta = mtx.beta[2] , intercept = mtx.beta[1] , gene.cor = cor.target.feature )
        rownames(mtx.beta) = tfs
-       return( mtx.beta )
+       if( keep.metrics == F ) return( mtx.beta )
+       if( keep.metrics == T ) return( list( mtx.beta = mtx.beta , lambda = NA , r2 = cor.target.feature^2 ) )
      }
 
      if( is.null(lambda) ) {

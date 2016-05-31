@@ -23,8 +23,24 @@ setMethod("run", "RandomForestSolver",
      mtx <- obj@mtx.assay
      stopifnot(target.gene %in% rownames(mtx))
      stopifnot(all(tfs %in% rownames(mtx)))
-     result <- randomForest(t(mtx[tfs,]), t(mtx[target.gene,]))
-     result
+     if(length(tfs)==0) return(NULL)
+
+        # we don't try to handle tf self-regulation
+     deleters <- grep(target.gene, tfs)
+     if(length(deleters) > 0){
+       tfs <- tfs[-deleters]
+       tf.weights = tf.weights[-deleters]
+     }
+     if(length(tfs)==0) return(NULL)
+
+     x = t(mtx[tfs,,drop=F])
+     y = t(mtx[target.gene,])
+
+     fit <- randomForest( x = x, y = y )
+     edges = as.data.frame(fit$importance)
+     pred.values = predict(fit)
+     r2 = cor( pred.values , mtx[target.gene,])^2
+     return( list( edges = edges , r2 = r2 ) )
      })
 
 
