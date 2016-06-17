@@ -257,7 +257,11 @@ test_fitDREAM5_yeast.randomForest <- function()
      # values returned by randomforest, and the directly
      # measured corrleation of the tfs to the target?
 
-   checkTrue(cor(tbl.importance$IncNodePurity, tbl.gold.met2$cor) > 0.7)
+   browser()
+      # random forest results matrix is sorted by IncNodePurity
+      # extract those values in the same order as they appear in tbl.gold
+   rf.score <- tbl.importance[tbl.gold.met2$TF, "IncNodePurity"]
+   checkTrue(cor(rf.score, tbl.gold.met2$cor) > 0.7)
 
 } # test_fitDREAM5_yeast.randomForest
 #----------------------------------------------------------------------------------------------------
@@ -641,21 +645,21 @@ test_LCLs.build_genomewide_model.lasso <- function()
 
    # select an appropriate lambda by evaluating a subset of genes
    trena = TReNA(mtx.assay=enorm,solver="lasso")
-   
+
    fit.cv =
    foreach( target.gene=sample(rownames(enorm),100) ) %dopar% {
       tfs = names(which(candidate_regulators[target.gene,]==T))
       fit = solve(trena,target.gene,tfs,extraArgs=list(alpha=1,keep.metrics=T))
    }
 
-   lambda = do.call( c , 
+   lambda = do.call( c ,
       lapply(1:length(fit.cv), function(i) fit.cv[[i]]$lambda))
    lambda.median = median(lambda,na.rm=T)
    checkTrue( lambda.median > 0 & lambda.median < 1 )
 
    # fit the model for all genes using the median lambda from fit.cv
 
-   fit2 = 
+   fit2 =
    foreach( target.gene=rownames(enorm)[1:100] ) %dopar% {
       # tfs = names(which(candidate_regulators[target.gene,]==T))
       tfs = names(which(candidate_regulators[target.gene,]==T))
@@ -677,7 +681,7 @@ test_LCLs.build_genomewide_model.lasso <- function()
    trn = do.call( rbind ,
       lapply(1:length(fit2), function(i) fit2[[i]]$mtx.beta))
 
-   checkTrue( any( r2 > 0.25 ) ) 
+   checkTrue( any( r2 > 0.25 ) )
    checkTrue( median(n.nonzero) > 3 & median(n.nonzero) < 100 )
    checkTrue( ncol(trn) == 5 )
    checkTrue( nrow(trn) == sum(n.nonzero) )

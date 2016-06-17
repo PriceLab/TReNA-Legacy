@@ -39,8 +39,11 @@ setMethod("run", "RandomForestSolver",
      fit <- randomForest( x = x, y = y )
      edges = as.data.frame(fit$importance)
      pred.values = predict(fit)
-     r2 = cor( pred.values , mtx[target.gene,])^2
-     return( list( edges = edges , r2 = r2 ) )
+     r2 = cor(pred.values , mtx[target.gene,])^2
+     gene.cor <- sapply(rownames(edges), function(tf) cor(mtx[tf,], mtx[target.gene,]))
+     edges$gene.cor <- gene.cor
+     edges <- edges[order(edges$IncNodePurity, decreasing=TRUE),]
+     return(list(edges = edges , r2 = r2))
      })
 
 
