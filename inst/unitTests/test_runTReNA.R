@@ -6,6 +6,8 @@ printf <- function(...) print(noquote(sprintf(...)))
 runTests <- function()
 {
    test_getFootprintsForTF()
+   test_getGenePromoterRegions()
+   test_getTfbsCountsPerGene()
    test_makeTfbsCountsTbl()
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -17,17 +19,22 @@ test_getFootprintsForTF = function()
    project.db.uri <-  "postgres://whovian/lymphoblast"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
-   # our test TF is RXRA
    tf = "RXRA"
 
-   footprints = getFootprintsForTF( fp , tf )
+   footprints = getFootprintsForTF( obj = fp , tf = tf )
 
    checkTrue( nrow(footprints) > 10000 )
-}
+
+
+} #test_getFootprintsForTF
 #----------------------------------------------------------------------------------------------------
-test_getGenePromoterRegions = function()
+test_getGenePromoterRegions = function(quiet=F)
 {
-   printf("--- test_getGenePromoterRegions")
+   if( quiet==F ) printf("--- test_getGenePromoterRegions")
+
+   genome.db.uri <- "postgres://whovian/hg38"
+   project.db.uri <-  "postgres://whovian/lymphoblast"
+   fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
    # get gene_name field from gtf
       query = paste( "select gene_name from gtf",
@@ -42,11 +49,19 @@ test_getGenePromoterRegions = function()
   checkTrue( length( promoter_regions ) == 5 )
   checkTrue( all( width(ranges(promoter_regions)) == 20001 ))
 
+  invisible( promoter_regions )
+
 } #test_getGenePromoterRegions
 #----------------------------------------------------------------------------------------------------
-test_getTfbsCountsPerGene()
+test_getTfbsCountsPerGene <- function()
 {
    printf("--- test_getTfbsCountsPerGene")
+
+   genome.db.uri <- "postgres://whovian/hg38"
+   project.db.uri <-  "postgres://whovian/lymphoblast"
+   fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+
+   promoter_regions = test_getGenePromoterRegions(quiet=T)
 
    # get TF names
       query = "select distinct tf from motifsgenes"
@@ -57,7 +72,6 @@ test_getTfbsCountsPerGene()
 
    checkTrue( sum( tfbs_counts ) > 0 )
    checkTrue( all( colnames(tfbs_counts) == tflist ))
-   checkTrue( all( rownames(tfbs_counts) == genelist_sample ))
 
 } # test_getTfbsCountsPerGene
 #----------------------------------------------------------------------------------------------------
@@ -65,14 +79,14 @@ test_makeTfbsCountsTbl <- function()
 {
    printf("--- test_makeTfbsCountsTbl")
 
-   tfbs_counts = makeTfbsCountsTbl( genome="hg38" , tissue="lymphoblast" , cores = 10 , verbose = 2 )
+   tfbs_counts = makeTfbsCountsTbl( genome="hg38" , tissue="lymphoblast" , 
+      tflist = c("RXRA","SATB2","EMX2","SP1","SP2") , cores = 2 , verbose = 2 )
 
-   checkEquals( nrow(tfbs_counts) , length(genelist) )
-   checkEquals( ncol(tfbs_counts) , 847 )
    checkTrue( max( apply( tfbs_counts , 2 , max ) ) < 100 )
 
 }
 #----------------------------------------------------------------------------------------------------
+if(!interactive()) runTests()
 
 
 
