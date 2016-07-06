@@ -49,13 +49,13 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
       # open the genome database
    if(genome.db.info$brand == "postgres"){
       host <- genome.db.info$host
-      dbName <- genome.db.info$name
+      dbname <- genome.db.info$name
       driver <- PostgreSQL()
-      genome.db <- dbConnect(driver, user= "trena", password="trena", host=host)
+      genome.db <- dbConnect(driver, user= "trena", password="trena", dbname=dbname, host=host)
       existing.databases <- dbGetQuery(genome.db, "select datname from pg_database")[,1]
-      stopifnot(dbName %in% existing.databases)
+      stopifnot(dbname %in% existing.databases)
       dbDisconnect(genome.db)
-      genome.db <- dbConnect(driver, user="trena", password="trena", dbname=dbName, host=host)
+      genome.db <- dbConnect(driver, user="trena", password="trena", dbname=dbname, host=host)
       expected.tables <- c("gtf", "motifsgenes")
       stopifnot(all(expected.tables %in% dbListTables(genome.db)))
       if(!quiet){
@@ -70,13 +70,13 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
       # open the project database
    if(project.db.info$brand == "postgres"){
       host <- project.db.info$host
-      dbName <- project.db.info$name
+      dbname <- project.db.info$name
       driver <- PostgreSQL()
-      project.db <- dbConnect(driver, user= "trena", password="trena", host=host)
+      project.db <- dbConnect(driver, user= "trena", password="trena", dbname=dbname, host=host)
       existing.databases <- dbGetQuery(project.db, "select datname from pg_database")[,1]
-      stopifnot(dbName %in% existing.databases)
+      stopifnot(dbname %in% existing.databases)
       dbDisconnect(project.db)
-      project.db <- dbConnect(driver, user="trena", password="trena", host=host, dbname=dbName)
+      project.db <- dbConnect(driver, user="trena", password="trena", dbname=dbname, host=host)
       expected.tables <- c("footprints")
       stopifnot(all(expected.tables %in% dbListTables(project.db)))
       if(!quiet){
