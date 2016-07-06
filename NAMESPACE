@@ -5,7 +5,12 @@ export(
     Solver,
     LassoSolver,
     FootprintFinder,
-    printf
+    printf,
+    runTReNA,
+    getFootprintsForTF,
+    makeTfbsCountsTbl ,
+    getGenePromoterRegions ,
+    getTfbsCountsPerGene 
 )
 
 exportMethods(
@@ -22,5 +27,6 @@ exportMethods(
     getGenePromoterRegion,
     getFootprintsForGene,
     getFootprintsInRegion,
+    getPromoterRegionsAllGenes,
     closeDatabaseConnections
     )

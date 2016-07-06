@@ -25,6 +25,7 @@ setGeneric("getFootprintsInRegion", signature="obj", function(obj, chromosome, s
 setGeneric("getGtfGeneBioTypes", signature="obj", function(obj) standardGeneric("getGtfGeneBioTypes"))
 setGeneric("getGtfMoleculeTypes", signature="obj", function(obj) standardGeneric("getGtfMoleculeTypes"))
 setGeneric("closeDatabaseConnections", signature="obj", function(obj) standardGeneric("closeDatabaseConnections"))
+setGeneric("getPromoterRegionsAllGenes",signature="obj", function(obj ,size.upstream=10000 , size.downstream=10000 ) standardGeneric("getPromoterRegionsAllGenes"))
 #------------------------------------------------------------------------------------------------------------------------
 .parseDatabaseUri <- function(database.uri)
 {
@@ -177,3 +178,61 @@ setMethod("getFootprintsInRegion", "FootprintFinder",
        }) # getFootprintsInRegion
 
 #----------------------------------------------------------------------------------------------------
+setMethod("getPromoterRegionsAllGenes","FootprintFinder",
+
+   function( obj , size.upstream=10000 , size.downstream=10000 ) {
+
+   query <-
+   paste( "select gene_name, gene_id, chr, start, endpos, strand from gtf where" ,
+        "gene_biotype='protein_coding' and moleculetype='gene'" , sep=" " )
+
+   genes = dbGetQuery( obj@genome.db , query )
+
+   # function to get each transcript's TSS
+   get_tss <-
+   function( t ) {
+      chrom <- genes$chr[t]
+      start.orig <- genes$start[t]
+      end.orig   <- genes$endpos[t]
+      strand     <- genes$strand[t]
+
+      if(strand == "-"){ # reverse (minus) strand.  TSS is at "end" position
+         tss <- end.orig
+         }
+      else{ #  forward (plus) strand.  TSS is at "start" position
+        tss <- start.orig
+        }
+     return( tss )
+   }
+   # apply get_tss to all transcripts
+   tss = sapply( 1:nrow(genes) , get_tss )
+
+   # assemble a bed file for the TSSs
+   promoter_regions = unique( data.frame(
+        chr = genes$chr ,
+        start = tss - size.upstream , end = tss + size.downstream ,
+        gene_name = genes$gene_name ,
+        gene_id = genes$gene_id ))
+   # GRanges obj
+   gr = makeGRangesFromDataFrame( promoter_regions , keep.extra.columns = T )
+   names(gr) = promoter_regions$gene_name
+   return( gr )
+
+}) # getPromoterRegionsAllGenes
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
