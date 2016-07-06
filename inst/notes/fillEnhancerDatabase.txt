@@ -1,0 +1,70 @@
+     library(plyr)
+     hiC.file <- "/proj/price1/sament/resources/enhancerTargets/rao2014/tss.loops.rao2014.txt"
+     dnase.file <- "/proj/price1/sament/resources/enhancerTargets/thurman2012/tss.loops.thurman2012.txt"
+     tbl.hic <- read.table(hiC.file, sep="\t" , header=TRUE, as.is=TRUE)        #  106266     12
+     tbl.hic$method <- "Hi-C"
+     tbl.dnase <- read.table(dnase.file, sep="\t" , header=TRUE, as.is=TRUE)    # 3328776     12
+     tbl.dnase$method <- "DNase-DNase"
+     #tbl.test <- rbind.fill(head(tbl.hic), head(tbl.dnase))
+     tbl <- rbind.fill(tbl.hic, tbl.dnase)
+     x <- order(tbl$chr, tbl$start, tbl$end)
+     tbl.out <- tbl[x,]
+     dim(tbl.out) # [1] 3435042      13
+     
+     # validation: sum(nrow(tbl.hic), nrow(tbl.dnase))  # [1] 3435042
+     write.table(tbl.out, file="enhancer.tsv", row.names=FALSE, quote=FALSE, sep="\t")
+     # 434936373 Jul  5 16:41 enhancer.tsv
+  
+  bash> createdb -U pshannon enhancers.hg38
+  psql -U pshannon enhancers.hg38
+  pshannon> \dt    # no relations found.
+  pshannon> create table enhancers(chr1 varchar,
+                                   start1 integer,
+                                   end1 integer,
+                                   geneName varchar,
+                                   transcriptName varchar,
+                                   transcriptID varchar,
+                                   geneID varchar,
+                                   chr2 varchar,
+                                   start2 integer,
+                                   end2 integer,
+                                   distance numeric,
+                                   cellType varchar,
+                                   method varchar,
+                                   cor numeric);
+   \copy enhancers from 'enhancer.tsv' delimiter E'\t' CSV;
+
+  GRANT select on all tables in SCHEMA public to trena;
+  GRANT connect on database "enhancers.hg38" to trena;
+
+
+   --- test from psql
+    select * from enhancers limit 4;
+     chr1 | start1 |  end1  | genename | transcriptname |  transcriptid   |     geneid      | chr2 | start2  |  end2   | distance | celltype |   method    |   cor    
+    ------+--------+--------+----------+----------------+-----------------+-----------------+------+---------+---------+----------+----------+-------------+----------
+     chr1 | 924880 | 924880 | SAMD11   | SAMD11-011     | ENST00000420190 | ENSG00000187634 | chr1 | 1041140 | 1041290 |   116259 | NULL     | DNase-DNase | 0.737101
+     chr1 | 924880 | 924880 | SAMD11   | SAMD11-011     | ENST00000420190 | ENSG00000187634 | chr1 | 1191760 | 1191910 |   266879 | NULL     | DNase-DNase | 0.731211
+     chr1 | 924880 | 924880 | SAMD11   | SAMD11-011     | ENST00000420190 | ENSG00000187634 | chr1 | 1305020 | 1305170 |   380139 | NULL     | DNase-DNase |  0.70828
+     chr1 | 924880 | 924880 | SAMD11   | SAMD11-011     | ENST00000420190 | ENSG00000187634 | chr1 | 1080200 | 1080350 |   155319 | NULL     | DNase-DNase | 0.704411
+
+   select count(*) from enhancers;   3435042
+
+   --- in R
+   library(RPostgreSQL)
+   db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="enhancers.hg38", host="whovian")
+   as.data.frame(t(dbGetQuery(db, "select * from enhancers where distance > 2000000000")
+                                  1
+     chr1                      chr1
+     start1                15341761
+     end1                  15341761
+     genename                 FHAD1
+     transcriptname       FHAD1-004
+     transcriptid   ENST00000444385
+     geneid         ENSG00000142621
+     chr2                      chr1
+     start2               234774253
+     end2                 234784253
+     distance             219432491
+     celltype               GM12878
+     method                    Hi-C
+     cor                          0
