@@ -8,9 +8,12 @@ export(
     printf,
     runTReNA,
     getFootprintsForTF,
-    makeTfbsCountsTbl ,
     getGenePromoterRegions ,
-    getTfbsCountsPerGene 
+    getTfbsCountsPerPromoter ,
+    getTfbsCountsInAllPromoters ,
+    getDnaseEnhancerRegions ,
+    getHiCEnhancerRegions ,
+    getTfbsCountsInEnhancers 
 )
 
 exportMethods(

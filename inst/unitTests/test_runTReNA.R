@@ -7,7 +7,7 @@ runTests <- function()
 {
    test_getFootprintsForTF()
    test_getGenePromoterRegions()
-   test_getTfbsCountsPerGene()
+   test_getTfbsCountsPerPromoter()
    test_makeTfbsCountsTbl()
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -53,9 +53,9 @@ test_getGenePromoterRegions = function(quiet=F)
 
 } #test_getGenePromoterRegions
 #----------------------------------------------------------------------------------------------------
-test_getTfbsCountsPerGene <- function()
+test_getTfbsCountsPerPromoter <- function()
 {
-   printf("--- test_getTfbsCountsPerGene")
+   printf("--- test_getTfbsCountsPerPromoter")
 
    genome.db.uri <- "postgres://whovian/hg38"
    project.db.uri <-  "postgres://whovian/lymphoblast"
@@ -68,12 +68,12 @@ test_getTfbsCountsPerGene <- function()
       tflist = dbGetQuery( fp@project.db , query )[,1]
    tflist = sample( tflist , 10 )
 
-   tfbs_counts = getTfbsCountsPerGene( fp , tflist , promoter_regions = promoter_regions )
+   tfbs_counts = getTfbsCountsPerPromoter( fp , tflist , promoter_regions = promoter_regions )
 
    checkTrue( sum( tfbs_counts ) > 0 )
    checkTrue( all( colnames(tfbs_counts) == tflist ))
 
-} # test_getTfbsCountsPerGene
+} # test_getTfbsCountsPerPromoter
 #----------------------------------------------------------------------------------------------------
 test_makeTfbsCountsTbl <- function()
 {

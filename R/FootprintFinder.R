@@ -219,9 +219,7 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
    return( gr )
 
 }) # getPromoterRegionsAllGenes
-
-
-
+#----------------------------------------------------------------------------------------------------
 
 
 

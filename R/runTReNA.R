@@ -37,7 +37,7 @@ function( obj , genelist , size.upstream = 10000 , size.downstream = 10000 ) {
 
 } #getGenePromoterRegions
 #----------------------------------------------------------------------------------------------------
-getTfbsCountsPerGene <-
+getTfbsCountsPerPromoter <-
 function( obj , tflist , promoter_regions , verbose = 1 ) {
 
    tfbs_counts_per_gene = list()
@@ -60,12 +60,11 @@ function( obj , tflist , promoter_regions , verbose = 1 ) {
    rownames(tfbs_counts_per_gene) = names(promoter_regions)
    return( tfbs_counts_per_gene )
 
-} #getTfbsCountsPerGene
+} #getTfbsCountsPerPromoter
 #----------------------------------------------------------------------------------------------------
-getTfbsCountsPerGeneMC <-
+getTfbsCountsPerPromoterMC <-
 function( tflist , promoter_regions , verbose = 1 , cores = 3 , genome="hg38" , tissue="lymphoblast") {
 
-   library(doParallel)
    registerDoParallel( cores = cores )
 
    tfbs_counts_per_gene =
@@ -93,9 +92,114 @@ function( tflist , promoter_regions , verbose = 1 , cores = 3 , genome="hg38" , 
    rownames(tfbs_counts_per_gene) = names(promoter_regions)
    return( tfbs_counts_per_gene )
 
-} #getTfbsCountsPerGene
+} #getTfbsCountsPerPromoterMC
 #----------------------------------------------------------------------------------------------------
-makeTfbsCountsTbl <- 
+getHiCEnhancerRegions <- function() {  
+
+   enhancerdb <- 
+      dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="enhancers.hg38", host="whovian")
+   query <- "select * from enhancers where method='Hi-C'"
+   tbl = dbGetQuery( enhancerdb, query )
+   return( tbl )
+}
+#----------------------------------------------------------------------------------------------------
+getDnaseEnhancerRegions <- function() {   
+
+   enhancerdb <- 
+      dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="enhancers.hg38", host="whovian")
+   query <- "select * from enhancers where method='DNase-DNase'"
+   tbl = dbGetQuery( enhancerdb, query )
+   return( tbl )
+}
+#----------------------------------------------------------------------------------------------------
+getTfbsCountsInEnhancers <-
+function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 , 
+   cores = 3 , genome = "hg38" , tissue = "lymphoblast" , 
+   biotype = "protein_coding" , moleculetype="gene" ) {
+
+   stopifnot( genome == "hg38" )
+
+   registerDoParallel( cores == cores )
+
+   if( enhancertype == "Hi-C" )
+      enhancers = getHiCEnhancerRegions()
+   if( enhancertype == "DNase" )
+      enhancers = getDnaseEnhancerRegions()
+
+   enhancers = enhancers[,c("chr2","start2","end2","genename")]
+   enhancers = unique( enhancers )
+   colnames(enhancers)[1:3] = c("chr","start","end")
+   enhancers = makeGRangesFromDataFrame( enhancers , keep.extra.columns = T )
+
+   if( is.null( genelist ) ) {
+      if( verbose >= 1 )
+          cat("no gene list is given. using all gene_ids from obj@genome.db\n")
+      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
+      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
+      obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+      query = paste( "select gene_name from gtf",
+         sprintf("where gene_biotype='%s' and moleculetype='%s'", biotype, moleculetype ) ,
+         collapse = " " )
+      genelist = dbGetQuery( obj@genome.db , query )
+      genelist = genelist[,1]
+   }
+
+   if( is.null( tflist ) ) {
+      if( verbose >= 1 )
+          cat("no tf list is given. using all tfs from obj@project.db\n")
+      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
+      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
+      obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+      query = "select distinct tf from motifsgenes"
+      tflist = dbGetQuery( obj@project.db , query )[,1]
+      closeDatabaseConnections(obj)
+   }
+
+   if( verbose >= 1 ) cat("counting TFBSs per enhancer\n")
+
+   tfbs_counts_per_enhancer =
+   foreach( x=1:length(tflist) ) %dopar% {
+      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
+      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
+      obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+      footprints.tf = getFootprintsForTF( obj , tflist[x] )
+      closeDatabaseConnections( obj )
+
+      if( nrow( footprints.tf ) == 0 ) {
+         counts = rep( 0 , length(enhancers) )
+         return(counts)
+      }
+      colnames( footprints.tf )[1:3] = c("chr","start","end")
+      footprints.tf.gr = makeGRangesFromDataFrame( footprints.tf )
+      fp.reduced = reduce( footprints.tf.gr )
+      counts = countOverlaps( enhancers , fp.reduced )
+      if( verbose > 1 & x/10 == round(x/10) ) cat("...done" , x , "/" , length(tflist) ,"\n" )
+      return( counts )
+   }
+   tfbs_counts_per_enhancer = do.call( cbind , tfbs_counts_per_enhancer )
+   colnames(tfbs_counts_per_enhancer) = tflist
+
+   enhancertargets = enhancers$genename
+
+   if( verbose >= 1 ) cat("counting TFBSs per gene\n")
+
+   tfbs_counts_per_gene =
+   foreach( gene=genelist ) %dopar% {
+      enhancers_per_gene = which( enhancertargets == gene )
+      if( length(enhancers_per_gene) == 0 ) return( rep(0,length(tflist)) )
+      tmp = tfbs_counts_per_enhancer[ which( enhancertargets == gene ) , , drop = F ]
+      counts = colSums( tmp )
+      return(counts)
+   }
+   tfbs_counts_per_gene = do.call( rbind , tfbs_counts_per_gene )
+   colnames(tfbs_counts_per_gene) = tflist
+   rownames(tfbs_counts_per_gene) = genelist
+
+   return( tfbs_counts_per_gene )
+
+} # getTFbsCountsInEnhancers
+#----------------------------------------------------------------------------------------------------
+getTfbsCountsInAllPromoters <- 
 function( genome = "hg38" , tissue = "lymphoblast" ,  genelist = NULL , tflist = NULL , 
    biotype = "protein_coding" , moleculetype = "gene" ,
    size.upstream = 10000 , size.downstream = 10000 , cores = 1 , verbose = 1 ) {
@@ -131,7 +235,7 @@ function( genome = "hg38" , tissue = "lymphoblast" ,  genelist = NULL , tflist =
    if( verbose >= 1 ) cat("counting binding sites for each tf in each region\n")
 
    tfbs_counts_per_gene = 
-      getTfbsCountsPerGeneMC(
+      getTfbsCountsPerPromoterMC(
           tflist = tflist , promoter_regions = promoter_regions ,
           cores = cores , genome=genome , tissue=tissue )
 
