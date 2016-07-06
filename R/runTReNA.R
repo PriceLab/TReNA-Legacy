@@ -63,9 +63,10 @@ function( obj , tflist , promoter_regions , verbose = 1 ) {
 } #getTfbsCountsPerPromoter
 #----------------------------------------------------------------------------------------------------
 getTfbsCountsPerPromoterMC <-
-function( tflist , promoter_regions , verbose = 1 , cores = 3 , genome="hg38" , tissue="lymphoblast") {
+function( tflist , promoter_regions , verbose = 1 , cores = 5 , genome="hg38" , tissue="lymphoblast") {
 
-   registerDoParallel( cores = cores )
+   cl = makeForkCluster( cores )
+   registerDoParallel( cl )
 
    tfbs_counts_per_gene =
    foreach( x=1:length(tflist) ) %dopar% {
@@ -90,6 +91,7 @@ function( tflist , promoter_regions , verbose = 1 , cores = 3 , genome="hg38" , 
    tfbs_counts_per_gene = do.call( cbind , tfbs_counts_per_gene )
    colnames(tfbs_counts_per_gene) = tflist
    rownames(tfbs_counts_per_gene) = names(promoter_regions)
+   stopCluster( cl )
    return( tfbs_counts_per_gene )
 
 } #getTfbsCountsPerPromoterMC
@@ -114,12 +116,10 @@ getDnaseEnhancerRegions <- function() {
 #----------------------------------------------------------------------------------------------------
 getTfbsCountsInEnhancers <-
 function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 , 
-   cores = 3 , genome = "hg38" , tissue = "lymphoblast" , 
+   cores = 5 , genome = "hg38" , tissue = "lymphoblast" , 
    biotype = "protein_coding" , moleculetype="gene" ) {
 
    stopifnot( genome == "hg38" )
-
-   registerDoParallel( cores == cores )
 
    if( enhancertype == "Hi-C" )
       enhancers = getHiCEnhancerRegions()
@@ -157,6 +157,10 @@ function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 
 
    if( verbose >= 1 ) cat("counting TFBSs per enhancer\n")
 
+
+   cl <- makeForkCluster(cores)
+   registerDoParallel( cl )
+
    tfbs_counts_per_enhancer =
    foreach( x=1:length(tflist) ) %dopar% {
       genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
@@ -176,12 +180,16 @@ function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 
       if( verbose > 1 & x/10 == round(x/10) ) cat("...done" , x , "/" , length(tflist) ,"\n" )
       return( counts )
    }
+   stopCluster(cl)
    tfbs_counts_per_enhancer = do.call( cbind , tfbs_counts_per_enhancer )
    colnames(tfbs_counts_per_enhancer) = tflist
 
    enhancertargets = enhancers$genename
 
    if( verbose >= 1 ) cat("counting TFBSs per gene\n")
+
+   cl = makeForkCluster( cores )
+   registerDoParallel( cl )
 
    tfbs_counts_per_gene =
    foreach( gene=genelist ) %dopar% {
@@ -195,11 +203,13 @@ function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 
    colnames(tfbs_counts_per_gene) = tflist
    rownames(tfbs_counts_per_gene) = genelist
 
+   stopCluster( cl )
+
    return( tfbs_counts_per_gene )
 
 } # getTFbsCountsInEnhancers
 #----------------------------------------------------------------------------------------------------
-getTfbsCountsInAllPromoters <- 
+getTfbsCountsInPromoters <- 
 function( genome = "hg38" , tissue = "lymphoblast" ,  genelist = NULL , tflist = NULL , 
    biotype = "protein_coding" , moleculetype = "gene" ,
    size.upstream = 10000 , size.downstream = 10000 , cores = 1 , verbose = 1 ) {
@@ -242,7 +252,7 @@ function( genome = "hg38" , tissue = "lymphoblast" ,  genelist = NULL , tflist =
    return( tfbs_counts_per_gene )
 
 
-} #makeTfbsCountsTbl
+} #getTfbsCountsInPromoters
 #----------------------------------------------------------------------------------------------------
 runTReNA <- function(gene, mtx, candidate.tfs)
 {

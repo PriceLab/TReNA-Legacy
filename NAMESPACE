@@ -10,7 +10,7 @@ export(
     getFootprintsForTF,
     getGenePromoterRegions ,
     getTfbsCountsPerPromoter ,
-    getTfbsCountsInAllPromoters ,
+    getTfbsCountsInPromoters ,
     getDnaseEnhancerRegions ,
     getHiCEnhancerRegions ,
     getTfbsCountsInEnhancers 
