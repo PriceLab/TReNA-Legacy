@@ -6,6 +6,8 @@ printf <- function(...) print(noquote(sprintf(...)))
 runTests <- function()
 {
    test_getFootprintsForTF()
+   test_getGenePromoterRegions()
+   test_getTfbsCountsPerPromoter()
    test_makeTfbsCountsTbl()
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -17,17 +19,22 @@ test_getFootprintsForTF = function()
    project.db.uri <-  "postgres://whovian/lymphoblast"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
-   # our test TF is RXRA
    tf = "RXRA"
 
-   footprints = getFootprintsForTF( fp , tf )
+   footprints = getFootprintsForTF( obj = fp , tf = tf )
 
    checkTrue( nrow(footprints) > 10000 )
-}
+
+
+} #test_getFootprintsForTF
 #----------------------------------------------------------------------------------------------------
-test_getGenePromoterRegions = function()
+test_getGenePromoterRegions = function(quiet=F)
 {
-   printf("--- test_getGenePromoterRegions")
+   if( quiet==F ) printf("--- test_getGenePromoterRegions")
+
+   genome.db.uri <- "postgres://whovian/hg38"
+   project.db.uri <-  "postgres://whovian/lymphoblast"
+   fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
    # get gene_name field from gtf
       query = paste( "select gene_name from gtf",
@@ -42,37 +49,93 @@ test_getGenePromoterRegions = function()
   checkTrue( length( promoter_regions ) == 5 )
   checkTrue( all( width(ranges(promoter_regions)) == 20001 ))
 
+  invisible( promoter_regions )
+
 } #test_getGenePromoterRegions
 #----------------------------------------------------------------------------------------------------
-test_getTfbsCountsPerGene()
+test_getTfbsCountsPerPromoter <- function()
 {
-   printf("--- test_getTfbsCountsPerGene")
+   printf("--- test_getTfbsCountsPerPromoter")
+
+   genome.db.uri <- "postgres://whovian/hg38"
+   project.db.uri <-  "postgres://whovian/lymphoblast"
+   fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+
+   promoter_regions = test_getGenePromoterRegions(quiet=T)
 
    # get TF names
       query = "select distinct tf from motifsgenes"
       tflist = dbGetQuery( fp@project.db , query )[,1]
    tflist = sample( tflist , 10 )
 
-   tfbs_counts = getTfbsCountsPerGene( fp , tflist , promoter_regions = promoter_regions )
+   tfbs_counts = getTfbsCountsPerPromoter( fp , tflist , promoter_regions = promoter_regions )
 
    checkTrue( sum( tfbs_counts ) > 0 )
    checkTrue( all( colnames(tfbs_counts) == tflist ))
-   checkTrue( all( rownames(tfbs_counts) == genelist_sample ))
 
-} # test_getTfbsCountsPerGene
+} # test_getTfbsCountsPerPromoter
 #----------------------------------------------------------------------------------------------------
-test_makeTfbsCountsTbl <- function()
+test_getTfbsCountsInPromoters <- function()
 {
-   printf("--- test_makeTfbsCountsTbl")
+   printf("--- test_getTfbsCountsInPromoters")
 
-   tfbs_counts = makeTfbsCountsTbl( genome="hg38" , tissue="lymphoblast" , cores = 10 , verbose = 2 )
+   tfbs_counts = getTfbsCountsInPromoters( genome="hg38" , tissue="lymphoblast" , 
+      tflist = c("RXRA","NR3C3","SATB2","EMX2","SP1","SP2") , cores = 2 , verbose = 2 )
 
-   checkEquals( nrow(tfbs_counts) , length(genelist) )
-   checkEquals( ncol(tfbs_counts) , 847 )
+
+   checkTrue( ncol(tfbs_counts) == 5 )
    checkTrue( max( apply( tfbs_counts , 2 , max ) ) < 100 )
+   checkTrue( colnames(tfbs_counts)[1] == "ENSG00000186350" )
 
-}
+} # test_getTfbsCountsInPromoters
 #----------------------------------------------------------------------------------------------------
+test_makeTrnFromPromoterCountsAndExpression <- function()
+{
+   printf("--- test_makeTrnFromPromoterCountsAndExpression")
+ 
+
+   print(load(system.file(package="TReNA", "extdata/promoter_tfbs_counts.gene_ids.hg38.lymphoblast.RData")))
+
+   print(load(system.file(package="TReNA","extdata/GSE37772.expr.RData")))
+
+   trn = makeTrnFromPromoterCountsAndExpression( 
+      counts = promoter_counts , expr = expr2 , method = "lasso" )
+
+   edges = trn$trn
+   r2 = trn$r2
+   
+   checkTrue( nrow( edges ) > 100000 )
+   checkTrue( median(r2 , na.rm = T ) > 0.2 )
+} # test_makeTrnFromPromoterCountsAndExpression
+#----------------------------------------------------------------------------------------------------
+test_makeTrnFromPromoterCountsAndExpression.useAllTFs <- function()
+{
+   printf("--- test_makeTrnFromPromoterCountsAndExpression")
+
+
+   print(load(system.file(package="TReNA", "extdata/promoter_tfbs_counts.gene_ids.hg38.lymphoblast.RData")))
+
+   print(load(system.file(package="TReNA","extdata/GSE37772.expr.RData")))
+ 
+   trn2 = makeTrnFromPromoterCountsAndExpression(
+      counts = promoter_counts , expr = expr2 , method = "lasso" , candidate_regulator_method = "all" )
+
+   edges = trn2$trn
+   r2 = trn2$r2
+
+   checkTrue( nrow( edges ) > 100000 )
+   checkTrue( median(r2 , na.rm = T ) > 0.2 )
+
+   kIn = table( edges$target )
+   kOut = table( edges$tf )
+
+   checkTrue( median( kIn ) > 10 & median( kIn ) < 25 )
+   checkTrue( max( kOut ) < 3000 )
+
+
+} # test_makeTrnFromPromoterCountsAndExpression.useAllTFs
+#----------------------------------------------------------------------------------------------------
+if(!interactive()) runTests()
 
 
 

@@ -37,7 +37,7 @@ function( obj , genelist , size.upstream = 10000 , size.downstream = 10000 ) {
 
 } #getGenePromoterRegions
 #----------------------------------------------------------------------------------------------------
-getTfbsCountsPerGene <-
+getTfbsCountsPerPromoter <-
 function( obj , tflist , promoter_regions , verbose = 1 ) {
 
    tfbs_counts_per_gene = list()
@@ -60,13 +60,13 @@ function( obj , tflist , promoter_regions , verbose = 1 ) {
    rownames(tfbs_counts_per_gene) = names(promoter_regions)
    return( tfbs_counts_per_gene )
 
-} #getTfbsCountsPerGene
+} #getTfbsCountsPerPromoter
 #----------------------------------------------------------------------------------------------------
-getTfbsCountsPerGeneMC <-
-function( tflist , promoter_regions , verbose = 1 , cores = 3 , genome="hg38" , tissue="lymphoblast") {
+getTfbsCountsPerPromoterMC <-
+function( tflist , promoter_regions , verbose = 1 , cores = 5 , genome="hg38" , tissue="lymphoblast") {
 
-   library(doParallel)
-   registerDoParallel( cores = cores )
+   cl = makeForkCluster( cores )
+   registerDoParallel( cl )
 
    tfbs_counts_per_gene =
    foreach( x=1:length(tflist) ) %dopar% {
@@ -91,56 +91,220 @@ function( tflist , promoter_regions , verbose = 1 , cores = 3 , genome="hg38" , 
    tfbs_counts_per_gene = do.call( cbind , tfbs_counts_per_gene )
    colnames(tfbs_counts_per_gene) = tflist
    rownames(tfbs_counts_per_gene) = names(promoter_regions)
+   stopCluster( cl )
    return( tfbs_counts_per_gene )
 
-} #getTfbsCountsPerGene
+} #getTfbsCountsPerPromoterMC
 #----------------------------------------------------------------------------------------------------
-makeTfbsCountsTbl <- 
-function( genome = "hg38" , tissue = "lymphoblast" ,  genelist = NULL , tflist = NULL , 
-   biotype = "protein_coding" , moleculetype = "gene" ,
-   size.upstream = 10000 , size.downstream = 10000 , cores = 1 , verbose = 1 ) {
+getHiCEnhancerRegions <- function() {  
 
-   genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
-   project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
-   obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+   enhancerdb <- 
+      dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="enhancers.hg38", host="whovian")
+   query <- "select * from enhancers where method='Hi-C'"
+   tbl = dbGetQuery( enhancerdb, query )
+   return( tbl )
+}
+#----------------------------------------------------------------------------------------------------
+getDnaseEnhancerRegions <- function() {   
 
-   if( is.null( genelist ) ) {
-      if( verbose >= 1 ) 
-          cat("no gene list is given. using all gene_ids from obj@genome.db\n")
-      query = paste( "select gene_name from gtf",
-         sprintf("where gene_biotype='%s' and moleculetype='%s'", biotype, moleculetype ) ,
-         collapse = " " )
+   enhancerdb <- 
+      dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="enhancers.hg38", host="whovian")
+   query <- "select * from enhancers where method='DNase-DNase'"
+   tbl = dbGetQuery( enhancerdb, query )
+   return( tbl )
+}
+#----------------------------------------------------------------------------------------------------
+getGenelistFromGtf <- function( genome="hg38",tissue="lymphoblast" , 
+   biotype="protein_coding" , moleculetype="gene" , use_gene_ids = T ) {
+
+      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
+      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
+      obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+
+      if( use_gene_ids == T ) {
+         query = paste( "select gene_id from gtf",
+            sprintf("where gene_biotype='%s' and moleculetype='%s'", biotype, moleculetype ) ,
+            collapse = " " )
+      }
+      if( use_gene_ids == F ) {
+         query = paste( "select gene_name from gtf",
+            sprintf("where gene_biotype='%s' and moleculetype='%s'", biotype, moleculetype ) ,
+            collapse = " " )
+      }
       genelist = dbGetQuery( obj@genome.db , query )
       genelist = genelist[,1]
+      closeDatabaseConnections(obj)
+      return( genelist )
+
+} # getGenelistFromGtf
+#----------------------------------------------------------------------------------------------------
+getTfbsCountsInEnhancers <-
+function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 , 
+   cores = 5 , genome = "hg38" , tissue = "lymphoblast" , use_gene_ids = T ,
+   biotype = "protein_coding" , moleculetype="gene" ) {
+
+   stopifnot( genome == "hg38" )
+
+   if( enhancertype == "Hi-C" )
+      enhancers = getHiCEnhancerRegions()
+   if( enhancertype == "DNase" )
+      enhancers = getDnaseEnhancerRegions()
+
+   enhancers = enhancers[,c("chr2","start2","end2","genename")]
+   enhancers = unique( enhancers )
+   colnames(enhancers)[1:3] = c("chr","start","end")
+   enhancers = makeGRangesFromDataFrame( enhancers , keep.extra.columns = T )
+
+   if( is.null( genelist )) {
+      if( verbose >= 1 )
+          cat( "no gene list is given, using all genes from obj@genome.db\n" )
+      genelist = getGenelistFromGtf( genome=genome , tissue=tissue , use_gene_ids = use_gene_ids )
    }
 
    if( is.null( tflist ) ) {
       if( verbose >= 1 )
           cat("no tf list is given. using all tfs from obj@project.db\n")
+      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
+      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
+      obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
       query = "select distinct tf from motifsgenes"
       tflist = dbGetQuery( obj@project.db , query )[,1]
+      closeDatabaseConnections(obj)
+   }
+
+   if( verbose >= 1 ) cat("counting TFBSs per enhancer\n")
+
+
+   cl <- makeForkCluster(cores)
+   registerDoParallel( cl )
+
+   tfbs_counts_per_enhancer =
+   foreach( x=1:length(tflist) ) %dopar% {
+      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
+      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
+      obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+      footprints.tf = getFootprintsForTF( obj , tflist[x] )
+      closeDatabaseConnections( obj )
+
+      if( nrow( footprints.tf ) == 0 ) {
+         counts = rep( 0 , length(enhancers) )
+         return(counts)
+      }
+      colnames( footprints.tf )[1:3] = c("chr","start","end")
+      footprints.tf.gr = makeGRangesFromDataFrame( footprints.tf )
+      fp.reduced = reduce( footprints.tf.gr )
+      counts = countOverlaps( enhancers , fp.reduced )
+      if( verbose > 1 & x/10 == round(x/10) ) cat("...done" , x , "/" , length(tflist) ,"\n" )
+      return( counts )
+   }
+   stopCluster(cl)
+   tfbs_counts_per_enhancer = do.call( cbind , tfbs_counts_per_enhancer )
+   colnames(tfbs_counts_per_enhancer) = tflist
+
+   enhancertargets = enhancers$genename
+
+   if( verbose >= 1 ) cat("counting TFBSs per gene\n")
+
+   cl = makeForkCluster( cores )
+   registerDoParallel( cl )
+
+   tfbs_counts_per_gene =
+   foreach( gene=genelist ) %dopar% {
+      enhancers_per_gene = which( enhancertargets == gene )
+      if( length(enhancers_per_gene) == 0 ) return( rep(0,length(tflist)) )
+      tmp = tfbs_counts_per_enhancer[ which( enhancertargets == gene ) , , drop = F ]
+      counts = colSums( tmp )
+      return(counts)
+   }
+   tfbs_counts_per_gene = do.call( rbind , tfbs_counts_per_gene )
+   colnames(tfbs_counts_per_gene) = tflist
+   rownames(tfbs_counts_per_gene) = genelist
+
+   stopCluster( cl )
+
+   if( use_gene_ids == T ) {
+      cat("converting TF names to ENSG ids\n")
+
+      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
+      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
+      obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+      query = paste( "select gene_id, gene_name from gtf",
+         sprintf("where gene_biotype='%s' and moleculetype='%s'", biotype, moleculetype ) ,
+         collapse = " " )
+      gene_ids_names = dbGetQuery( obj@genome.db , query )
+      matchRows = match( colnames(tfbs_counts_per_gene) , gene_ids_names$gene_name )
+      tf_ids = gene_ids_names[ matchRows , "gene_id" ]
+      colnames(tfbs_counts_per_gene) = tf_ids
+      na_tf_ids = is.na( tf_ids )
+      tfbs_counts_per_gene = tfbs_counts_per_gene[ , which(na_tf_ids ==F) ]
+      
+   }
+
+   return( tfbs_counts_per_gene )
+
+} # getTFbsCountsInEnhancers
+#----------------------------------------------------------------------------------------------------
+getTfbsCountsInPromoters <- 
+function( genome = "hg38" , tissue = "lymphoblast" ,  genelist = NULL , tflist = NULL , 
+   biotype = "protein_coding" , moleculetype = "gene" , use_gene_ids = T ,
+   size.upstream = 10000 , size.downstream = 10000 , cores = 1 , verbose = 1 ) {
+
+   if( is.null( genelist )) {
+      if( verbose >= 1 )
+          cat( "no gene list is given, using all genes from obj@genome.db\n" )
+      genelist = getGenelistFromGtf( genome=genome , tissue=tissue , use_gene_ids = use_gene_ids )
+   }
+
+   if( is.null( tflist ) ) {
+      if( verbose >= 1 )
+          cat("no tf list is given. using all tfs from obj@project.db\n")
+      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
+      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
+      obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+      query = "select distinct tf from motifsgenes"
+      tflist = dbGetQuery( obj@project.db , query )[,1]
+      closeDatabaseConnections(obj)
    }
 
    if( verbose >= 1 ) cat("fetching promoter regions for all genes\n")
 
-   promoter_regions = 
-      getPromoterRegionsAllGenes( obj )
-
-   closeDatabaseConnections(obj)
+      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
+      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
+      obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+      promoter_regions = 
+         getPromoterRegionsAllGenes( obj , use_gene_ids = use_gene_ids )
+      closeDatabaseConnections(obj)
 
    if( verbose >= 1 ) cat("counting binding sites for each tf in each region\n")
 
    tfbs_counts_per_gene = 
-      getTfbsCountsPerGeneMC(
+      getTfbsCountsPerPromoterMC(
           tflist = tflist , promoter_regions = promoter_regions ,
           cores = cores , genome=genome , tissue=tissue )
 
+   if( use_gene_ids == T ) {
+      cat("converting TF names to ENSG ids\n")
+
+      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
+      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
+      obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+      query = paste( "select gene_id, gene_name from gtf",
+         sprintf("where gene_biotype='%s' and moleculetype='%s'", biotype, moleculetype ) ,
+         collapse = " " )
+      gene_ids_names = dbGetQuery( obj@genome.db , query )
+      matchRows = match( colnames(tfbs_counts_per_gene) , gene_ids_names$gene_name )
+      tf_ids = gene_ids_names[ matchRows , "gene_id" ]
+      colnames(tfbs_counts_per_gene) = tf_ids
+      na_tf_ids = is.na( tf_ids )
+      tfbs_counts_per_gene = tfbs_counts_per_gene[ , which(na_tf_ids == F ) ]
+      
+   }
+
    return( tfbs_counts_per_gene )
 
-
-} #makeTfbsCountsTbl
+} #getTfbsCountsInPromoters
 #----------------------------------------------------------------------------------------------------
-runTReNA <- function(gene, mtx, candidate.tfs)
+runAllSolversForGene <- function(gene, mtx, candidate.tfs)
 {
   trena.lasso <- TReNA(mtx, solver="lasso")
   trena.bs    <- TReNA(mtx, solver="bayesSpike")
@@ -177,9 +341,119 @@ runTReNA <- function(gene, mtx, candidate.tfs)
   tbl.all <- rbind.fill(tbl.lasso, tbl.bs, tbl.rf)
   tbl.all[order(abs(tbl.all$gene.cor), decreasing=TRUE),]
 
-} # runTReNA
+} # runAllSolversForGene
 #----------------------------------------------------------------------------------------------------
+makeTrnFromPromoterCountsAndExpression <- 
+function( counts , expr , method = "lasso" , alpha = 0.5 ,
+   cores = NULL , center_and_scale = T , candidate_regulator_method = "quantile" ,
+   tfbs.quantile.thresh = 0.75 ){   
 
+   stopifnot( method %in% c("lasso","randomForest") )
+
+   # prepare expression data
+   expr = as.matrix(expr)
+   if( center_and_scale == T ) {
+      gene.mean = rowMeans(expr)
+      gene.sd = apply( expr , 1 , sd )
+      expr = ( expr - gene.mean ) / gene.sd
+   }
+
+   cat("selecting genes for which we have both expression data and tfbs counts\n")
+   isec.tfs = intersect( colnames(counts) , rownames(expr) )
+   isec.genes = intersect( rownames(counts) , rownames(expr) )
+   stopifnot( length(isec.genes) > 0 && length(isec.tfs) > 0 )
+   tfbs = counts[ isec.genes , isec.tfs ]
+   expr = expr[ isec.genes , ]
+
+   stopifnot( all( rownames(tfbs) == rownames(expr) ) )
+
+   # set up multi-core operation
+   if( is.null(cores) ) cores = round( detectCores() / 3 )
+   cl = makeForkCluster( cores )
+   registerDoParallel( cl )
+
+   # select candidate regulators for each gene based on tfbs
+
+   if( candidate_regulator_method == "quantile" ) {
+      if( is.null( tfbs.quantile.thresh ) )  tfbs.quantile.thresh = 0.75
+      tfbs.quantile = apply( tfbs , 2 , quantile , probs = tfbs.quantile.thresh )
+      candidate_regulators = t( t(tfbs) > tfbs.quantile )
+   }
+   if( candidate_regulator_method == "all" ) {
+      candidate_regulators = tfbs
+   }
+
+
+
+   if( method == "lasso" ) {
+
+      # set up the TReNA object
+      trena = TReNA(mtx.assay=expr,solver=method)
+
+      cat("determining an appropriate value for the panalty parameter lambda\n")
+      fit.cv =
+      foreach( target.gene=sample(rownames(expr),100) ) %dopar% {
+         tfs = names(which( candidate_regulators[target.gene,] > 0 ))
+         fit = solve(trena,target.gene,tfs,extraArgs=list(alpha=alpha,keep.metrics=T))
+      }
+
+      lambda = do.call( c ,
+         lapply(1:length(fit.cv), function(i) fit.cv[[i]]$lambda))
+      lambda.median = median(lambda,na.rm=T)
+ 
+      cat("fiting model for all genes using the median lambda from fit.cv\n")
+
+      fit2 =
+      foreach( target.gene=rownames(expr) ) %dopar% {
+         # tfs = names(which(candidate_regulators[target.gene,]==T))
+         tfs = names(which( candidate_regulators[target.gene,] > 0 ))
+         fit = solve(trena,target.gene,tfs,
+             extraArgs=list(alpha=alpha,lambda=lambda.median,keep.metrics=T))
+         if( length(fit) > 0 ) {
+            if( nrow(fit$mtx.beta) > 0 ) {
+               fit$mtx.beta$target = target.gene
+               fit$mtx.beta$tf = rownames(fit$mtx.beta)
+            }
+         }
+         return( fit )
+      }
+
+      r2 = do.call( c ,
+         lapply(1:length(fit2), function(i) fit2[[i]]$r2))
+      n.nonzero = do.call( c ,
+         lapply(1:length(fit2), function(i) nrow(fit2[[i]]$mtx.beta)))
+      trn = do.call( rbind ,
+         lapply(1:length(fit2), function(i) fit2[[i]]$mtx.beta))
+
+   }
+
+   if( method == "randomForest" ) {
+
+      trena <- TReNA(mtx.assay=enorm, solver="randomForest", quiet=FALSE)
+   
+      trn0 =
+      foreach( target.gene=rownames(expr) ) %dopar% {
+         tfs <- names(which( candidate_regulators[target.gene,] > 0 ))
+         result <- solve(trena, target.gene, tfs)
+         if( is.null(result) == F ) {
+            result$edges$target = target.gene
+            result$edges$tf = rownames(result$edges)
+         }
+         return(result)
+      }
+
+      r2 = do.call( c ,
+         lapply(1:length(trn0), function(i) trn0[[i]]$r2))
+      trn = do.call( rbind ,
+         lapply(1:length(trn0), function(i) trn0[[i]]$edges))
+
+   }
+
+   stopCluster( cl )
+
+   return( list( trn = trn , r2 = r2 ))
+
+} # makeTrnFromPromoterCountsAndExpression
 
 
 

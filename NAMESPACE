@@ -6,11 +6,17 @@ export(
     LassoSolver,
     FootprintFinder,
     printf,
-    runTReNA,
+    runAllSolversForGene,
     getFootprintsForTF,
-    makeTfbsCountsTbl ,
     getGenePromoterRegions ,
-    getTfbsCountsPerGene 
+    getTfbsCountsPerPromoter ,
+    getTfbsCountsInPromoters ,
+    getTfbsCountsPerPromoterMC ,
+    getDnaseEnhancerRegions ,
+    getHiCEnhancerRegions ,
+    getTfbsCountsInEnhancers ,
+    getGenelistFromGtf ,
+    makeTrnFromPromoterCountsAndExpression
 )
 
 exportMethods(

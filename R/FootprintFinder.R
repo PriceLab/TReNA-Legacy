@@ -25,7 +25,7 @@ setGeneric("getFootprintsInRegion", signature="obj", function(obj, chromosome, s
 setGeneric("getGtfGeneBioTypes", signature="obj", function(obj) standardGeneric("getGtfGeneBioTypes"))
 setGeneric("getGtfMoleculeTypes", signature="obj", function(obj) standardGeneric("getGtfMoleculeTypes"))
 setGeneric("closeDatabaseConnections", signature="obj", function(obj) standardGeneric("closeDatabaseConnections"))
-setGeneric("getPromoterRegionsAllGenes",signature="obj", function(obj ,size.upstream=10000 , size.downstream=10000 ) standardGeneric("getPromoterRegionsAllGenes"))
+setGeneric("getPromoterRegionsAllGenes",signature="obj", function(obj ,size.upstream=10000 , size.downstream=10000 , use_gene_ids = T ) standardGeneric("getPromoterRegionsAllGenes"))
 #------------------------------------------------------------------------------------------------------------------------
 .parseDatabaseUri <- function(database.uri)
 {
@@ -180,7 +180,7 @@ setMethod("getFootprintsInRegion", "FootprintFinder",
 #----------------------------------------------------------------------------------------------------
 setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 
-   function( obj , size.upstream=10000 , size.downstream=10000 ) {
+   function( obj , size.upstream=10000 , size.downstream=10000 , use_gene_ids = T ) {
 
    query <-
    paste( "select gene_name, gene_id, chr, start, endpos, strand from gtf where" ,
@@ -215,13 +215,12 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
         gene_id = genes$gene_id ))
    # GRanges obj
    gr = makeGRangesFromDataFrame( promoter_regions , keep.extra.columns = T )
-   names(gr) = promoter_regions$gene_name
+   if( use_gene_ids == F ) names(gr) = promoter_regions$gene_name
+   if( use_gene_ids == T ) names(gr) = promoter_regions$gene_id
    return( gr )
 
 }) # getPromoterRegionsAllGenes
-
-
-
+#----------------------------------------------------------------------------------------------------
 
 
 
