@@ -75,16 +75,65 @@ test_getTfbsCountsPerPromoter <- function()
 
 } # test_getTfbsCountsPerPromoter
 #----------------------------------------------------------------------------------------------------
-test_makeTfbsCountsTbl <- function()
+test_getTfbsCountsInPromoters <- function()
 {
-   printf("--- test_makeTfbsCountsTbl")
+   printf("--- test_getTfbsCountsInPromoters")
 
-   tfbs_counts = makeTfbsCountsTbl( genome="hg38" , tissue="lymphoblast" , 
-      tflist = c("RXRA","SATB2","EMX2","SP1","SP2") , cores = 2 , verbose = 2 )
+   tfbs_counts = getTfbsCountsInPromoters( genome="hg38" , tissue="lymphoblast" , 
+      tflist = c("RXRA","NR3C3","SATB2","EMX2","SP1","SP2") , cores = 2 , verbose = 2 )
 
+
+   checkTrue( ncol(tfbs_counts) == 5 )
    checkTrue( max( apply( tfbs_counts , 2 , max ) ) < 100 )
+   checkTrue( colnames(tfbs_counts)[1] == "ENSG00000186350" )
 
-}
+} # test_getTfbsCountsInPromoters
+#----------------------------------------------------------------------------------------------------
+test_makeTrnFromPromoterCountsAndExpression <- function()
+{
+   printf("--- test_makeTrnFromPromoterCountsAndExpression")
+ 
+
+   print(load(system.file(package="TReNA", "extdata/promoter_tfbs_counts.gene_ids.hg38.lymphoblast.RData")))
+
+   print(load(system.file(package="TReNA","extdata/GSE37772.expr.RData")))
+
+   trn = makeTrnFromPromoterCountsAndExpression( 
+      counts = promoter_counts , expr = expr2 , method = "lasso" )
+
+   edges = trn$trn
+   r2 = trn$r2
+   
+   checkTrue( nrow( edges ) > 100000 )
+   checkTrue( median(r2 , na.rm = T ) > 0.2 )
+} # test_makeTrnFromPromoterCountsAndExpression
+#----------------------------------------------------------------------------------------------------
+test_makeTrnFromPromoterCountsAndExpression.useAllTFs <- function()
+{
+   printf("--- test_makeTrnFromPromoterCountsAndExpression")
+
+
+   print(load(system.file(package="TReNA", "extdata/promoter_tfbs_counts.gene_ids.hg38.lymphoblast.RData")))
+
+   print(load(system.file(package="TReNA","extdata/GSE37772.expr.RData")))
+ 
+   trn2 = makeTrnFromPromoterCountsAndExpression(
+      counts = promoter_counts , expr = expr2 , method = "lasso" , candidate_regulator_method = "all" )
+
+   edges = trn2$trn
+   r2 = trn2$r2
+
+   checkTrue( nrow( edges ) > 100000 )
+   checkTrue( median(r2 , na.rm = T ) > 0.2 )
+
+   kIn = table( edges$target )
+   kOut = table( edges$tf )
+
+   checkTrue( median( kIn ) > 10 & median( kIn ) < 25 )
+   checkTrue( max( kOut ) < 3000 )
+
+
+} # test_makeTrnFromPromoterCountsAndExpression.useAllTFs
 #----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()
 
