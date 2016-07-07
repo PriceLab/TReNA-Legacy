@@ -25,6 +25,7 @@ save( promoter_counts ,
 trn = makeTrnFromPromoterCountsAndExpression( counts = promoter_counts , expr = expr , 
    method = method , cores = cores )
 
-
+save( trn , 
+   file = paste( outdir , "trn." , genome , "." , tissue , ".RData" , sep = "" ))
 
 
