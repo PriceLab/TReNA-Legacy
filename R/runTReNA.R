@@ -63,15 +63,13 @@ function( obj , tflist , promoter_regions , verbose = 1 ) {
 } #getTfbsCountsPerPromoter
 #----------------------------------------------------------------------------------------------------
 getTfbsCountsPerPromoterMC <-
-function( tflist , promoter_regions , verbose = 1 , cores = 5 , genome="hg38" , tissue="lymphoblast") {
+function( tflist , promoter_regions , verbose = 1 , cores = 5 , genome.db.uri , project.db.uri ) {
 
    cl = makeForkCluster( cores )
    registerDoParallel( cl )
 
    tfbs_counts_per_gene =
    foreach( x=1:length(tflist) ) %dopar% {
-      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
-      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
       obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
       if( verbose > 1 ) cat( "...Working on" , tflist[x] , "(" , x , "/" , length(x) ,  ")\n" )
       footprints.tf = getFootprintsForTF( obj , tflist[x] )
@@ -114,11 +112,9 @@ getDnaseEnhancerRegions <- function() {
    return( tbl )
 }
 #----------------------------------------------------------------------------------------------------
-getGenelistFromGtf <- function( genome="hg38",tissue="lymphoblast" , 
+getGenelistFromGtf <- function( genome.db.uri , project.db.uri , 
    biotype="protein_coding" , moleculetype="gene" , use_gene_ids = T ) {
 
-      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
-      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
       obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
       if( use_gene_ids == T ) {
@@ -140,10 +136,9 @@ getGenelistFromGtf <- function( genome="hg38",tissue="lymphoblast" ,
 #----------------------------------------------------------------------------------------------------
 getTfbsCountsInEnhancers <-
 function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 , 
-   cores = 5 , genome = "hg38" , tissue = "lymphoblast" , use_gene_ids = T ,
+   cores = 5 , genome.db.uri , project.db.uri , use_gene_ids = T ,
    biotype = "protein_coding" , moleculetype="gene" ) {
 
-   stopifnot( genome == "hg38" )
 
    if( enhancertype == "Hi-C" )
       enhancers = getHiCEnhancerRegions()
@@ -158,14 +153,12 @@ function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 
    if( is.null( genelist )) {
       if( verbose >= 1 )
           cat( "no gene list is given, using all genes from obj@genome.db\n" )
-      genelist = getGenelistFromGtf( genome=genome , tissue=tissue , use_gene_ids = use_gene_ids )
+      genelist = getGenelistFromGtf( genome.db.uri=genome.db.uri , project.db.uri=project.db.uri , use_gene_ids = use_gene_ids )
    }
 
    if( is.null( tflist ) ) {
       if( verbose >= 1 )
           cat("no tf list is given. using all tfs from obj@project.db\n")
-      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
-      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
       obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
       query = "select distinct tf from motifsgenes"
       tflist = dbGetQuery( obj@project.db , query )[,1]
@@ -180,8 +173,6 @@ function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 
 
    tfbs_counts_per_enhancer =
    foreach( x=1:length(tflist) ) %dopar% {
-      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
-      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
       obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
       footprints.tf = getFootprintsForTF( obj , tflist[x] )
       closeDatabaseConnections( obj )
@@ -225,8 +216,6 @@ function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 
    if( use_gene_ids == T ) {
       cat("converting TF names to ENSG ids\n")
 
-      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
-      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
       obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
       query = paste( "select gene_id, gene_name from gtf",
          sprintf("where gene_biotype='%s' and moleculetype='%s'", biotype, moleculetype ) ,
@@ -245,21 +234,19 @@ function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 
 } # getTFbsCountsInEnhancers
 #----------------------------------------------------------------------------------------------------
 getTfbsCountsInPromoters <- 
-function( genome = "hg38" , tissue = "lymphoblast" ,  genelist = NULL , tflist = NULL , 
+function( genome.db.uri , project.db.uri ,  genelist = NULL , tflist = NULL , 
    biotype = "protein_coding" , moleculetype = "gene" , use_gene_ids = T ,
    size.upstream = 10000 , size.downstream = 10000 , cores = 1 , verbose = 1 ) {
 
    if( is.null( genelist )) {
       if( verbose >= 1 )
           cat( "no gene list is given, using all genes from obj@genome.db\n" )
-      genelist = getGenelistFromGtf( genome=genome , tissue=tissue , use_gene_ids = use_gene_ids )
+      genelist = getGenelistFromGtf( genome.db.uri=genome.db.uri , project.db.uri=project.db.uri , use_gene_ids = use_gene_ids )
    }
 
    if( is.null( tflist ) ) {
       if( verbose >= 1 )
           cat("no tf list is given. using all tfs from obj@project.db\n")
-      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
-      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
       obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
       query = "select distinct tf from motifsgenes"
       tflist = dbGetQuery( obj@project.db , query )[,1]
@@ -268,8 +255,6 @@ function( genome = "hg38" , tissue = "lymphoblast" ,  genelist = NULL , tflist =
 
    if( verbose >= 1 ) cat("fetching promoter regions for all genes\n")
 
-      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
-      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
       obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
       promoter_regions = 
          getPromoterRegionsAllGenes( obj , use_gene_ids = use_gene_ids )
@@ -280,13 +265,11 @@ function( genome = "hg38" , tissue = "lymphoblast" ,  genelist = NULL , tflist =
    tfbs_counts_per_gene = 
       getTfbsCountsPerPromoterMC(
           tflist = tflist , promoter_regions = promoter_regions ,
-          cores = cores , genome=genome , tissue=tissue )
+          cores = cores , genome.db.uri=genome.db.uri , project.db.uri=project.db.uri )
 
    if( use_gene_ids == T ) {
       cat("converting TF names to ENSG ids\n")
 
-      genome.db.uri <- paste("postgres://whovian/" , genome , sep="" )
-      project.db.uri <-  paste("postgres://whovian/" , tissue , sep="" )
       obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
       query = paste( "select gene_id, gene_name from gtf",
          sprintf("where gene_biotype='%s' and moleculetype='%s'", biotype, moleculetype ) ,

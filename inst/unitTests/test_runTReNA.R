@@ -8,7 +8,9 @@ runTests <- function()
    test_getFootprintsForTF()
    test_getGenePromoterRegions()
    test_getTfbsCountsPerPromoter()
-   test_makeTfbsCountsTbl()
+   test_getTfbsCountsInPromoters()
+   test_makeTrnFromPromoterCountsAndExpression()
+   test_makeTrnFromPromoterCountsAndExpression.useAllTFs()
 } # runTests
 #----------------------------------------------------------------------------------------------------
 test_getFootprintsForTF = function()
@@ -79,7 +81,8 @@ test_getTfbsCountsInPromoters <- function()
 {
    printf("--- test_getTfbsCountsInPromoters")
 
-   tfbs_counts = getTfbsCountsInPromoters( genome="hg38" , tissue="lymphoblast" , 
+   tfbs_counts = getTfbsCountsInPromoters( genome.db.uri = "postgres://whovian/hg38" , 
+      project.db.uri = "postgres://whovian/lymphoblast" , 
       tflist = c("RXRA","NR3C3","SATB2","EMX2","SP1","SP2") , cores = 2 , verbose = 2 )
 
 

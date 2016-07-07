@@ -1,31 +1,29 @@
 library(TReNA)
 
 # 0. set options
-genome = "hg38"
-tissue = "lymphoblast"
-outdir = "/proj/price1/sament/TReNA/inst/extdata/"
+genome.db.uri = "postgres://whovian/hg38"
+project.db.uri = "postgres://whovian/lymphoblast"
+out = "/proj/price1/sament/lymphoblast_trn/hg38.lymphoblast"
 cores = 5
-verbose = 2
 method = "lasso"
-print(load("/proj/price1/sament/TReNA/inst/extdata/GSE37772.expr.RData"))
+print(load(system.file(package="TReNA","/extdata/GSE37772.expr.RData")))
 expr = expr2
 rm( expr2 )
+
 # 1, get counts of binding sites for each TF proximal to each gene (by default +/- 10kb from the TSS)
 
 promoter_counts = getTfbsCountsInPromoters( 
-   genome=genome , tissue=tissue , # specify the genome build and tissue source for footprints
+   genome.db.uri=genome.db.uri , project.db.uri=project.db.uri , 
    size.upstream = 10000 , size.downstream = 10000 , # define the size of the window around the TSS
-   cores = cores , verbose = verbose ) # specify the number of cores for parallelization
+   cores = cores ) # specify the number of cores for parallelization
 
-save( promoter_counts , 
-   file = paste( outdir , "promoter_tfbs_counts.gene_ids." , genome , "." , tissue , ".RData" , sep="" ))
+save( promoter_counts , file = paste( out , ".promoter_tfbs_counts.gene_ids.RData" , sep="" ))
   
 # 2. build TRN model by integrating TFBS counts with expression data
 
 trn = makeTrnFromPromoterCountsAndExpression( counts = promoter_counts , expr = expr , 
    method = method , cores = cores )
 
-save( trn , 
-   file = paste( outdir , "trn." , genome , "." , tissue , ".RData" , sep = "" ))
+save( trn , file = paste( out , ".trn.RData" , sep = "" ))
 
 
