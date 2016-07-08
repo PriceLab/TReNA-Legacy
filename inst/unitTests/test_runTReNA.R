@@ -92,6 +92,18 @@ test_getTfbsCountsInPromoters <- function()
 
 } # test_getTfbsCountsInPromoters
 #----------------------------------------------------------------------------------------------------
+test_getTfbsCountsInEnhancers <- function()
+{
+   printf("--- test_getTfbsCountsInPromoters")
+
+   tfbs_counts = getTfbsCountsInEnhancers( genome.db.uri = "postgres://whovian/hg38" ,
+      project.db.uri = "postgres://whovian/lymphoblast" , 
+      tflist = c("RXRA","NR3C3","SATB2","EMX2","SP1","SP2") , cores = 2 )
+
+   checkTrue( any( colSums( tfbs_counts ) > 0 ))
+
+}
+#----------------------------------------------------------------------------------------------------
 test_makeTrnFromPromoterCountsAndExpression <- function()
 {
    printf("--- test_makeTrnFromPromoterCountsAndExpression")

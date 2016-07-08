@@ -145,9 +145,12 @@ function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 
    if( enhancertype == "DNase" )
       enhancers = getDnaseEnhancerRegions()
 
-   enhancers = enhancers[,c("chr2","start2","end2","genename")]
+   if( use_gene_ids == T )
+      enhancers = enhancers[,c("chr2","start2","end2","geneid")]
+   if( use_gene_ids == F )
+      enhancers = enhancers[,c("chr2","start2","end2","genename")]
    enhancers = unique( enhancers )
-   colnames(enhancers)[1:3] = c("chr","start","end")
+   colnames(enhancers) = c("chr","start","end","gene")
    enhancers = makeGRangesFromDataFrame( enhancers , keep.extra.columns = T )
 
    if( is.null( genelist )) {
@@ -192,7 +195,7 @@ function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 
    tfbs_counts_per_enhancer = do.call( cbind , tfbs_counts_per_enhancer )
    colnames(tfbs_counts_per_enhancer) = tflist
 
-   enhancertargets = enhancers$genename
+   enhancertargets = enhancers$gene
 
    if( verbose >= 1 ) cat("counting TFBSs per gene\n")
 
