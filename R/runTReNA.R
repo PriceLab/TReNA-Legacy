@@ -182,8 +182,11 @@ function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 
       if( verbose >= 1 )
           cat("no tf list is given. using all tfs from obj@project.db\n")
       obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
-      query = "select distinct tf from motifsgenes"
-      tflist = dbGetQuery( obj@project.db , query )[,1]
+      motifsgenes = dbReadTable( obj@project.db , "motifsgenes" )
+      if( "tf_name" %in% colnames(motifsgenes) )
+         tflist = unique( motifsgenes$tf_name )
+      if( "tf" %in% colnames(motifsgenes) )
+         tflist = unique( motifsgenes$tf )
       closeDatabaseConnections(obj)
    }
 
