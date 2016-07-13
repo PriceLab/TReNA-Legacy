@@ -30,6 +30,8 @@ enhancer_counts_hic = getTfbsCountsInEnhancers(
    enhancertype = "Hi-C" , # source of enhancer-promoter loops (Hi-C vs. DNase-Dnase correlation)
    cores = cores )
 
+
+
 save( enhancer_counts_hic , 
    file = paste( out , ".enhancer_tfbs_counts_hic.RData" , sep="" ))
 

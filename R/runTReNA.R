@@ -1,12 +1,31 @@
 #----------------------------------------------------------------------------------------------------
 getFootprintsForTF <-
 function( obj , tf ){
+
+       motifsgenes = dbReadTable( obj@project.db , "motifsgenes" )
+       fields = colnames(motifsgenes)
+       
+       if( "tf_name" %in% fields ) {
+
+       query <-
+paste( "select fp.chr, fp.mfpstart, fp.mfpend, fp.motifname, fp.pval, fp.score, mg.motif, mg.tf_name",
+             "from footprints fp",
+             "inner join motifsgenes mg",
+             "on fp.motifName=mg.motif",
+             paste("where mg.tf_name='",tf,"'" , sep="" ) ,  collapse = " " )
+
+       }
+
+       if( "tf" %in% fields ) {
+
        query <-
 paste( "select fp.chr, fp.mfpstart, fp.mfpend, fp.motifname, fp.pval, fp.score, mg.motif, mg.tf",
              "from footprints fp",
              "inner join motifsgenes mg",
              "on fp.motifName=mg.motif",
              paste("where mg.tf='",tf,"'" , sep="" ) ,  collapse = " " )
+
+       }
 
        if(!obj@quiet) print(query)
        dbGetQuery( obj@project.db , query )
@@ -251,8 +270,11 @@ function( genome.db.uri , project.db.uri ,  genelist = NULL , tflist = NULL ,
       if( verbose >= 1 )
           cat("no tf list is given. using all tfs from obj@project.db\n")
       obj <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
-      query = "select distinct tf from motifsgenes"
-      tflist = dbGetQuery( obj@project.db , query )[,1]
+      motifsgenes = dbReadTable( obj@project.db , "motifsgenes" )
+      if( "tf_name" %in% colnames(motifsgenes) )
+         tflist = unique( motifsgenes$tf_name )
+      if( "tf" %in% colnames(motifsgenes) )
+         tflist = unique( motifsgenes$tf )
       closeDatabaseConnections(obj)
    }
 
