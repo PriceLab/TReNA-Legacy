@@ -1,5 +1,6 @@
 library(RPostgreSQL)
 library(TReNA)
+library(gplots)
 library (RColorBrewer)
 #------------------------------------------------------------------------------------------------------------------------
 source("../../../../BDDS/trenadb/utils.R")
