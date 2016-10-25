@@ -3,7 +3,7 @@ library(TReNA)
 library(gplots)
 library (RColorBrewer)
 #------------------------------------------------------------------------------------------------------------------------
-source("../../../../BDDS/trenadb/utils.R")
+source("../../../../BDDS/trenadb/src/utils.R")
 #------------------------------------------------------------------------------------------------------------------------
 if(!exists("db.trena"))
    db.trena <- dbConnect(PostgreSQL(), user="trena", password="trena", dbname="trena", host="whovian")
