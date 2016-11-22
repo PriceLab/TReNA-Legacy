@@ -261,13 +261,4 @@ test_getFootprintsForEnsemblGenes <- function()
 
 } # test_getFootprintsForEnsemblGenes
 #----------------------------------------------------------------------------------------------------
-test_getPromoterRegionsAllGenes()
-{
-   printf("--- test_getPromoterRegionsAllGenes")
-
-   promoter_regions = getPromoterRegionsAllGenes( fp )
- 
-   checkTrue( length( promoter_regions ) == 19797 )
-}
-#----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()
