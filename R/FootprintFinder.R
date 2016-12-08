@@ -77,14 +77,13 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
       stopifnot(dbname %in% existing.databases)
       dbDisconnect(project.db)
       project.db <- dbConnect(driver, user="trena", password="trena", dbname=dbname, host=host)
-      expected.tables <- c("footprints")
+      expected.tables <- c("regions", "hits")
       stopifnot(all(expected.tables %in% dbListTables(project.db)))
       if(!quiet){
-         row.count <- dbGetQuery(project.db, "select count(*) from footprints")[1,1]
-         printf("%s: %d rows", sprintf("%s/footprints", project.database.uri), row.count)
+         row.count <- dbGetQuery(project.db, "select count(*) from regions")[1,1]
+         printf("%s: %d rows", sprintf("%s/regions", project.database.uri), row.count)
          }
      } # if postgres
-
 
    .FootprintFinder(genome.db=genome.db, project.db=project.db, quiet=quiet)
 
@@ -166,15 +165,27 @@ setMethod("getFootprintsForGene", "FootprintFinder",
 setMethod("getFootprintsInRegion", "FootprintFinder",
 
     function(obj, chromosome, start, end){
-       query <- paste(c("select fp.chr, fp.mfpstart, fp.mfpend, fp.motifname, fp.pval, mg.motif, mg.tf_name, mg.tf_ensg",
-                        "from footprints fp",
-                        "inner join motifsgenes mg",
-                        "on fp.motifName=mg.motif",
-                          sprintf("where fp.chr = '%s' and  fp.mfpstart >= %d and fp.mfpend <= %d",
-                                  chromosome, start, end)),
-                        collapse=" ")
-       if(!obj@quiet) print(query)
-       dbGetQuery(obj@project.db, query)
+       query.p0 <- "select loc, chrom, start, endpos from regions"
+       query.p1 <- sprintf("where chrom='%s' and start >= %d and endpos <= %d", chromosome, start, end)
+       query.regions <- paste(query.p0, query.p1)
+       tbl.regions <- dbGetQuery(obj@project.db, query.regions)
+       if(nrow(tbl.regions) == 0)
+          return(data.frame())
+       loc.set <- sprintf("('%s')", paste(tbl.regions$loc, collapse="','"))
+       query.hits <- sprintf("select * from hits where loc in %s", loc.set)
+       tbl.hits <- dbGetQuery(obj@project.db, query.hits)
+       tbl.out <- merge(tbl.regions, tbl.hits, on="loc")
+       unique(tbl.out)
+
+       #query <- paste(c("select fp.chr, fp.mfpstart, fp.mfpend, fp.motifname, fp.pval, mg.motif, mg.tf_name, mg.tf_ensg",
+       #                 "from footprints fp",
+       #                 "inner join motifsgenes mg",
+       #                 "on fp.motifName=mg.motif",
+       #                   sprintf("where fp.chr = '%s' and  fp.mfpstart >= %d and fp.mfpend <= %d",
+       #                           chromosome, start, end)),
+       #                 collapse=" ")
+       #if(!obj@quiet) print(query)
+       #dbGetQuery(obj@project.db, query)
        }) # getFootprintsInRegion
 
 #----------------------------------------------------------------------------------------------------

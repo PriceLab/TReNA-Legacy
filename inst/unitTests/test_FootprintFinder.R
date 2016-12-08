@@ -21,7 +21,8 @@ test_.parseDatabaseUri <- function()
 {
    printf("--- test_.parseDatabaseUri")
    genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/lymphoblast"
+   #project.db.uri <-  "postgres://whovian/lymphoblast"
+   project.db.uri <-  "postgres://whovian/brain_wellington"
 
    x <- TReNA:::.parseDatabaseUri(genome.db.uri)
    checkEquals(x$brand, "postgres")
@@ -31,7 +32,7 @@ test_.parseDatabaseUri <- function()
    x <- TReNA:::.parseDatabaseUri(project.db.uri)
    checkEquals(x$brand, "postgres")
    checkEquals(x$host,  "whovian")
-   checkEquals(x$name,  "lymphoblast")
+   checkEquals(x$name,  "brain_wellington")
 
 } # test_.parseDatabaseUri
 #----------------------------------------------------------------------------------------------------
@@ -40,7 +41,7 @@ test_constructor <- function()
    printf("--- test_constructor")
 
    genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/lymphoblast"
+   project.db.uri <-  "postgres://whovian/brain_wellington"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
    closeDatabaseConnections(fp)
 
@@ -62,7 +63,7 @@ test_getGtfGeneBioTypes <- function()
    printf("--- test_getGtfGeneBioTypes")
 
    genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/lymphoblast"
+   project.db.uri <-  "postgres://whovian/brain_wellington"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
    types <- getGtfGeneBioTypes(fp)
    checkTrue(length(types) >= 40)
@@ -78,7 +79,7 @@ test_getGtfMoleculeTypes <- function()
    printf("--- test_getGtfMoleculeTypes")
 
    genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/lymphoblast"
+   project.db.uri <-  "postgres://whovian/brain_wellington"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
    types <- getGtfMoleculeTypes(fp)
 
@@ -96,7 +97,7 @@ test_getChromLoc <- function()
    printf("--- test_getChromLoc")
 
    genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/lymphoblast"
+   project.db.uri <-  "postgres://whovian/brain_wellington"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
    tbl.loc <- getChromLoc(fp, "MEF2C", biotype="protein_coding", moleculetype="gene")
    checkEquals(dim(tbl.loc), c(1, 6))
@@ -126,7 +127,7 @@ test_getGenePromoterRegion <- function()
    printf("--- test_getGenePromoterRegion")
 
    genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/lymphoblast"
+   project.db.uri <-  "postgres://whovian/brain_wellington"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
       # TREM2: prepare for test of both gene symbol and ensembl gene id
@@ -185,7 +186,7 @@ test_getFootprintsForGene <- function()
    printf("--- test_getFootprintsForGene")
 
    genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/wholeBrain"
+   project.db.uri <-  "postgres://whovian/brain_wellington"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
       # get enembl gene id for MEF2C
@@ -200,8 +201,11 @@ test_getFootprintsForGene <- function()
 
          # 3k up and downstream.  we expect more footprints upstream,  some downstream
    tbl <- getFootprintsForGene(fp, "MEF2C", size.upstream=3000,  size.downstream=1000)
-   checkEquals(colnames(tbl), c("chr", "mfpstart", "mfpend", "motifname", "pval", "motif", "tf_name", "tf_ensg"))
-   checkTrue(nrow(tbl) > 50)   # 1385
+   expected.colnames <- c("loc", "chrom", "start", "endpos", "type", "name", "length", "strand",
+                          "sample_id", "method",  "provenance", "score1", "score2", "score3",
+                          "score4",  "score5",  "score6")
+   checkTrue(all(expected.colnames %in% colnames(tbl)))
+   checkTrue(nrow(tbl) > 20)   # 1385
 
    tbl.ensg <- getFootprintsForGene(fp, mef2c.ensg, size.upstream=3000,  size.downstream=1000)
    checkEquals(dim(tbl), dim(tbl.ensg))
@@ -215,7 +219,7 @@ test_getFootprintsInRegion <- function()
    printf("--- test_getFootprintsInRegion")
 
    genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/wholeBrain"
+   project.db.uri <-  "postgres://whovian/brain_wellington"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
       # use MEF2C and the hg38 assembly
@@ -228,7 +232,7 @@ test_getFootprintsInRegion <- function()
 
          # 3k up and downstream.  we expect more footprints upstream,  some downstream
    tbl <- getFootprintsInRegion(fp, chromosome, tss, tss + 3000)
-   checkTrue(nrow(tbl) > 50)   # 59 before 10may16, 257 after
+   checkTrue(nrow(tbl) > 0)   # 59 before 10may16, 257 after
    closeDatabaseConnections(fp)
 
 } # test_getFootprintsInRegion
@@ -244,7 +248,7 @@ test_getFootprintsForEnsemblGenes <- function()
    printf("--- test_getFootprintsForEnsemblGenes")
 
    genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/wholeBrain"
+   project.db.uri <-  "postgres://whovian/brain_wellington"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
    genes <- c("ENSG00000267051", "ENSG00000264503", "ENSG00000273141", "ENSG00000212712",
