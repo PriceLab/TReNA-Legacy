@@ -26,6 +26,7 @@ setGeneric("getGtfGeneBioTypes", signature="obj", function(obj) standardGeneric(
 setGeneric("getGtfMoleculeTypes", signature="obj", function(obj) standardGeneric("getGtfMoleculeTypes"))
 setGeneric("closeDatabaseConnections", signature="obj", function(obj) standardGeneric("closeDatabaseConnections"))
 setGeneric("getPromoterRegionsAllGenes",signature="obj", function(obj ,size.upstream=10000 , size.downstream=10000 , use_gene_ids = T ) standardGeneric("getPromoterRegionsAllGenes"))
+setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj", function(obj, tbl) standardGeneric("mapMotifsToTFsMergeIntoTable"))
 #------------------------------------------------------------------------------------------------------------------------
 .parseDatabaseUri <- function(database.uri)
 {
@@ -232,17 +233,17 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 
 }) # getPromoterRegionsAllGenes
 #----------------------------------------------------------------------------------------------------
+setMethod("mapMotifsToTFsMergeIntoTable", "FootprintFinder",
 
+   function(obj, tbl){
+      motifs <- unique(tbl$name)
+      if(length(motifs) == 0)
+         return(tbl)
+      collected.motifs <- sprintf("('%s')", paste(motifs, collapse="','"))
+      query.string <- sprintf("select * from motifsgenes where motif in %s", collected.motifs)
+      tbl.mtf <- dbGetQuery(obj@genome.db, query.string)
+      tbl.out <- merge(tbl, tbl.mtf, by.x='name', by.y='motif')
+      tbl.out
+      })
 
-
-
-
-
-
-
-
-
-
-
-
-
+#----------------------------------------------------------------------------------------------------

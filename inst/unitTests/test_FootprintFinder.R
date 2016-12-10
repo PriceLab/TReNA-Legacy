@@ -12,7 +12,8 @@ runTests <- function()
    test_getGenePromoterRegion()
    test_getFootprintsInRegion()
    test_getFootprintsForGene()
-
+   test_mapMotifsToTFsMergeIntoTable()
+   
    #test_getFootprintsForEnsemblGenes()
 
 } # runTests
@@ -233,6 +234,29 @@ test_getFootprintsInRegion <- function()
          # 3k up and downstream.  we expect more footprints upstream,  some downstream
    tbl <- getFootprintsInRegion(fp, chromosome, tss, tss + 3000)
    checkTrue(nrow(tbl) > 0)   # 59 before 10may16, 257 after
+   closeDatabaseConnections(fp)
+
+} # test_getFootprintsInRegion
+#----------------------------------------------------------------------------------------------------
+test_mapMotifsToTFsMergeIntoTable <- function()
+{
+   printf("--- test_mapMotifsToTFsMergeIntoTable")
+
+   genome.db.uri <- "postgres://whovian/hg38"
+   project.db.uri <-  "postgres://whovian/brain_hint"
+   fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+
+      # use MEF2C and the hg38 assembly
+   chromosome <- "chr5"
+   tss <- 88904257
+
+         # 3k up and downstream.  we expect more footprints upstream,  some downstream
+   tbl <- getFootprintsInRegion(fp, chromosome, tss-1000, tss + 1000)
+   checkTrue(nrow(tbl) > 0)   # 11 
+
+   tbl.withTFs <- mapMotifsToTFsMergeIntoTable(fp, tbl)
+   checkEquals(ncol(tbl.withTFs), 1 + ncol(tbl))
+   checkTrue(nrow(tbl.withTFs) > nrow(tbl))
    closeDatabaseConnections(fp)
 
 } # test_getFootprintsInRegion
