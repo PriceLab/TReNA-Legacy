@@ -33,6 +33,7 @@ exportMethods(
     getGenePromoterRegion,
     getFootprintsForGene,
     getFootprintsInRegion,
+    mapMotifsToTFsMergeIntoTable,
     getPromoterRegionsAllGenes,
     closeDatabaseConnections
     )
