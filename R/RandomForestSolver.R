@@ -19,7 +19,7 @@ setMethod("getSolverName", "RandomForestSolver",
 setMethod("run", "RandomForestSolver",
 
   function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs), extraArgs=list())){
-
+     
      mtx <- obj@mtx.assay
      stopifnot(target.gene %in% rownames(mtx))
      stopifnot(all(tfs %in% rownames(mtx)))
@@ -34,7 +34,7 @@ setMethod("run", "RandomForestSolver",
      if(length(tfs)==0) return(NULL)
 
      x = t(mtx[tfs,,drop=F])
-     y = t(mtx[target.gene,])
+     y = as.vector(t(mtx[target.gene,])) # Change y to a vector to avoid RF warning
 
      fit <- randomForest( x = x, y = y )
      edges = as.data.frame(fit$importance)

@@ -100,7 +100,7 @@ test_getTfbsCountsInEnhancers <- function()
       project.db.uri = "postgres://whovian/lymphoblast" , 
       tflist = c("RXRA","NR3C3","SATB2","EMX2","SP1","SP2") , cores = 2 )
 
-   checkTrue( any( colSums( tfbs_counts ) > 0 ))
+   checkTrue( any( colSums( tfbs_counts ) > 0 )) #Why do we use "any" here? MR 12/19/2016
 
 }
 #----------------------------------------------------------------------------------------------------

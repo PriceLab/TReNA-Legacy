@@ -257,7 +257,6 @@ test_fitDREAM5_yeast.randomForest <- function()
      # values returned by randomforest, and the directly
      # measured corrleation of the tfs to the target?
 
-   browser()
       # random forest results matrix is sorted by IncNodePurity
       # extract those values in the same order as they appear in tbl.gold
    rf.score <- tbl.importance[tbl.gold.met2$TF, "IncNodePurity"]
