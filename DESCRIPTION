@@ -17,3 +17,4 @@ Collate:  Solver.R
           BayesSpikeSolver.R
           FootprintFinder.R
           runTReNA.R
+	  PearsonSolver.R
