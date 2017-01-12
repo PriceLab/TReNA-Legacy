@@ -18,7 +18,7 @@ setGeneric("predictFromModel",         signature="obj", function(obj, model, tfs
 #------------------------------------------------------------------------------------------------------------------------
 TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 {
-  stopifnot(solver %in% c("lasso", "randomForest", "bayesSpike"))
+  stopifnot(solver %in% c("lasso", "randomForest", "bayesSpike","pearson"))
 
   if(solver == "lasso")
       solver <- LassoSolver(mtx.assay)
@@ -26,7 +26,9 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
       solver <- RandomForestSolver(mtx.assay)
   else if(solver == "bayesSpike")
       solver <- BayesSpikeSolver(mtx.assay)
-
+  else if(solver == "pearson")
+      solver <- PearsonSolver(mtx.assay)
+  
   .TReNA(solver=solver, quiet=quiet)
 
 } # TReNA, the constructor
