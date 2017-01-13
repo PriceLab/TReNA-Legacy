@@ -8,8 +8,13 @@ runTests <- function()
    test_emptyConstructor()
    test_developAndFitDummyTestData()
    test_LassoSolverConstructor()
+   test_PearsonSolverConstructor()
+   test_SpearmanSolverConstructor()
    test_fitDummyData()
+   test_fitDummyData.pearson()
+   test_fitDummyData.spearman()
 
+   
    test_fitDREAM5_yeast.lasso()
    test_fitDREAM5_yeast.lasso_weighted.tfs()
    test_fitDREAM5_yeast.randomForest()
@@ -740,5 +745,66 @@ test_LCLs.build_genomewide_model.randomForest <- function()
 
 }  # test_LCLs.build_genomewide_model.randomForest
 
-#----------------------------------------------------------------------------------------------------
+                                        #----------------------------------------------------------------------------------------------------
+test_PearsonSolverConstructor <- function()
+{
+    printf("--- test_PearsonSolverConstructor")
+    solver <- PearsonSolver()
+    checkEquals(getSolverName(solver), "PearsonSolver")
+    checkTrue(all(c("PearsonSolver", "Solver") %in% is(solver)))
+
+} # test_PearsonSolverConstructor
+                                        #----------------
+test_fitDummyData.pearson <- function()
+{
+    printf("--- test_fitDummyData.pearson")
+                                        # Grab the dummy data function and create the data
+    x <- test_developAndFitDummyTestData(quiet=TRUE)
+    mtx <- x$assay
+    tfs <- x$tf.genes
+    target.gene <- x$correlated.target
+
+    # Setup and solve using Pearson solver
+    trena <- TReNA(mtx.assay=mtx,solver="pearson",quiet=FALSE)    
+    coeffs <- solve(trena,target.gene,tfs)    
+
+    # Select only genes and coefficients above 0.2
+    sub.coeffs <- coeffs[abs(coeffs) > 0.2]
+
+    checkTrue(length(sub.coeffs) > 5)
+    
+} #test_fitDummyData.pearson            
+
+                                        #--------------------
+test_SpearmanSolverConstructor <- function()
+{
+    printf("--- test_SpearmanSolverConstructor")
+    solver <- SpearmanSolver()
+    checkEquals(getSolverName(solver), "SpearmanSolver")
+    checkTrue(all(c("SpearmanSolver", "Solver") %in% is(solver)))
+
+} # test_SpearmanSolverConstructor
+                                        #----------------
+test_fitDummyData.spearman <- function()
+{
+    printf("--- test_fitDummyData.spearman")
+                                        # Grab the dummy data function and create the data
+    x <- test_developAndFitDummyTestData(quiet=TRUE)
+    mtx <- x$assay
+    tfs <- x$tf.genes
+    target.gene <- x$correlated.target
+
+    # Setup and solve using Pearson solver
+    trena <- TReNA(mtx.assay=mtx,solver="spearman",quiet=FALSE)    
+    coeffs <- solve(trena,target.gene,tfs)    
+
+    # Select only genes and coefficients above 0.2
+    sub.coeffs <- coeffs[abs(coeffs) > 0.2]
+
+    checkTrue(length(sub.coeffs) > 4)
+    
+} #test_fitDummyData.spearman            
+
+                                        #--------------------
+
 if(!interactive()) runTests()

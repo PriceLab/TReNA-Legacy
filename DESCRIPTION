@@ -1,8 +1,8 @@
 Package: TReNA
 Type: Package
 Title: Fit transcriptional regulatory networks using gene expression, priors, machine learning
-Version: 0.99.60
-Date: 2017-01-10
+Version: 0.99.61
+Date: 2017-01-12
 Author: Seth Ament <seth.ament@systemsbiology.org>
 Maintainer: Seth Ament <seth.ament@systemsbiology.org>, Paul Shannon <pshannon@systemsbioloyg.org>
 Depends: R (>= 3.2.3), glmnet (>= 2.0.3), randomForest, vbsr, RPostgreSQL , GenomicRanges , foreach , doParallel
@@ -18,3 +18,4 @@ Collate:  Solver.R
           FootprintFinder.R
           runTReNA.R
 	  PearsonSolver.R
+          SpearmanSolver.R

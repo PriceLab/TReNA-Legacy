@@ -1,22 +1,22 @@
-                                        # This is my simple Pearson solver
-.PearsonSolver <- setClass ("PearsonSolver", contains = "Solver")
+                                        # This is my simple Spearman solver
+.SpearmanSolver <- setClass ("SpearmanSolver", contains = "Solver")
                                         #---------------
-PearsonSolver <- function(mtx.assay = matrix(), quiet=TRUE)
+SpearmanSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 {
-    obj <- .PearsonSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
+    obj <- .SpearmanSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
 
     obj
 
 }
                                         #---------------
-setMethod("getSolverName", "PearsonSolver",
+setMethod("getSolverName", "SpearmanSolver",
 
           function (obj){
-              return("PearsonSolver")
+              return("SpearmanSolver")
           })
 
                                         #----------------------------------------------
-setMethod("run", "PearsonSolver",
+setMethod("run", "SpearmanSolver",
 
           function (obj, target.gene, tfs, tf.weights = rep(1,length(tfs), extraArgs=list())){
 
@@ -39,9 +39,9 @@ setMethod("run", "PearsonSolver",
               x = t(mtx[tfs,,drop=F])
               y = as.vector(t(mtx[target.gene,])) # Make target gene levels into a vector
 
-              # Calculate Pearson correlation coefficients
-              fit <- cor( x = x, y = y)
+              # Calculate Spearman correlation coefficients
+              fit <- cor( x = x, y = y, method = "spearman")
 
                                         # For now, just return the fit
               return(fit)
-})          
+})
