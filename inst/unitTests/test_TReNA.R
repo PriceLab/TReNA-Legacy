@@ -446,6 +446,19 @@ test_ampAD.mef2c.154tfs.278samples.lasso <- function()
    checkTrue(max(tbl2$beta) < 1)
    checkTrue(c("SATB2") %in% rownames(subset(tbl2, abs(beta) > 0.15)))
 
+      # now transform mtx.sub with asinh
+
+   mtx.asinh <- asinh(mtx.sub)
+   fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290
+
+   trena <- TReNA(mtx.assay=mtx.asinh, solver="lasso", quiet=FALSE)
+   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
+   tbl3 <- solve(trena, target.gene, tfs)
+   checkTrue(min(tbl3$beta) > -0.2)
+   checkTrue(max(tbl3$beta) < 1)
+   checkTrue(c("SATB2") %in% rownames(subset(tbl2, abs(beta) > 0.15)))
+
+
 } # test_ampAD.mef2c.154tfs.278samples.lasso
 #----------------------------------------------------------------------------------------------------
 test_ampAD.mef2c.154tfs.278samples.bayesSpike <- function()
