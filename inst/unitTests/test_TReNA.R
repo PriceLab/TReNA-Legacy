@@ -257,7 +257,6 @@ test_fitDREAM5_yeast.randomForest <- function()
      # values returned by randomforest, and the directly
      # measured corrleation of the tfs to the target?
 
-   browser()
       # random forest results matrix is sorted by IncNodePurity
       # extract those values in the same order as they appear in tbl.gold
    rf.score <- tbl.importance[tbl.gold.met2$TF, "IncNodePurity"]
@@ -740,6 +739,42 @@ test_LCLs.build_genomewide_model.randomForest <- function()
 
 
 }  # test_LCLs.build_genomewide_model.randomForest
+#----------------------------------------------------------------------------------------------------
+test_rosmapAssayMatrixUnderDifferentTransformations <- function()
+{
+    printf("--- test_rosmapAssayMatrixUnderDifferentTransformations");
+    mtx.file <- "~/github/BDDS/trenadb/src/coryADpresentationNov2016/rosmapHuge.RData"
+    checkTrue(file.exists(mtx.file))
+    load(mtx.file)
+    mtx <- tbl[, -1]
+    mtx <- as.matrix(tbl[, -1])
+    rownames(mtx) <- tbl$ensembl_id
+    rows.to.delete <- setdiff(1:nrow(mtx), grep("ENSG", rownames(mtx)))
+    mtx <- mtx[-rows.to.delete,]
+    fivenum(mtx) # [1] 0.000000e+00 0.000000e+00 0.000000e+00 3.486310e-01 5.148396e+05
 
+    trena <- TReNA(mtx.assay=mtx, solver="lasso", quiet=FALSE)
+
+    gene.variances <- sort(apply(mtx, 1, var), decreasing=TRUE)
+    target.gene <- names(gene.variances[100])  # a high, but otherwise arbitrary choice)
+    set.seed(17)
+    candidates <- rownames(mtx)[sample(1:nrow(mtx), 100)]
+      # make sure the target is not among the candidates
+    candidates <- setdiff(candidates, target.gene)
+    tbl.betas <- solve(trena, target.gene, candidates, extraArgs=list(alpha=1.0, lambda=NULL))
+
+    checkTrue(max(tbl.betas$beta) > 500)
+
+    mtx2 <- asinh(mtx)
+    trena <- TReNA(mtx.assay=mtx2, solver="lasso", quiet=FALSE)
+    tbl.betas <- solve(trena, target.gene, candidates, extraArgs=list(alpha=1.0, lambda=NULL))
+    checkTrue(max(tbl.betas$beta) < 10)
+    
+    mtx3 <- asinh(mtx2)
+    trena <- TReNA(mtx.assay=mtx3, solver="lasso", quiet=FALSE)
+    tbl.betas <- solve(trena, target.gene, candidates, extraArgs=list(alpha=1.0, lambda=NULL))
+    checkTrue(max(tbl.betas$beta) < 1)
+
+} # test_rosmapAssayMatrixUnderDifferentTransformations
 #----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()
