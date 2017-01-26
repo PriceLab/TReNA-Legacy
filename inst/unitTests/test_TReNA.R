@@ -827,7 +827,7 @@ test_rosmapAssayMatrixUnderDifferentTransformations <- function()
     
 } # test_rosmapAssayMatrixUnderDifferentTransformations
 #----------------------------------------------------------------------------------------------------
-test_ampADDistributions <- function()
+assess_methodsAgainstDistributions <- function()
 {
     # Load the matrix and create the transformed versions
     load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
@@ -945,7 +945,8 @@ test_ampADDistributions <- function()
     rf2.sub <- subset(rf2, rf2$gene %in% all.genes)
     rf3.sub <- subset(rf3, rf3$gene %in% all.genes)
 
-    # Join it all in a table
+    # Join it all in a table (requires plyr package)
+    library(plyr)
     tbl.all <- join_all(list(lasso1.sub,
                              lasso2.sub,
                              lasso3.sub,
@@ -966,6 +967,8 @@ test_ampADDistributions <- function()
 
     # Order the rows
     tbl.all <- tbl.all[order(abs(tbl.all$gene.cor), decreasing = TRUE),]
-} #test_ampADDistributions
+    invisible(tbl.all)
+
+} #assess_methodsAgainstDistributions
 #----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()
