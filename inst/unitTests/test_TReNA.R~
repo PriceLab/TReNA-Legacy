@@ -881,7 +881,7 @@ assess_methodsAgainstDistributions <- function()
     lasso1.top10 <- lasso1$gene[order(abs(lasso1$lasso.as.is), decreasing=TRUE)][1:10]
     lasso2.top10 <- lasso2$gene[order(abs(lasso2$lasso.log2), decreasing=TRUE)][1:10]
     lasso3.top10 <- lasso3$gene[order(abs(lasso3$lasso.asinh), decreasing=TRUE)][1:10]
-    lasso4.top10 <- lasso4$gene[order(abs(lasso4$lasso.voom), decreasing = TRUE)][1:10]
+    lasso4.top10 <- lasso4$gene[order(abs(lasso4$lasso.voom), decreating = TRUE)][1:10]
 
     printf("--- Testing Bayes Spike")
 
@@ -914,7 +914,7 @@ assess_methodsAgainstDistributions <- function()
     bs1.top10 <- bs1$gene[order(abs(bs1$bs.as.is), decreasing=TRUE)][1:10]
     bs2.top10 <- bs2$gene[order(abs(bs2$bs.log2), decreasing=TRUE)][1:10]
     bs3.top10 <- bs3$gene[order(abs(bs3$bs.asinh), decreasing=TRUE)][1:10]
-    bs4.top10 <- bs4$gene[order(abs(bs4$bs.voom), decreasing = TRUE)][1:10]
+    bs4.top10 <- bs4$gene[order(abs(bs4$bs.voom), decreating = TRUE)][1:10]
 
     printf("--- Testing Random Forest")
 
