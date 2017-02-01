@@ -16,9 +16,7 @@ export(
     getHiCEnhancerRegions ,
     getTfbsCountsInEnhancers ,
     getGenelistFromGtf ,
-    makeTrnFromPromoterCountsAndExpression,
-    PearsonSolver,
-    SpearmanSolver
+    makeTrnFromPromoterCountsAndExpression
 )
 
 exportMethods(
