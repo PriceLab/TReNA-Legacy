@@ -1,4 +1,4 @@
-#This is my simple Pearson solver
+#----------------------------------------------------------------------------------------------------
 .PearsonSolver <- setClass ("PearsonSolver", contains = "Solver")
 #----------------------------------------------------------------------------------------------------
 PearsonSolver <- function(mtx.assay = matrix(), quiet=TRUE)

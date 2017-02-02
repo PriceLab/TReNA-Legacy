@@ -193,3 +193,36 @@ assess_ampAD154AllSolversAndDistributions <- function(){
 
 } #assess_ampAD154AllSolversAndDistributions
 #----------------------------------------------------------------------------------------------------
+transform_ampADFromRaw <- function(){
+
+    library(edgeR)
+    file.path <- "./inst/extdata/MayoRNAseq_RNAseq_TCX_geneCounts2.tsv"
+    transposedCounts <- read.table(file.path, header = TRUE, check.names = FALSE, as.is = TRUE, sep = "\t", stringsAsFactors = TRUE)
+    browser()
+    rownames(transposedCounts) <- transposedCounts$ensembl_id
+    
+    # Make it into a matrix of counts and drop the ENSEMBL IDs
+    mtx <- as.matrix(transposedCounts[, -1])
+
+    # Make a DGEList object
+    expr <- DGEList(mtx, group = rep(1, ncol(mtx)))
+
+    # Calculate the normalization factors for TMM
+    normFactors <- calcNormFactors(expr, method = ("TMM"))
+
+    # Compute counts per million (returns a matrix)
+    normalizedCpm <- cpm(normFactors)
+    
+    # Organize as a data frame w/ENSEMBL IDs and data values
+    ### Where are the IDs to map to ENSEMBL? 
+    ids <- as.data.frame(row.names(normalizedCpm))
+    colnames(ids) <-c("ensembl_id")
+    row.names(normalizedCpm) <- NULL
+    df <- as.data.frame(normalizedCpm)
+    newDF <- cbind(ids, df)
+
+    # Return the normalized data frame
+    invisible(newDF)
+    
+} #transform_ampADFromRaw
+#----------------------------------------------------------------------------------------------------
