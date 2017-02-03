@@ -20,4 +20,4 @@ Collate:  Solver.R
           PearsonSolver.R
           SpearmanSolver.R
 	  NullFilter.R
-	  HGLassoSolver.R
+	  FlamSolver.R

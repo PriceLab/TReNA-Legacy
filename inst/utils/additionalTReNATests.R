@@ -5,199 +5,192 @@ printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
 runTests <- function()
 {
-   test_ampAD.mef2c.154tfs.278samples.lasso()
-   test_ampAD.mef2c.154tfs.278samples.bayesSpike()
-#   test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes()
-   test_ampAD.mef2c.154tfs.278samples.randomForest()
+
+   test_fitDREAM5_yeast.lasso()
+   test_fitDREAM5_yeast.lasso_weighted.tfs()
+   test_fitDREAM5_yeast.randomForest()
+   test_fitDREAM5_yeast.bayesSpike()
+   test_trainAndPredict_DREAM5_yeast.lasso()
+   
    test_LCLs.build_genomewide_model.lasso()
    test_LCLs.build_genomewide_model.randomForest()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
-test_ampAD.mef2c.154tfs.278samples.lasso <- function()
+test_fitDREAM5_yeast.lasso <- function()
 {
-   printf("--- test_ampAD.mef2c.154tfs.278samples.lasso")
+   printf("--- test_fitDREAM5_yeast.lasso")
+   load(system.file(package="TReNA", "extdata", "dream5.net4.yeast.RData"))
 
-   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-   target.gene <- "MEF2C"
-   # print(fivenum(mtx.sub))   # 0.000000    1.753137   12.346965   43.247467 1027.765854
+   checkTrue(exists("mtx"))
+   checkTrue(exists("tbl.gold"))
+   checkTrue(exists("tbl.ids"))
 
-    print("note!  without log transform of the data")
-    print("bayesSpike model is quite useless, even after")
-    print("filtering for abs(beta) and pval")
+   checkEquals(dim(mtx), c(5950, 536))
 
-   trena <- TReNA(mtx.assay=mtx.sub, solver="lasso", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.sub), "MEF2C")
-   tbl <- solve(trena, target.gene, tfs)
-     # check for expected non-sensical values
-   checkTrue(min(tbl$beta) < -7)
-   checkTrue(max(tbl$beta) > 10)
+   trena <- TReNA(mtx.assay=mtx, solver="lasso", quiet=FALSE)
 
-      # with log transform, justified how?
-      # good results are returned, as loosely checked
-      # by correlating betas against  expression
+     # subset(tbl.gold, target=="MET2")
+     #     TF target score        cor
+     #   CBF1   MET2     1 -0.4746397
+     #  MET32   MET2     1  0.8902950
+     #  MET31   MET2     1  0.1245628
+     #   MET4   MET2     1  0.5301484
 
-   mtx.tmp <- mtx.sub - min(mtx.sub) + 0.001
-   mtx.log2 <- log2(mtx.tmp)
-   fivenum(mtx.log2)  # [1] -9.9657843  0.8107618  3.6262014  5.4345771 10.0052973
+   target.gene <- "MET2"
+   tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
+   tfs <- tbl.gold.met2$TF
 
-   trena <- TReNA(mtx.assay=mtx.log2, solver="lasso", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.log2), "MEF2C")
-   tbl2 <- solve(trena, target.gene, tfs)
-   checkTrue(min(tbl2$beta) > -0.2)
-   checkTrue(max(tbl2$beta) < 1)
-   checkTrue(c("SATB2") %in% rownames(subset(tbl2, abs(beta) > 0.15)))
+   tbl.betas <- as.data.frame(solve(trena, target.gene, tfs))
 
-      # now transform mtx.sub with asinh
+   #tbl.betas <- as.data.frame(result)
+     # 1st row of tbl.betas is the intercept, give it an NA correlation
+   #tbl.betas$cor <- c(NA, unlist(lapply(rownames(tbl.betas)[-1], function(tf) subset(tbl.gold.met2, TF==tf)$cor)))
+   #colnames (tbl.betas) <- c("beta", "cor")
 
-   mtx.asinh <- asinh(mtx.sub)
-   fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290
+     # is there some rough correlation between the calculated betas and the
+     # measured correlation?
+   checkTrue(cor(tbl.betas$beta, tbl.betas$gene.cor) > 0.7)
 
-   trena <- TReNA(mtx.assay=mtx.asinh, solver="lasso", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
-   tbl3 <- solve(trena, target.gene, tfs)
-   checkTrue(min(tbl3$beta) > -0.2)
-   checkTrue(max(tbl3$beta) < 1)
-   checkTrue(c("SATB2") %in% rownames(subset(tbl2, abs(beta) > 0.15)))
-
-   
-} # test_ampAD.mef2c.154tfs.278samples.lasso
+} # test_fitDREAM5_yeast.lasso
 #----------------------------------------------------------------------------------------------------
-test_ampAD.mef2c.154tfs.278samples.bayesSpike <- function()
+test_fitDREAM5_yeast.lasso_weighted.tfs <- function()
 {
-   printf("--- test_ampAD.mef2c.154tfs.278samples.bayesSpike")
+   printf("--- test_fitDREAM5_yeast.lasso_weighted.tfs")
 
-   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-   target.gene <- "MEF2C"
-   # print(fivenum(mtx.sub))   # 0.000000    1.753137   12.346965   43.247467 1027.765854
+   load(system.file(package="TReNA", "extdata", "dream5.net4.yeast.RData"))
+   checkTrue(exists("mtx"))
+   checkTrue(exists("tbl.gold"))
+   checkTrue(exists("tbl.ids"))
 
-    print("note!  without log transform of the data")
-    print("bayesSpike model is quite useless, even after")
-    print("filtering for abs(beta) and pval")
+   checkEquals(dim(mtx), c(5950, 536))
 
-   trena <- TReNA(mtx.assay=mtx.sub, solver="bayesSpike", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.sub), "MEF2C")
-   tbl <- solve(trena, target.gene, tfs)
-   tbl.trimmed <- subset(tbl, abs(beta) > 0.1 & pval < 0.01)
-   betas <- tbl.trimmed$beta
-   big.abs.betas <- betas[abs(betas) > 1]
-   checkTrue(length(big.abs.betas) > 20)
+   trena <- TReNA(mtx.assay=mtx, solver="lasso", quiet=FALSE)
 
-   checkTrue(nrow(tbl) > 10)
-   checkTrue(cor(tbl.trimmed$beta, tbl.trimmed$gene.cor) < 0.2)
+     # subset(tbl.gold, target=="MET2")
+     #     TF target score        cor
+     #   CBF1   MET2     1 -0.4746397
+     #  MET32   MET2     1  0.8902950
+     #  MET31   MET2     1  0.1245628
+     #   MET4   MET2     1  0.5301484
 
-      # with log transform, justified how?
-      # good results are returned, as loosely checked
-      # by correlating betas against  expression
+   target.gene <- "MET2"
+   tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
+   tfs <- tbl.gold.met2$TF
 
-   mtx.tmp <- mtx.sub - min(mtx.sub) + 0.001
-   mtx.log2 <- log2(mtx.tmp)
-   fivenum(mtx.log2)  # [1] -9.9657843  0.8107618  3.6262014  5.4345771 10.0052973
+   tf.weights <- c(100000, 1.0, 100000, 1.0)
+   mtx.betas <- solve(trena, target.gene, tfs, tf.weights)
 
-   trena <- TReNA(mtx.assay=mtx.log2, solver="bayesSpike", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.log2), "MEF2C")
-   tbl2 <- solve(trena, target.gene, tfs)
-   tbl2.trimmed <- subset(tbl2, abs(beta) > 0.1 & pval < 0.01)
-   betas2 <- tbl2.trimmed$beta
-   big.abs.betas2 <- betas2[abs(betas2) > 1]
-   checkEquals(length(big.abs.betas2), 0)
-   checkTrue(cor(tbl2.trimmed$beta, tbl2.trimmed$gene.cor) > 0.6)
-   
-} # test_ampAD.mef2c.154tfs.278samples.bayesSpike
+   tbl.betas <- as.data.frame(mtx.betas)
+   significant.tfs <- rownames(tbl.betas)
+   tbl.gold.met2.trimmed <- subset(tbl.gold.met2, TF %in% significant.tfs)
+
+     # is there some rough correlation between the calculated betas and the
+     # measured correlation?
+   checkTrue(any(tbl.betas$gene.cor > 0.8))
+
+} # test_fitDREAM5_yeast.lasso_weighted.tfs
 #----------------------------------------------------------------------------------------------------
-test_ampAD.mef2c.154tfs.278samples.randomForest <- function()
+test_fitDREAM5_yeast.randomForest <- function()
 {
-   printf("--- test_ampAD.mef2c.154tfs.278samples.randomForest")
+   printf("--- test_fitDREAM5_yeast.randomForest")
+   load(system.file(package="TReNA", "extdata", "dream5.net4.yeast.RData"))
+   checkTrue(exists("mtx"))
+   checkTrue(exists("tbl.gold"))
+   checkTrue(exists("tbl.ids"))
 
-   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-   target.gene <- "MEF2C"
-   # print(fivenum(mtx.sub))   # 0.000000    1.753137   12.346965   43.247467 1027.765854
+   checkEquals(dim(mtx), c(5950, 536))
 
-    print("note!  without log transform of the data")
-    print("bayesSpike model is quite useless, even after")
-    print("filtering for abs(beta) and pval")
+   trena <- TReNA(mtx.assay=mtx, solver="randomForest", quiet=FALSE)
+     # subset(tbl.gold, target=="MET2")
+     #     TF target score        cor
+     #   CBF1   MET2     1 -0.4746397
+     #  MET32   MET2     1  0.8902950
+     #  MET31   MET2     1  0.1245628
+     #   MET4   MET2     1  0.5301484
 
-   trena <- TReNA(mtx.assay=mtx.sub, solver="randomForest", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.sub), "MEF2C")
+   target.gene <- "MET2"
+   tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
+   tfs <- tbl.gold.met2$TF
+      # RandomForest returns its own structured data object
+      # we respect that here rather than squeeze it into a lasso-like table of beta coefficients
    rf.result <- solve(trena, target.gene, tfs)
-   tbl.scores <- rf.result$edges
+   tbl.importance  <- rf.result$edges
 
-   tbl.scores <- tbl.scores[order(tbl.scores$IncNodePurity, decreasing=TRUE),, drop=FALSE]
+     # is there some rough correlation between the importance
+     # values returned by randomforest, and the directly
+     # measured corrleation of the tfs to the target?
 
-     # a loose test, ignoring rank of these 7 genes for now
-   actual.genes.reported <- sort(rownames(subset(tbl.scores, IncNodePurity > 100000)))
-   expected.genes <- sort(c("HLF", "STAT4", "SATB1", "SATB2", "FOXP2", "FOXO4","ATF2"))
-   printf("1: expected: %s", paste(expected.genes, collapse=","))
-   printf("1: actual: %s", paste(actual.genes.reported, collapse=","))
-#   checkEquals(actual.genes.reported, expected.genes)
+      # random forest results matrix is sorted by IncNodePurity
+      # extract those values in the same order as they appear in tbl.gold
+   rf.score <- tbl.importance[tbl.gold.met2$TF, "IncNodePurity"]
+   checkTrue(cor(rf.score, tbl.gold.met2$cor) > 0.7)
 
-      # with log transform, justified how?
-      # good results are returned, as loosely checked
-      # by correlating betas against  expression
-
-   mtx.tmp <- mtx.sub - min(mtx.sub) + 0.001
-   mtx.log2 <- log2(mtx.tmp)
-   fivenum(mtx.log2)  # [1] -9.9657843  0.8107618  3.6262014  5.4345771 10.0052973
-
-   trena <- TReNA(mtx.assay=mtx.log2, solver="randomForest", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.log2), "MEF2C")
-   rf.result.2 <- solve(trena, target.gene, tfs)
-   tbl.scores.2 <- rf.result.2$edges
-   tbl.scores.2 <- tbl.scores.2[order(tbl.scores.2$IncNodePurity, decreasing=TRUE),, drop=FALSE]
-
-     # a loose test, ignoring rank of these 7 genes for now
-   actual.genes.reported <- sort(rownames(subset(tbl.scores.2, IncNodePurity > 100000)))
-   expected.genes <- sort(c("HLF", "STAT4", "SATB1", "SATB2", "FOXP2", "DRGX","ATF2"))
-   printf("2: expected: %s", paste(expected.genes, collapse=","))
-   printf("2: actual: %s", paste(actual.genes.reported, collapse=","))
-#   checkTrue( length( intersect(actual.genes.reported, expected.genes)) > 3 )
-
-       # lasso reports, with log2 transformed data,
-       # rownames(subset(tbl2, abs(beta) > 0.15)) "CUX1"   "FOXK2"  "SATB2"  "HLF"    "STAT5B" "ATF2"
-   
-} # test_ampAD.mef2c.154tfs.278samples.randomForest
+} # test_fitDREAM5_yeast.randomForest
 #----------------------------------------------------------------------------------------------------
-test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes <- function()
+test_fitDREAM5_yeast.bayesSpike <- function()
 {
-   printf("--- test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes")
-   print(load(system.file(package="TReNA", "extdata/mtx.AD.noncodingNearPiez02.RData")))
-   target.genes <- genes.noncoding.near.piez02.active
-   mtx <- log2(mtx.nonCoding + 0.0001)
-   tfs <- setdiff(rownames(mtx), target.genes)
+   printf("--- test_fitDREAM5_yeast.bayesSpike")
+   load(system.file(package="TReNA", "extdata", "dream5.net4.yeast.RData"))
+   checkTrue(exists("mtx"))
+   checkTrue(exists("tbl.gold"))
+   checkTrue(exists("tbl.ids"))
+
+   checkEquals(dim(mtx), c(5950, 536))
 
    trena <- TReNA(mtx.assay=mtx, solver="bayesSpike", quiet=FALSE)
-   findings <- list()
-   for(target.gene in target.genes){
-     tbl <- solve(trena, target.gene, tfs)
-     tbl <- subset(tbl, pval < 0.01)
-     findings[[target.gene]] <- tbl
-     }
-   tbl.trimmed <- subset(tbl, abs(beta) > 0.1 & pval < 0.01)
-   betas <- tbl.trimmed$beta
-   big.abs.betas <- betas[abs(betas) > 1]
-   checkTrue(length(big.abs.betas) > 20)
 
-   checkTrue(nrow(tbl) > 10)
-   checkTrue(cor(tbl.trimmed$beta, tbl.trimmed$gene.cor) < 0.2)
+     # subset(tbl.gold, target=="MET2")
+     #     TF target score        cor
+     #   CBF1   MET2     1 -0.4746397
+     #  MET32   MET2     1  0.8902950
+     #  MET31   MET2     1  0.1245628
+     #   MET4   MET2     1  0.5301484
 
-      # with log transform, justified how?
-      # good results are returned, as loosely checked
-      # by correlating betas against  expression
+   target.gene <- "MET2"
+   tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
+   tfs <- tbl.gold.met2$TF
 
-   mtx.tmp <- mtx.sub - min(mtx.sub) + 0.001
-   mtx.log2 <- log2(mtx.tmp)
-   fivenum(mtx.log2)  # [1] -9.9657843  0.8107618  3.6262014  5.4345771 10.0052973
+   tbl <- solve(trena, target.gene, tfs)
+   #tbl.betas <- data.frame(beta=result$beta, pval=result$pval, z=result$z, post=result$post)
+   #rownames(tbl.betas) <- tfs
+   #tbl.betas$score <- -log10(tbl.betas$pval)
+   #tbl.betas$cor <- tbl.gold.met2$cor
 
-   trena <- TReNA(mtx.assay=mtx.log2, solver="bayesSpike", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.log2), "MEF2C")
-   tbl2 <- solve(trena, target.gene, tfs)
-   tbl2.trimmed <- subset(tbl2, abs(beta) > 0.1 & pval < 0.01)
-   betas2 <- tbl2.trimmed$beta
-   big.abs.betas2 <- betas2[abs(betas2) > 1]
-   checkEquals(length(big.abs.betas2), 0)
-   checkTrue(cor(tbl2.trimmed$beta, tbl2.trimmed$gene.cor) > 0.6)
+     # is there some rough correlation between the calculated betas and the
+     # measured correlation?
+   checkTrue(with(tbl, cor(beta,gene.cor)) > 0.9)
 
-} # test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes
+} # test_fitDREAM5_yeast.bayesSpike
+#----------------------------------------------------------------------------------------------------
+test_trainAndPredict_DREAM5_yeast.lasso <- function()
+{
+   printf("--- test_trainAndPredict_DREAM5_yeast.lasso")
+   load(system.file(package="TReNA", "extdata", "dream5.net4.yeast.RData"))
+   checkTrue(exists("mtx"))
+   checkTrue(exists("tbl.gold"))
+   checkTrue(exists("tbl.ids"))
+
+   checkEquals(dim(mtx), c(5950, 536))
+
+   trena <- TReNA(mtx.assay=mtx, solver="lasso", quiet=FALSE)
+   target.gene <- "MET2"
+   tbl.gold.met2 <- subset(tbl.gold, target=="MET2")
+   tfs <- tbl.gold.met2$TF
+
+   count <- as.integer(0.80 * ncol(mtx))
+   set.seed(31)
+   training.samples <- sample(colnames(mtx), count)
+   test.samples <- setdiff(colnames(mtx), training.samples)
+
+   weights <- rep(1, length(tfs))
+   model <- trainModel(trena, target.gene, tfs, tf.weightstraining.samples)
+   prediction <- predictFromModel(trena, model, tfs, test.samples)
+
+   agreement <- cor(mtx["MET2", test.samples], as.numeric(prediction))
+   checkTrue(agreement > 0.8)
+
+} # test_trainAndPredict_DREAM5_yeast.lasso
 #----------------------------------------------------------------------------------------------------
 test_LCLs.build_genomewide_model.lasso <- function()
 {
