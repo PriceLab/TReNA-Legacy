@@ -18,6 +18,7 @@ runTests <- function()
    test_trainAndPredict_DREAM5_yeast.lasso()
    test_scalePredictorPenalties.lasso()
    test_eliminateSelfTFs()
+   test_NullFilter()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -451,4 +452,16 @@ test_SpearmanSolverConstructor <- function()
 
 } # test_SpearmanSolverConstructor
 #----------------------------------------------------------------------------------------------------
+test_NullFilter <- function()
+{
+    printf("--- test_NullFilter")
+
+    # Check that dummy data returns all gene names
+    x <- test_developAndFitDummyTestData(quiet=TRUE)
+    null.filter <- NullFilter(mtx.assay = x$assay)
+    checkEquals(getCandidates(null.filter),rownames(x$assay))
+
+} # test_NullFilter
+#----------------------------------------------------------------------------------------------------
+
 if(!interactive()) runTests()

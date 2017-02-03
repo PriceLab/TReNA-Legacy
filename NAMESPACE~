@@ -1,4 +1,4 @@
-exportClasses(TReNA, Solver, LassoSolver, FootprintFinder)
+exportClasses(TReNA, Solver, LassoSolver, FootprintFinder, NullFilter)
 
 export(
     TReNA,
@@ -16,7 +16,10 @@ export(
     getHiCEnhancerRegions ,
     getTfbsCountsInEnhancers ,
     getGenelistFromGtf ,
-    makeTrnFromPromoterCountsAndExpression
+    makeTrnFromPromoterCountsAndExpression,
+    PearsonSolver,
+    SpearmanSolver,
+    NullFilter
 )
 
 exportMethods(

@@ -1,4 +1,4 @@
-exportClasses(TReNA, Solver, LassoSolver, FootprintFinder)
+exportClasses(TReNA, Solver, LassoSolver, FootprintFinder, NullFilter)
 
 export(
     TReNA,
@@ -18,7 +18,8 @@ export(
     getGenelistFromGtf ,
     makeTrnFromPromoterCountsAndExpression,
     PearsonSolver,
-    SpearmanSolver
+    SpearmanSolver,
+    NullFilter
 )
 
 exportMethods(
@@ -37,5 +38,6 @@ exportMethods(
     getFootprintsInRegion,
     mapMotifsToTFsMergeIntoTable,
     getPromoterRegionsAllGenes,
-    closeDatabaseConnections
+    closeDatabaseConnections,
+    getCandidates
     )
