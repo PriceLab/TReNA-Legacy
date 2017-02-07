@@ -1,3 +1,10 @@
+#' The central class of the TReNA package
+#'
+#' @param mtx.assay An assay matrix of gene expression data
+#' @param solver A string matching the designated solver for relating a target gene to transcription factors. (default = "lasso")
+#'
+#' @return An object of the TReNA class
+
 #------------------------------------------------------------------------------------------------------------------------
 .TReNA <- setClass ("TReNA",
                     representation = representation(solver="Solver",

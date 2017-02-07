@@ -1,6 +1,12 @@
-# This is a simple Spearman solver
+
 .SpearmanSolver <- setClass ("SpearmanSolver", contains = "Solver")
 #----------------------------------------------------------------------------------------------------
+#' Create a Solver class object using Spearman correlation coefficients as the solver
+#'
+#' @param mtx.assay An assay matrix of gene expression data
+#'
+#' @return A Solver class object with Spearman correlation coefficients as the solver
+
 SpearmanSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 {
     obj <- .SpearmanSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
@@ -9,6 +15,10 @@ SpearmanSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 
 }
 #----------------------------------------------------------------------------------------------------
+#' Get Spearman Solver Name
+#'
+#' @return "SpearmanSolver"
+
 setMethod("getSolverName", "SpearmanSolver",
 
           function (obj){
@@ -16,6 +26,18 @@ setMethod("getSolverName", "SpearmanSolver",
           })
 
 #----------------------------------------------------------------------------------------------------
+#' Run the Spearman Solver
+#' @aliases run.SpearmanSolver
+#' @description Given a TReNA object with Spearman as the solver, use the \code{\link{cor}} function with
+#' \code{method = "spearman"} to esimate coefficients for each transcription factor as a predictor of the target
+#' gene's expression level
+#' @param target.gene A designated target gene that should be part of the mtx.assay data
+#' @param tfs The designated set of transcription factors that could be associated with the target gene.
+#'
+#' @return fit The set of Spearman Correlation Coefficients between each transcription factor and the target gene.
+#'
+#' @seealso \code{\link{cor}}
+
 setMethod("run", "SpearmanSolver",
 
           function (obj, target.gene, tfs, tf.weights = rep(1,length(tfs), extraArgs=list())){

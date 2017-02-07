@@ -7,22 +7,21 @@
 
 
 #----------------------------------------------------------------------------------------------------
-.FootprintFinder <- setClass("FootprintFinder",
-                             slots = c(genome.db="DBIConnection",
-                                       project.db="DBIConnection",
-                                       quiet="logical")
-                            )
-
-#----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
-#----------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
 # a FootprintFinder needs, at present, this sort of information
 #
 #   1) a complete table of genome features, for which our current model is ensembl's Homo_sapiens.GRCh38.84.chr.gtf
 #   2) a footprint table, the output from cory's pipeline
 #   3) a motif/TF map, with scores & etc
-#			    
-#----------------------------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------------------------------------------------
+.FootprintFinder <- setClass("FootprintFinder",
+                             slots = c(genome.db="DBIConnection",
+                                       project.db="DBIConnection",
+                                       quiet="logical")
+                            )
+#------------------------------------------------------------------------------------------------------------------------
 setGeneric("getChromLoc", signature="obj", function(obj, name, biotype="protein_coding",
                                                     moleculetype="gene") standardGeneric("getChromLoc"))
 setGeneric("getGenePromoterRegion", signature="obj", function(obj,  gene, size.upstream=1000, size.downstream=0,
@@ -37,7 +36,7 @@ setGeneric("getGtfMoleculeTypes", signature="obj", function(obj) standardGeneric
 setGeneric("closeDatabaseConnections", signature="obj", function(obj) standardGeneric("closeDatabaseConnections"))
 setGeneric("getPromoterRegionsAllGenes",signature="obj", function(obj ,size.upstream=10000 , size.downstream=10000 , use_gene_ids = T ) standardGeneric("getPromoterRegionsAllGenes"))
 setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj", function(obj, tbl) standardGeneric("mapMotifsToTFsMergeIntoTable"))
-#----------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
 .parseDatabaseUri <- function(database.uri)
 {
    topLevel.tokens <- strsplit(database.uri, "://")[[1]]
@@ -49,7 +48,7 @@ setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj", function(obj, tbl) st
    list(brand=database.brand, host=host, name=database.name)
 
 } # .parseDatabaseUri
-#----------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
 FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRUE)
 {
    genome.db.info <- .parseDatabaseUri(genome.database.uri)
@@ -99,7 +98,7 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
    .FootprintFinder(genome.db=genome.db, project.db=project.db, quiet=quiet)
 
 } # FootprintFinder, the constructor
-#----------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
 setMethod("closeDatabaseConnections", "FootprintFinder",
 
      function(obj){
@@ -109,21 +108,21 @@ setMethod("closeDatabaseConnections", "FootprintFinder",
           dbDisconnect(obj@project.db)
           })
 
-#----------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
 setMethod("getGtfGeneBioTypes", "FootprintFinder",
 
      function(obj){
         sort(dbGetQuery(obj@genome.db, "select distinct gene_biotype from gtf")[,1])
         })
 
-#----------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
 setMethod("getGtfMoleculeTypes", "FootprintFinder",
 
      function(obj){
         sort(dbGetQuery(obj@genome.db, "select distinct moleculetype from gtf")[,1])
         })
 
-#----------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
 setMethod("getChromLoc", "FootprintFinder",
 
    function(obj, name, biotype="protein_coding", moleculetype="gene"){
@@ -134,7 +133,7 @@ setMethod("getChromLoc", "FootprintFinder",
      dbGetQuery(obj@genome.db, query)
      })
 
-#----------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
 setMethod("getGenePromoterRegion", "FootprintFinder",
 
    function(obj, gene, size.upstream=1000, size.downstream=0, biotype="protein_coding", moleculetype="gene"){
@@ -161,7 +160,7 @@ setMethod("getGenePromoterRegion", "FootprintFinder",
      return(list(chr=chrom, start=start.loc, end=end.loc))
      })
 
-#----------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
 setMethod("getFootprintsForGene", "FootprintFinder",
 
     function(obj,  gene, size.upstream=1000, size.downstream=0, biotype="protein_coding", moleculetype="gene"){

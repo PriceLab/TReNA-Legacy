@@ -1,30 +1,31 @@
-#' Designate Pearson Correlation Coefficients as the TReNA Solver and Solve
+#' Designate Spearman Correlation Coefficients as the TReNA Solver and Solve
 #'
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #'
-#' @return fit The set of Pearson Correlation Coefficients between each transcription factor and the target gene.
+#' @return fit The set of Spearman Correlation Coefficients between each transcription factor and the target gene.
 
+
+
+.SpearmanSolver <- setClass ("SpearmanSolver", contains = "Solver")
 #----------------------------------------------------------------------------------------------------
-.PearsonSolver <- setClass ("PearsonSolver", contains = "Solver")
-#----------------------------------------------------------------------------------------------------
-PearsonSolver <- function(mtx.assay = matrix(), quiet=TRUE)
+SpearmanSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 {
-    obj <- .PearsonSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
+    obj <- .SpearmanSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
 
     obj
 
 }
 #----------------------------------------------------------------------------------------------------
-setMethod("getSolverName", "PearsonSolver",
+setMethod("getSolverName", "SpearmanSolver",
 
           function (obj){
-              return("PearsonSolver")
+              return("SpearmanSolver")
           })
-#----------------------------------------------------------------------------------------------------
 
-setMethod("run", "PearsonSolver",
+#----------------------------------------------------------------------------------------------------
+setMethod("run", "SpearmanSolver",
 
           function (obj, target.gene, tfs, tf.weights = rep(1,length(tfs), extraArgs=list())){
 
@@ -47,9 +48,9 @@ setMethod("run", "PearsonSolver",
               x = t(mtx[tfs,,drop=F])
               y = as.vector(t(mtx[target.gene,])) # Make target gene levels into a vector
 
-              # Calculate Pearson correlation coefficients
-              fit <- cor( x = x, y = y)
+              # Calculate Spearman correlation coefficients
+              fit <- cor( x = x, y = y, method = "spearman")
 
-              # For now, just return the fit
+                                        # For now, just return the fit
               return(fit)
-})     
+})

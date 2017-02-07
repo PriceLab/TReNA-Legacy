@@ -1,3 +1,8 @@
+#' Apply a null filter
+#'
+#' @param mtx.assay An assay matrix of gene expression data
+#' @return An object of class NullFilter
+
 #----------------------------------------------------------------------------------------------------
 .NullFilter <- setClass ("NullFilter",
                      slots = c(mtx.assay = "matrix",

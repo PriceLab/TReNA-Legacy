@@ -1,8 +1,4 @@
 #----------------------------------------------------------------------------------------------------
-#' Get Footprints for a TF
-#' @description Get all footprints from the project database for a specified transcription factor
-#' @param tf A transcription factor
-
 getFootprintsForTF <-
 function( obj , tf ){
 
@@ -35,13 +31,6 @@ paste( "select fp.chr, fp.mfpstart, fp.mfpend, fp.motifname, fp.pval, fp.score, 
        dbGetQuery( obj@project.db , query )
 } # getFootprintsForTF
 #----------------------------------------------------------------------------------------------------
-#' Get Gene Promoter Regions
-#' @description Get the promoter regions for a list of genes. Region sizes can be tuned by specifying
-#' the positions upstream and downstream of the gene that bound the region. 
-#' @param genelist A gene list
-#' @param size.upstream Number of basepairs to grab upstream of each gene (default = 10000)
-#' @param size.downstream Number of basepairs to grab downstream of each gene (default = 10000)
-
 getGenePromoterRegions <-
 function( obj , genelist , size.upstream = 10000 , size.downstream = 10000 ) {
 
