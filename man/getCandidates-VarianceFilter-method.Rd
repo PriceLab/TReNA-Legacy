@@ -9,6 +9,8 @@
 \S4method{getCandidates}{VarianceFilter}(obj, target.gene)
 }
 \arguments{
+\item{obj}{An object of class VarianceFilter}
+
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 }
 \value{

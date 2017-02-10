@@ -15,6 +15,6 @@ An S4 class to represent a solver
 
 \item{\code{quiet}}{A logical element indicating whether the solver should produce output}
 
-\item{\code{state}}{Environment}
+\item{\code{state}}{Environment variable}
 }}
 

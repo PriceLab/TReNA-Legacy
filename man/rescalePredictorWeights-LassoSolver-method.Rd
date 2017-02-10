@@ -10,6 +10,8 @@
   rawValues)
 }
 \arguments{
+\item{obj}{An object of class LassoSolver}
+
 \item{rawValue.min}{The minimum value of the raw expression values}
 
 \item{rawValue.max}{The maximum value of the raw expression values}

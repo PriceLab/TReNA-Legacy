@@ -8,6 +8,8 @@ getGenePromoterRegions(obj, genelist, size.upstream = 10000,
   size.downstream = 10000)
 }
 \arguments{
+\item{obj}{An object of class FootprintFilter(??)}
+
 \item{genelist}{A gene list}
 
 \item{size.upstream}{Number of basepairs to grab upstream of each gene (default = 10000)}

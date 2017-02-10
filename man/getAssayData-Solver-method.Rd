@@ -7,6 +7,9 @@
 \usage{
 \S4method{getAssayData}{Solver}(obj)
 }
+\arguments{
+\item{obj}{An object of class Solver}
+}
 \value{
 The assay matrix of gene expression data associated with a Solver object
 }

@@ -8,6 +8,9 @@
 \usage{
 \S4method{getCandidates}{NullFilter}(obj)
 }
+\arguments{
+\item{obj}{An object of class NullFilter}
+}
 \value{
 A vector containing all genes in the assay matrix
 }

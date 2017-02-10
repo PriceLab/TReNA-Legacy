@@ -1,0 +1,153 @@
+
+R version 3.3.2 (2016-10-31) -- "Sincere Pumpkin Patch"
+Copyright (C) 2016 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin11.4.2 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "TReNA"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('TReNA')
+Loading required package: glmnet
+Loading required package: Matrix
+Loading required package: foreach
+Loaded glmnet 2.0-5
+
+Loading required package: randomForest
+randomForest 4.6-12
+Type rfNews() to see new features/changes/bug fixes.
+Loading required package: vbsr
+Loading required package: RPostgreSQL
+Loading required package: DBI
+Loading required package: GenomicRanges
+Loading required package: stats4
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following object is masked from ‘package:randomForest’:
+
+    combine
+
+The following object is masked from ‘package:Matrix’:
+
+    which
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    Filter, Find, Map, Position, Reduce, anyDuplicated, append,
+    as.data.frame, cbind, colnames, do.call, duplicated, eval, evalq,
+    get, grep, grepl, intersect, is.unsorted, lapply, lengths, mapply,
+    match, mget, order, paste, pmax, pmax.int, pmin, pmin.int, rank,
+    rbind, rownames, sapply, setdiff, sort, table, tapply, union,
+    unique, unsplit, which, which.max, which.min
+
+Loading required package: S4Vectors
+
+Attaching package: ‘S4Vectors’
+
+The following objects are masked from ‘package:Matrix’:
+
+    colMeans, colSums, expand, rowMeans, rowSums
+
+The following objects are masked from ‘package:base’:
+
+    colMeans, colSums, expand.grid, rowMeans, rowSums
+
+Loading required package: IRanges
+Loading required package: GenomeInfoDb
+Loading required package: doParallel
+Loading required package: iterators
+
+Attaching package: ‘TReNA’
+
+The following object is masked from ‘package:S4Vectors’:
+
+    Filter
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    Filter
+
+The following object is masked from ‘package:Matrix’:
+
+    solve
+
+The following objects are masked from ‘package:base’:
+
+    Filter, solve
+
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("LassoSolver")
+> ### * LassoSolver
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: LassoSolver
+> ### Title: Create a Solver class object using the LASSO solver
+> ### Aliases: LassoSolver
+> 
+> ### ** Examples
+> 
+> solver <- LassoSolver()
+> 
+> 
+> 
+> cleanEx()
+> nameEx("getSolverName-LassoSolver-method")
+> ### * getSolverName-LassoSolver-method
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: getSolverName,LassoSolver-method
+> ### Title: Get Lasso Solver name
+> ### Aliases: getSolverName,LassoSolver-method
+> 
+> ### ** Examples
+> 
+> solver <- LassoSolver()
+> getSolverName(solver)
+[1] "LassoSolver"
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  4.117 0.066 4.193 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

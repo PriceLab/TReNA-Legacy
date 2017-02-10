@@ -7,6 +7,9 @@
 \usage{
 \S4method{getSolverName}{RandomForestSolver}(obj)
 }
+\arguments{
+\item{obj}{An object of class RandomForestSolver}
+}
 \value{
 "RandomForestSolver"
 }

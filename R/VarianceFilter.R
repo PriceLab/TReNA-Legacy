@@ -19,6 +19,8 @@ VarianceFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' Get candidate genes using the variance filter
 #'
 #' @aliases getCandidates-VarianceFilter
+#'
+#' @param obj An object of class VarianceFilter
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #'
 #' @return A vector containing all genes with variances less than the target gene

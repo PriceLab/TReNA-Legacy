@@ -10,6 +10,8 @@
   length(tfs)), extraArgs = list())
 }
 \arguments{
+\item{obj}{An object of class LassoSolver}
+
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 
 \item{tfs}{The designated set of transcription factors that could be associated with the target gene.}

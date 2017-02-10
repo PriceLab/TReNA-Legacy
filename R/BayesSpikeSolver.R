@@ -3,7 +3,6 @@
 #'
 #' @include Solver.R
 #' @name BayesSpikeSolver-class
-#' @rdname BayesSpikeSolver-class
 
 .BayesSpikeSolver <- setClass ("BayesSpikeSolver", contains="Solver")
 #------------------------------------------------------------------------------------------------------------------------
@@ -23,7 +22,11 @@ BayesSpikeSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #------------------------------------------------------------------------------------------------------------------------
 #' Get Bayes Spike Solver name
 #'
+#' @param obj An object of the class BayesSpikeSolver
+#' 
 #' @return "BayesSpikeSolver"
+#' 
+
 setMethod("getSolverName", "BayesSpikeSolver",
 
   function (obj){
@@ -36,6 +39,8 @@ setMethod("getSolverName", "BayesSpikeSolver",
 #' @aliases run.BayesSpikeSolver
 #' @description Given a TReNA object with Bayes Spike as the solver, use the \code{\link{vbsr}} function to estimate coefficients
 #' for each transcription factor as a predictor of the target gene's expression level.
+#'
+#' @param obj An object of the class BayesSpikeSolver
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
@@ -78,6 +83,8 @@ setMethod("run", "BayesSpikeSolver",
 #' Rescale Bayes Spike Predictor Weights
 #'
 #' @aliases rescalePredictorWeights.BayesSpikeSolver
+#'
+#' @param obj An object of class BayesSpikeSolver
 #' @param rawValue.min The minimum value of the raw expression values
 #' @param rawValue.max The maximum value of the raw expression values
 #' @param rawValues A matrix of raw expression values

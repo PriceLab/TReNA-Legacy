@@ -7,6 +7,9 @@
 \usage{
 \S4method{getSolverName}{BayesSpikeSolver}(obj)
 }
+\arguments{
+\item{obj}{An object of the class BayesSpikeSolver}
+}
 \value{
 "BayesSpikeSolver"
 }

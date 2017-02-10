@@ -1,0 +1,43 @@
+exportClasses(TReNA, Solver, LassoSolver, FootprintFinder, NullFilter)
+
+export(
+    TReNA,
+    Solver,
+    LassoSolver,
+    FootprintFinder,
+    printf,
+    runAllSolversForGene,
+    getFootprintsForTF,
+    getGenePromoterRegions ,
+    getTfbsCountsPerPromoter ,
+    getTfbsCountsInPromoters ,
+    getTfbsCountsPerPromoterMC ,
+    getDnaseEnhancerRegions ,
+    getHiCEnhancerRegions ,
+    getTfbsCountsInEnhancers ,
+    getGenelistFromGtf ,
+    makeTrnFromPromoterCountsAndExpression,
+    PearsonSolver,
+    SpearmanSolver,
+    Filter,
+    NullFilter,
+    VarianceFilter
+    )
+
+exportMethods(
+    getSolverName,
+    getAssayData,
+    solve,
+    run,
+    rescalePredictorWeights,
+    getGtfGeneBioTypes,
+    getGtfMoleculeTypes,
+    getChromLoc,
+    getGenePromoterRegion,
+    getFootprintsForGene,
+    getFootprintsInRegion,
+    mapMotifsToTFsMergeIntoTable,
+    getPromoterRegionsAllGenes,
+    closeDatabaseConnections,
+    getCandidates
+    )

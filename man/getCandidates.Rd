@@ -7,6 +7,9 @@
 \usage{
 Filter(mtx.assay = matrix(), quiet = TRUE)
 }
+\arguments{
+\item{mtx.assay}{An assay matrix of gene expression data}
+}
 \value{
 A vector containing all genes selected as candidates by the filter
 }

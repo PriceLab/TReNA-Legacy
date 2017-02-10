@@ -1,6 +1,8 @@
 #' Apply a null filter
 #'
 #' @include Filter.R
+#' @name NullFilter-class
+#'
 #' @param mtx.assay An assay matrix of gene expression data
 #' @return An object of class NullFilter
 
@@ -26,6 +28,8 @@ NullFilter <- function(mtx.assay=matrix(), quiet = TRUE)
 #' Get candidate genes using the null filter
 #'
 #' @aliases getCandidates-NullFilter
+#'
+#' @param obj An object of class NullFilter
 #' @return A vector containing all genes in the assay matrix
 
 setMethod("getCandidates", "NullFilter",

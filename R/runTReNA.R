@@ -1,6 +1,8 @@
 #----------------------------------------------------------------------------------------------------
 #' Get Footprints for a TF
 #' @description Get all footprints from the project database for a specified transcription factor
+#'
+#' @param obj An object of class FootprintFilter (??)
 #' @param tf A transcription factor
 
 getFootprintsForTF <-
@@ -38,6 +40,8 @@ paste( "select fp.chr, fp.mfpstart, fp.mfpend, fp.motifname, fp.pval, fp.score, 
 #' Get Gene Promoter Regions
 #' @description Get the promoter regions for a list of genes. Region sizes can be tuned by specifying
 #' the positions upstream and downstream of the gene that bound the region. 
+#'
+#' @param obj An object of class FootprintFilter(??)
 #' @param genelist A gene list
 #' @param size.upstream Number of basepairs to grab upstream of each gene (default = 10000)
 #' @param size.downstream Number of basepairs to grab downstream of each gene (default = 10000)
@@ -67,6 +71,18 @@ function( obj , genelist , size.upstream = 10000 , size.downstream = 10000 ) {
 
 } #getGenePromoterRegions
 #----------------------------------------------------------------------------------------------------
+#' Get Transcription Factor Binding Site Counts Per Promoter
+#'
+#' @description For a FootprintFilter object, get the transcription factor binding site counts for each promoter
+#'
+#' @param obj An object of class FootprintFilter
+#' @param tflist A list of transcription factors
+#' @param promotor_regions A list of promoter regions
+#' @param verbose A logical indicating whether the function should produce verbose output (default = 1)
+#'
+#' @return A numeric vector containing transcription factor binding site counts per promoter 
+
+
 getTfbsCountsPerPromoter <-
 function( obj , tflist , promoter_regions , verbose = 1 ) {
 
@@ -92,6 +108,20 @@ function( obj , tflist , promoter_regions , verbose = 1 ) {
 
 } #getTfbsCountsPerPromoter
 #----------------------------------------------------------------------------------------------------
+#' Get Transcription Factor Binding Site Counts Per Promoter with Clustering
+#'
+#' @description Get the transription factor binding site counts for each promoter and cluster
+#'
+#' @param tflist A list of transcription factors
+#' @param promoter_regions A list of promoter regions
+#' @param verbose A logical indicating whether the function should produce verbose output (default = 1)
+#' @param cores The number of computational cores to be devoted to the calculation (default = 5)
+#' @param genome.db.uri A web address to the genome database
+#' @param project.db.uri A web address to the project database
+#'
+#' @return A numeric vector containing transcription factor binding site counts per gene
+
+
 getTfbsCountsPerPromoterMC <-
 function( tflist , promoter_regions , verbose = 1 , cores = 5 , genome.db.uri , project.db.uri ) {
 

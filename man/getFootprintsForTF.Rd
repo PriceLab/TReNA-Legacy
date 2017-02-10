@@ -7,6 +7,8 @@
 getFootprintsForTF(obj, tf)
 }
 \arguments{
+\item{obj}{An object of class FootprintFilter (??)}
+
 \item{tf}{A transcription factor}
 }
 \description{

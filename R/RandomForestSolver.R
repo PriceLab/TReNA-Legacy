@@ -2,6 +2,7 @@
 #' An S4 class to represent a Random Forest solver
 #'
 #' @include Solver.R
+#' @name RandomForestSolver-class
 
 .RandomForestSolver <- setClass ("RandomForestSolver", contains="Solver")
 #------------------------------------------------------------------------------------------------------------------------
@@ -21,6 +22,8 @@ RandomForestSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #------------------------------------------------------------------------------------------------------------------------
 #' Get Random Forest Solver name
 #'
+#' @param obj An object of class RandomForestSolver
+#' 
 #' @return "RandomForestSolver"
 
 setMethod("getSolverName", "RandomForestSolver",
@@ -33,6 +36,8 @@ setMethod("getSolverName", "RandomForestSolver",
 #' Run the Random Forest Solver
 #'
 #' @aliases run.RandomForestSolver
+#'
+#' @param obj An object of class RandomForestSolver
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))

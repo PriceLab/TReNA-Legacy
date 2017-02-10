@@ -1,0 +1,789 @@
+\nonstopmode{}
+\documentclass[a4paper]{book}
+\usepackage[times,inconsolata,hyper]{Rd}
+\usepackage{makeidx}
+\usepackage[utf8,latin1]{inputenc}
+% \usepackage{graphicx} % @USE GRAPHICX@
+\makeindex{}
+\begin{document}
+\chapter*{}
+\begin{center}
+{\textbf{\huge Package `TReNA'}}
+\par\bigskip{\large \today}
+\end{center}
+\begin{description}
+\raggedright{}
+\item[Type]\AsIs{Package}
+\item[Title]\AsIs{Fit transcriptional regulatory networks using gene expression,
+priors, machine learning}
+\item[Version]\AsIs{0.99.66}
+\item[Date]\AsIs{2017-02-09}
+\item[Author]\AsIs{Seth Ament }\email{seth.ament@systemsbiology.org}\AsIs{, Paul Shannon }\email{pshannon@systemsbioloyg.org}\AsIs{, Matthew Richards }\email{mrichard@systemsbiology.org}\AsIs{}
+\item[Maintainer]\AsIs{Seth Ament }\email{seth.ament@systemsbiology.org}\AsIs{, Paul Shannon }\email{pshannon@systemsbioloyg.org}\AsIs{, Matthew Richards }\email{mrichard@systemsbiology.org}\AsIs{}
+\item[Depends]\AsIs{R (>= 3.2.3), glmnet (>= 2.0.3), randomForest, vbsr,
+RPostgreSQL , GenomicRanges , foreach , doParallel}
+\item[Suggests]\AsIs{RUnit}
+\item[Description]\AsIs{Methods for reconstructing transcriptional regulatory networks, especially in species
+for which genome-wide TF binding site information is available.}
+\item[License]\AsIs{GPL-3}
+\item[Collate]\AsIs{'Solver.R' 'BayesSpikeSolver.R' 'Filter.R' 'FootprintFinder.R'
+'LassoSolver.R' 'NullFilter.R' 'PearsonSolver.R'
+'RandomForestSolver.R' 'SpearmanSolver.R' 'TReNA.R'
+'VarianceFilter.R' 'runTReNA.R'}
+\item[RoxygenNote]\AsIs{6.0.1}
+\end{description}
+\Rdcontents{\R{} topics documented:}
+\inputencoding{utf8}
+\HeaderA{BayesSpikeSolver}{Designate Bayes Spike as the TReNA Solver and Solve}{BayesSpikeSolver}
+%
+\begin{Description}\relax
+Designate Bayes Spike as the TReNA Solver and Solve
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+BayesSpikeSolver(mtx.assay = matrix(), quiet = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A Solver class object with Bayes Spike as the solver
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{BayesSpikeSolver-class}{An S4 class to represent a Bayes Spike solver}{BayesSpikeSolver.Rdash.class}
+\aliasA{.BayesSpikeSolver}{BayesSpikeSolver-class}{.BayesSpikeSolver}
+%
+\begin{Description}\relax
+An S4 class to represent a Bayes Spike solver
+\end{Description}
+\inputencoding{utf8}
+\HeaderA{Filter-class}{An S4 class to represent a filter}{Filter.Rdash.class}
+\aliasA{.Filter}{Filter-class}{.Filter}
+%
+\begin{Description}\relax
+An S4 class to represent a filter
+\end{Description}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
+\inputencoding{utf8}
+\HeaderA{FootprintFinder-class}{Filter genes based on footprints}{FootprintFinder.Rdash.class}
+\aliasA{.FootprintFinder}{FootprintFinder-class}{.FootprintFinder}
+%
+\begin{Description}\relax
+Filter genes based on footprints
+\end{Description}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{genome.database.uri}] The address of a genome database for use in filtering
+
+\item[\code{project.database.uri}] The address of a project database for use in filtering
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+An object of the Filter class that reduces a list of genes to a subset prior to forming a TReNA object
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{getAssayData,Solver-method}{Get Assay Data from Solver}{getAssayData,Solver.Rdash.method}
+%
+\begin{Description}\relax
+Get Assay Data from Solver
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'Solver'
+getAssayData(obj)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+The assay matrix of gene expression data associated with a Solver object
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{getCandidates}{Get candidate genes using the selected filter}{getCandidates}
+\aliasA{Filter}{getCandidates}{Filter}
+%
+\begin{Description}\relax
+Get candidate genes using the selected filter
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+Filter(mtx.assay = matrix(), quiet = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+A vector containing all genes selected as candidates by the filter
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{getCandidates,NullFilter-method}{Get candidate genes using the null filter}{getCandidates,NullFilter.Rdash.method}
+\aliasA{getCandidates-NullFilter}{getCandidates,NullFilter-method}{getCandidates.Rdash.NullFilter}
+%
+\begin{Description}\relax
+Get candidate genes using the null filter
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'NullFilter'
+getCandidates(obj)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+A vector containing all genes in the assay matrix
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{getCandidates,VarianceFilter-method}{Get candidate genes using the variance filter}{getCandidates,VarianceFilter.Rdash.method}
+\aliasA{getCandidates-VarianceFilter}{getCandidates,VarianceFilter-method}{getCandidates.Rdash.VarianceFilter}
+%
+\begin{Description}\relax
+Get candidate genes using the variance filter
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'VarianceFilter'
+getCandidates(obj, target.gene)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A vector containing all genes with variances less than the target gene
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{getFootprintsForTF}{Get Footprints for a TF}{getFootprintsForTF}
+%
+\begin{Description}\relax
+Get all footprints from the project database for a specified transcription factor
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+getFootprintsForTF(obj, tf)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{tf}] A transcription factor
+\end{ldescription}
+\end{Arguments}
+\inputencoding{utf8}
+\HeaderA{getGenePromoterRegions}{Get Gene Promoter Regions}{getGenePromoterRegions}
+%
+\begin{Description}\relax
+Get the promoter regions for a list of genes. Region sizes can be tuned by specifying
+the positions upstream and downstream of the gene that bound the region.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+getGenePromoterRegions(obj, genelist, size.upstream = 10000,
+  size.downstream = 10000)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{genelist}] A gene list
+
+\item[\code{size.upstream}] Number of basepairs to grab upstream of each gene (default = 10000)
+
+\item[\code{size.downstream}] Number of basepairs to grab downstream of each gene (default = 10000)
+\end{ldescription}
+\end{Arguments}
+\inputencoding{utf8}
+\HeaderA{getSolverName,BayesSpikeSolver-method}{Get Bayes Spike Solver name}{getSolverName,BayesSpikeSolver.Rdash.method}
+%
+\begin{Description}\relax
+Get Bayes Spike Solver name
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'BayesSpikeSolver'
+getSolverName(obj)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+"BayesSpikeSolver"
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{getSolverName,LassoSolver-method}{Get Lasso Solver name}{getSolverName,LassoSolver.Rdash.method}
+%
+\begin{Description}\relax
+Get Lasso Solver name
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'LassoSolver'
+getSolverName(obj)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+"LassoSolver"
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+solver <- LassoSolver()
+getSolverName(solver)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{getSolverName,PearsonSolver-method}{Get Pearson Solver name}{getSolverName,PearsonSolver.Rdash.method}
+%
+\begin{Description}\relax
+Get Pearson Solver name
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'PearsonSolver'
+getSolverName(obj)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+"PearsonSolver
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{getSolverName,RandomForestSolver-method}{Get Random Forest Solver name}{getSolverName,RandomForestSolver.Rdash.method}
+%
+\begin{Description}\relax
+Get Random Forest Solver name
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'RandomForestSolver'
+getSolverName(obj)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+"RandomForestSolver"
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{getSolverName,SpearmanSolver-method}{Get Spearman Solver Name}{getSolverName,SpearmanSolver.Rdash.method}
+%
+\begin{Description}\relax
+Get Spearman Solver Name
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'SpearmanSolver'
+getSolverName(obj)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+"SpearmanSolver"
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{LassoSolver}{Create a Solver class object using the LASSO solver}{LassoSolver}
+%
+\begin{Description}\relax
+Create a Solver class object using the LASSO solver
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+LassoSolver(mtx.assay = matrix(), quiet = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A Solver class object with LASSO as the solver
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+solver <- LassoSolver()
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{LassoSolver-class}{An S4 class to represent a LASSO solver}{LassoSolver.Rdash.class}
+\aliasA{.LassoSolver}{LassoSolver-class}{.LassoSolver}
+%
+\begin{Description}\relax
+An S4 class to represent a LASSO solver
+\end{Description}
+\inputencoding{utf8}
+\HeaderA{NullFilter}{Define an object of class Null Filter}{NullFilter}
+%
+\begin{Description}\relax
+Define an object of class Null Filter
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+NullFilter(mtx.assay = matrix(), quiet = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+An object of the Null Filter class
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{NullFilter-class}{Apply a null filter}{NullFilter.Rdash.class}
+\aliasA{.NullFilter}{NullFilter-class}{.NullFilter}
+%
+\begin{Description}\relax
+Apply a null filter
+\end{Description}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+An object of class NullFilter
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{PearsonSolver}{Create a Solver class object using  Pearson correlation coefficients as the solver}{PearsonSolver}
+%
+\begin{Description}\relax
+Create a Solver class object using  Pearson correlation coefficients as the solver
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+PearsonSolver(mtx.assay = matrix(), quiet = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
+\inputencoding{utf8}
+\HeaderA{RandomForestSolver}{Create a Solver class object using the Random Forest Solver}{RandomForestSolver}
+%
+\begin{Description}\relax
+Create a Solver class object using the Random Forest Solver
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+RandomForestSolver(mtx.assay = matrix(), quiet = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A Solver class object with Random Forest as the solver
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{RandomForestSolver-class}{An S4 class to represent a Random Forest solver}{RandomForestSolver.Rdash.class}
+\aliasA{.RandomForestSolver}{RandomForestSolver-class}{.RandomForestSolver}
+%
+\begin{Description}\relax
+An S4 class to represent a Random Forest solver
+\end{Description}
+\inputencoding{utf8}
+\HeaderA{rescalePredictorWeights}{Rescale Bayes Spike Predictor Weights}{rescalePredictorWeights}
+\methaliasA{rescalePredictorWeights.BayesSpikeSolver}{rescalePredictorWeights}{rescalePredictorWeights.BayesSpikeSolver}
+%
+\begin{Description}\relax
+Rescale Bayes Spike Predictor Weights
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+rescalePredictorWeights(obj, rawValue.min, rawValue.max, rawValues)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{rawValue.min}] The minimum value of the raw expression values
+
+\item[\code{rawValue.max}] The maximum value of the raw expression values
+
+\item[\code{rawValues}] A matrix of raw expression values
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A matrix of the raw values re-scaled using the minimum and maximum values
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{rescalePredictorWeights,LassoSolver-method}{Rescale LASSO Predictor Weights}{rescalePredictorWeights,LassoSolver.Rdash.method}
+\aliasA{rescalePredictorWeights.LassoSolver}{rescalePredictorWeights,LassoSolver-method}{rescalePredictorWeights.LassoSolver}
+%
+\begin{Description}\relax
+Rescale LASSO Predictor Weights
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'LassoSolver'
+rescalePredictorWeights(obj, rawValue.min, rawValue.max,
+  rawValues)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{rawValue.min}] The minimum value of the raw expression values
+
+\item[\code{rawValue.max}] The maximum value of the raw expression values
+
+\item[\code{rawValues}] A matrix of raw expression values
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A matrix of the raw values re-scaled using the minimum and maximum values
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{run,BayesSpikeSolver-method}{Run the Bayes Spike Solver}{run,BayesSpikeSolver.Rdash.method}
+\aliasA{run.BayesSpikeSolver}{run,BayesSpikeSolver-method}{run.BayesSpikeSolver}
+%
+\begin{Description}\relax
+Given a TReNA object with Bayes Spike as the solver, use the \code{\LinkA{vbsr}{vbsr}} function to estimate coefficients
+for each transcription factor as a predictor of the target gene's expression level.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'BayesSpikeSolver'
+run(obj, target.gene, tfs, tf.weights = rep(1,
+  length(tfs), extraArgs = list()))
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
+
+\item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
+
+\item[\code{tf.weights}] A set of weights on the transcription factors (default = rep(1, length(tfs)))
+
+\item[\code{extraArgs}] Modifiers to the Bayes Spike solver
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
+\end{Value}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{vbsr}{vbsr}}
+\end{SeeAlso}
+\inputencoding{utf8}
+\HeaderA{run,LassoSolver-method}{Run the LASSO Solver}{run,LassoSolver.Rdash.method}
+\aliasA{run.LassoSolver}{run,LassoSolver-method}{run.LassoSolver}
+%
+\begin{Description}\relax
+Given a TReNA object with LASSO as the solver, use the \code{\LinkA{glmnet}{glmnet}} function to estimate coefficients
+for each transcription factor as a predictor of the target gene's expression level.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'LassoSolver'
+run(obj, target.gene, tfs, tf.weights = rep(1,
+  length(tfs)), extraArgs = list())
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
+
+\item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
+
+\item[\code{tf.weights}] A set of weights on the transcription factors (default = rep(1, length(tfs)))
+
+\item[\code{extraArgs}] Modifiers to the LASSO solver
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
+\end{Value}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{glmnet}{glmnet}}
+\end{SeeAlso}
+\inputencoding{utf8}
+\HeaderA{run,PearsonSolver-method}{Run the Pearson Solver}{run,PearsonSolver.Rdash.method}
+\aliasA{run.PearsonSolver}{run,PearsonSolver-method}{run.PearsonSolver}
+%
+\begin{Description}\relax
+Given a TReNA object with Pearson as the solver, use the \code{\LinkA{cor}{cor}} function to
+estimate coefficients for each transcription factor as a perdictor of the target gene's expression level
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'PearsonSolver'
+run(obj, target.gene, tfs, tf.weights = rep(1,
+  length(tfs), extraArgs = list()))
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
+
+\item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+fit The set of Pearson Correlation Coefficients between each transcription factor and the target gene.
+\end{Value}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{cor}{cor}}
+\end{SeeAlso}
+\inputencoding{utf8}
+\HeaderA{run,RandomForestSolver-method}{Run the Random Forest Solver}{run,RandomForestSolver.Rdash.method}
+\aliasA{run.RandomForestSolver}{run,RandomForestSolver-method}{run.RandomForestSolver}
+%
+\begin{Description}\relax
+Run the Random Forest Solver
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'RandomForestSolver'
+run(obj, target.gene, tfs, tf.weights = rep(1,
+  length(tfs), extraArgs = list()))
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
+
+\item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
+
+\item[\code{tf.weights}] A set of weights on the transcription factors (default = rep(1, length(tfs)))
+
+\item[\code{extraArgs}] Modifiers to the Random Forest solver
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A list containing various parameters of the Random Forest fit.
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{run,SpearmanSolver-method}{Run the Spearman Solver}{run,SpearmanSolver.Rdash.method}
+\aliasA{run.SpearmanSolver}{run,SpearmanSolver-method}{run.SpearmanSolver}
+%
+\begin{Description}\relax
+Given a TReNA object with Spearman as the solver, use the \code{\LinkA{cor}{cor}} function with
+\code{method = "spearman"} to esimate coefficients for each transcription factor as a predictor of the target
+gene's expression level
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'SpearmanSolver'
+run(obj, target.gene, tfs, tf.weights = rep(1,
+  length(tfs), extraArgs = list()))
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
+
+\item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+fit The set of Spearman Correlation Coefficients between each transcription factor and the target gene.
+\end{Value}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{cor}{cor}}
+\end{SeeAlso}
+\inputencoding{utf8}
+\HeaderA{solve,TReNA-method}{Solve the TReNA object}{solve,TReNA.Rdash.method}
+%
+\begin{Description}\relax
+Solve the TReNA object
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'TReNA'
+solve(obj, target.gene, tfs, tf.weights = rep(1,
+  length(tfs)), extraArgs = list())
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
+
+\item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
+
+\item[\code{tf.weights}] A set of weights on the transcription factors (default = rep(1, length(tfs)))
+
+\item[\code{extraArgs}] Modifiers to the Bayes Spike solver
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A data frame containing coefficients relating the target gene to each transcription factor
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{Solver}{Define an object of class Solver}{Solver}
+%
+\begin{Description}\relax
+Define an object of class Solver
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+Solver(mtx.assay = matrix(), quiet = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+An object of the Solver class
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{Solver-class}{An S4 class to represent a solver}{Solver.Rdash.class}
+\aliasA{.Solver}{Solver-class}{.Solver}
+%
+\begin{Description}\relax
+An S4 class to represent a solver
+\end{Description}
+%
+\begin{Section}{Slots}
+
+\begin{description}
+
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+
+\item[\code{quiet}] A logical element indicating whether the solver should produce output
+
+\item[\code{state}] Environment
+
+\end{description}
+\end{Section}
+\inputencoding{utf8}
+\HeaderA{SpearmanSolver}{Create a Solver class object using Spearman correlation coefficients as the solver}{SpearmanSolver}
+%
+\begin{Description}\relax
+Create a Solver class object using Spearman correlation coefficients as the solver
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+SpearmanSolver(mtx.assay = matrix(), quiet = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A Solver class object with Spearman correlation coefficients as the solver
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{TReNA}{TReNA:  Fit transcriptional regulatory networks using transcription factor binding sites and lasso regression}{TReNA}
+\aliasA{TReNA-package}{TReNA}{TReNA.Rdash.package}
+\keyword{networks}{TReNA}
+%
+\begin{Description}\relax
+Methods for reconstructing transcriptional regulatory networks, especially in species
+for which genome-wide TF binding site information is available.
+
+\end{Description}
+\inputencoding{utf8}
+\HeaderA{TReNA-class}{An S4 class to represent a TReNA object}{TReNA.Rdash.class}
+\aliasA{.TReNA}{TReNA-class}{.TReNA}
+%
+\begin{Description}\relax
+An S4 class to represent a TReNA object
+\end{Description}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+
+\item[\code{solver}] A string matching the designated solver for relating a target gene to transcription factors. (default = "lasso")
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+An object of the TReNA class
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{VarianceFilter-class}{Filter based on gene expression variance}{VarianceFilter.Rdash.class}
+\aliasA{.VarianceFilter}{VarianceFilter-class}{.VarianceFilter}
+%
+\begin{Description}\relax
+Filter based on gene expression variance
+\end{Description}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
+\printindex{}
+\end{document}

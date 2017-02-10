@@ -1,0 +1,61 @@
+BayesSpikeSolver        Designate Bayes Spike as the TReNA Solver and
+                        Solve
+BayesSpikeSolver-class
+                        An S4 class to represent a Bayes Spike solver
+Filter-class            An S4 class to represent a filter
+FootprintFinder-class   Filter genes based on footprints
+LassoSolver             Create a Solver class object using the LASSO
+                        solver
+LassoSolver-class       An S4 class to represent a LASSO solver
+NullFilter              Define an object of class Null Filter
+NullFilter-class        Apply a null filter
+PearsonSolver           Create a Solver class object using Pearson
+                        correlation coefficients as the solver
+RandomForestSolver      Create a Solver class object using the Random
+                        Forest Solver
+RandomForestSolver-class
+                        An S4 class to represent a Random Forest solver
+Solver                  Define an object of class Solver
+Solver-class            An S4 class to represent a solver
+SpearmanSolver          Create a Solver class object using Spearman
+                        correlation coefficients as the solver
+TReNA                   TReNA: Fit transcriptional regulatory networks
+                        using transcription factor binding sites and
+                        lasso regression
+TReNA-class             An S4 class to represent a TReNA object
+VarianceFilter-class    Filter based on gene expression variance
+getAssayData,Solver-method
+                        Get Assay Data from Solver
+getCandidates           Get candidate genes using the selected filter
+getCandidates,NullFilter-method
+                        Get candidate genes using the null filter
+getCandidates,VarianceFilter-method
+                        Get candidate genes using the variance filter
+getFootprintsForTF      Get Footprints for a TF
+getGenePromoterRegions
+                        Get Gene Promoter Regions
+getSolverName,BayesSpikeSolver-method
+                        Get Bayes Spike Solver name
+getSolverName,LassoSolver-method
+                        Get Lasso Solver name
+getSolverName,PearsonSolver-method
+                        Get Pearson Solver name
+getSolverName,RandomForestSolver-method
+                        Get Random Forest Solver name
+getSolverName,SpearmanSolver-method
+                        Get Spearman Solver Name
+rescalePredictorWeights
+                        Rescale Bayes Spike Predictor Weights
+rescalePredictorWeights,LassoSolver-method
+                        Rescale LASSO Predictor Weights
+run,BayesSpikeSolver-method
+                        Run the Bayes Spike Solver
+run,LassoSolver-method
+                        Run the LASSO Solver
+run,PearsonSolver-method
+                        Run the Pearson Solver
+run,RandomForestSolver-method
+                        Run the Random Forest Solver
+run,SpearmanSolver-method
+                        Run the Spearman Solver
+solve,TReNA-method      Solve the TReNA object

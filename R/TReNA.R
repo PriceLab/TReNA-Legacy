@@ -1,5 +1,7 @@
 #' An S4 class to represent a TReNA object
 #'
+#' @name TReNA-class
+#' 
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param solver A string matching the designated solver for relating a target gene to transcription factors. (default = "lasso")
 #'
@@ -38,8 +40,9 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 } # TReNA, the constructor
 #------------------------------------------------------------------------------------------------------------------------
 #' Solve the TReNA object
-#' @rdname solve-TReNA
+#' @name solve
 #'
+#' @obj obj An object of class TReNA
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))

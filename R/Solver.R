@@ -3,12 +3,12 @@
 #'
 #' @slot mtx.assay An assay matrix of gene expression data
 #' @slot quiet A logical element indicating whether the solver should produce output
-#' @slot state Environment
+#' @slot state Environment variable
 
 .Solver <- setClass ("Solver",
-                     representation = representation(mtx.assay="matrix",
-                                                     quiet="logical",
-                                                     state="environment")
+                     slots = c(mtx.assay="matrix",
+                               quiet="logical",
+                               state="environment")
                      )
 
 #------------------------------------------------------------------------------------------------------------------------
@@ -36,6 +36,8 @@ Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 #------------------------------------------------------------------------------------------------------------------------
 #' Get Assay Data from Solver
 #'
+#' @param obj An object of class Solver
+#' 
 #' @return The assay matrix of gene expression data associated with a Solver object
 
 setMethod("getAssayData", "Solver",
