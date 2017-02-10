@@ -19,8 +19,10 @@ export(
     makeTrnFromPromoterCountsAndExpression,
     PearsonSolver,
     SpearmanSolver,
-    NullFilter
-)
+    Filter,
+    NullFilter,
+    VarianceFilter
+    )
 
 exportMethods(
     getSolverName,
@@ -38,5 +40,6 @@ exportMethods(
     getFootprintsInRegion,
     mapMotifsToTFsMergeIntoTable,
     getPromoterRegionsAllGenes,
-    closeDatabaseConnections
+    closeDatabaseConnections,
+    getCandidates
     )

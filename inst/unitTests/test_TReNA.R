@@ -18,6 +18,7 @@ runTests <- function()
    test_scalePredictorPenalties.lasso()
    test_eliminateSelfTFs()
    test_NullFilter()
+   test_VarianceFilter()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -404,5 +405,15 @@ test_NullFilter <- function()
 
 } # test_NullFilter
 #----------------------------------------------------------------------------------------------------
+test_VarianceFilter <- function()
+{
+    printf("--- test_VarianceFilter")
 
+    # Create dummy data and filter it based on variance
+    x <- test_developAndFitDummyTestData(quiet=TRUE)
+    var.filter <- VarianceFilter(mtx.assay = x$assay)
+    checkTrue(length(var.filter) > 0)
+
+} # test_VarianceFilter
+#----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()

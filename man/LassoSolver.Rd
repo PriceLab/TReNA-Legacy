@@ -15,3 +15,6 @@ A Solver class object with LASSO as the solver
 \description{
 Create a Solver class object using the LASSO solver
 }
+\examples{
+solver <- LassoSolver()
+}

@@ -19,16 +19,16 @@ export(
     makeTrnFromPromoterCountsAndExpression,
     PearsonSolver,
     SpearmanSolver,
-    NullFilter
-)
+    Filter,
+    NullFilter,
+    VarianceFilter
+    )
 
 exportMethods(
     getSolverName,
     getAssayData,
     solve,
     run,
-    trainModel,
-    predictFromModel,
     rescalePredictorWeights,
     getGtfGeneBioTypes,
     getGtfMoleculeTypes,

@@ -1,5 +1,8 @@
-
 #------------------------------------------------------------------------------------------------------------------------
+#' An S4 class to represent a LASSO solver
+#'
+#' @include Solver.R
+
 .LassoSolver <- setClass ("LassoSolver", contains="Solver")
 #------------------------------------------------------------------------------------------------------------------------
 #' Create a Solver class object using the LASSO solver
@@ -7,6 +10,9 @@
 #' @param mtx.assay An assay matrix of gene expression data
 #'
 #' @return A Solver class object with LASSO as the solver
+#'
+#' @examples
+#' solver <- LassoSolver()
 
 LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
@@ -19,6 +25,10 @@ LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' Get Lasso Solver name
 #'
 #' @return "LassoSolver"
+#'
+#' @examples
+#' solver <- LassoSolver()
+#' getSolverName(solver)
 
 setMethod("getSolverName", "LassoSolver",
 
@@ -39,6 +49,9 @@ setMethod("getSolverName", "LassoSolver",
 #' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
 #'
 #' @seealso \code{\link{glmnet}}
+#'
+#' @examples
+#' 
 
 setMethod("run", "LassoSolver",
 
@@ -141,56 +154,6 @@ setMethod("run", "LassoSolver",
         return(as.data.frame(mtx.beta))
      })
 
-
-#----------------------------------------------------------------------------------------------------
-#' Train a model using LASSO
-#'
-#' @aliases trainModel.LassoSolver
-#' @param target.gene A designated target gene that should be part of the mtx.assay data
-#' @param tfs The designated set of transcription factors that could be associated with the target gene.
-#' @param training.samples ***These aren't currently used!
-#' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
-#'
-#' @return A model relating the target gene (response) to the transcription factors (predictors)
-
-setMethod("trainModel", "LassoSolver",
-
-   function (obj, target.gene, tfs, training.samples, tf.weights=rep(1, length(tfs))){
-
-       # transform to the 1..infinity range penalty.factor expects,
-       # where infinity indicates "exclude this tf"
-
-     tf.weights <- 1/tf.weights
-
-     mtx <- obj@mtx.assay
-     stopifnot(target.gene %in% rownames(mtx))
-     stopifnot(all(tfs %in% rownames(mtx)))
-     features <- t(mtx[tfs, ])
-     target <- t(mtx[target.gene, , drop=FALSE])
-
-     cv.out <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE)
-     lambda.min <- cv.out$lambda.min
-     glmnet(features, target, penalty.factor=tf.weights, lambda=lambda.min)
-     })
-
-#----------------------------------------------------------------------------------------------------
-#' Predict expression using a LASSO Model
-#'
-#' @aliases predictFromModel.LassoSolver
-#' @param model A LASSO model generated using \code{\\link{trainModel}} that relates the transcription
-#' factors to the target gene of interest
-#' @param tfs A list of transcription factor predictors matching those used in the LASSO model
-#' @param test.samples A matrix of gene expression levels for the supplied transcription factors
-#'
-#' @return Predictions of the target gene's expression level for each sample in the test sample set
-#' @seealso \code{\\link{trainModel}}
-
-setMethod("predictFromModel", "LassoSolver",
-
-   function (obj, model, tfs, test.samples){
-      mtx <- obj@mtx.assay
-      predict.glmnet(model, t(mtx[tfs, test.samples]))
-      })
 
 #----------------------------------------------------------------------------------------------------
 #' Rescale LASSO Predictor Weights

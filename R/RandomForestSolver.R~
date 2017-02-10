@@ -1,11 +1,12 @@
-#' Create a Solver class object using the Random Forest Solver
-#'
-#' @param mtx.assay An assay matrix of gene expression data
-
-
 #------------------------------------------------------------------------------------------------------------------------
 .RandomForestSolver <- setClass ("RandomForestSolver", contains="Solver")
 #------------------------------------------------------------------------------------------------------------------------
+#' Create a Solver class object using the Random Forest Solver
+#'
+#' @param mtx.assay An assay matrix of gene expression data
+#'
+#' @return A Solver class object with Random Forest as the solver
+
 RandomForestSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
     obj <- .RandomForestSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))

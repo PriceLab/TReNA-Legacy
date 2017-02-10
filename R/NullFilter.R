@@ -1,28 +1,33 @@
 #' Apply a null filter
 #'
+#' @include Filter.R
 #' @param mtx.assay An assay matrix of gene expression data
 #' @return An object of class NullFilter
 
 #----------------------------------------------------------------------------------------------------
-.NullFilter <- setClass ("NullFilter",
-                     slots = c(mtx.assay = "matrix",
-		               quiet = "logical"
-                     )
-)
+.NullFilter <- setClass ("NullFilter", contains = "Filter")
 
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
-#----------------------------------------------------------------------------------------------------
-setGeneric("getCandidates", signature="obj", function(obj) standardGeneric("getCandidates"))
 
 #----------------------------------------------------------------------------------------------------
+#' Define an object of class Null Filter
+#'
+#' @param mtx.assay An assay matrix of gene expression data
+#'
+#' @return An object of the Null Filter class
+
 NullFilter <- function(mtx.assay=matrix(), quiet = TRUE)
 {
-    # Simply return the genes
-    .NullFilter(mtx.assay = mtx.assay, quiet = quiet)
+    .NullFilter(Filter(mtx.assay = mtx.assay, quiet = quiet))
 
 } # NullFilter, the constructor
 #----------------------------------------------------------------------------------------------------
+#' Get candidate genes using the null filter
+#'
+#' @aliases getCandidates-NullFilter
+#' @return A vector containing all genes in the assay matrix
+
 setMethod("getCandidates", "NullFilter",
 
     function(obj){

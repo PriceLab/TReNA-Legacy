@@ -4,7 +4,7 @@
 \name{TReNA-class}
 \alias{TReNA-class}
 \alias{.TReNA}
-\title{The central class of the TReNA package}
+\title{An S4 class to represent a TReNA object}
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
 
@@ -14,5 +14,5 @@
 An object of the TReNA class
 }
 \description{
-The central class of the TReNA package
+An S4 class to represent a TReNA object
 }

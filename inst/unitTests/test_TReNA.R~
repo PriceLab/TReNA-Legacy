@@ -152,49 +152,26 @@ test_ampAD.mef2c.154tfs.278samples.lasso <- function()
 {
    printf("--- test_ampAD.mef2c.154tfs.278samples.lasso")
 
+   # Load matrix and transform via arcsinh
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    target.gene <- "MEF2C"
-   # print(fivenum(mtx.sub))   # 0.000000    1.753137   12.346965   43.247467 1027.765854
-
-    print("note!  without log transform of the data")
-    print("bayesSpike model is quite useless, even after")
-    print("filtering for abs(beta) and pval")
-
-   trena <- TReNA(mtx.assay=mtx.sub, solver="lasso", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.sub), "MEF2C")
-   tbl <- solve(trena, target.gene, tfs)
-     # check for expected non-sensical values
-   checkTrue(min(tbl$beta) < -7)
-   checkTrue(max(tbl$beta) > 10)
-
-      # with log transform, justified how?
-      # good results are returned, as loosely checked
-      # by correlating betas against  expression
-
-   mtx.tmp <- mtx.sub - min(mtx.sub) + 0.001
-   mtx.log2 <- log2(mtx.tmp)
-   fivenum(mtx.log2)  # [1] -9.9657843  0.8107618  3.6262014  5.4345771 10.0052973
-
-   trena <- TReNA(mtx.assay=mtx.log2, solver="lasso", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.log2), "MEF2C")
-   tbl2 <- solve(trena, target.gene, tfs)
-   checkTrue(min(tbl2$beta) > -0.2)
-   checkTrue(max(tbl2$beta) < 1)
-   checkTrue(c("SATB2") %in% rownames(subset(tbl2, abs(beta) > 0.15)))
-
-      # now transform mtx.sub with asinh
-
    mtx.asinh <- asinh(mtx.sub)
-   fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290
+   #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
+   
+   # check for expected non-sensical values
+   # I think this is now mostly unnecessary
+   #checkTrue(min(tbl$beta) < -7)
+   #checkTrue(max(tbl$beta) > 10)
 
    trena <- TReNA(mtx.assay=mtx.asinh, solver="lasso", quiet=FALSE)
    tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
-   tbl3 <- solve(trena, target.gene, tfs)
-   checkTrue(min(tbl3$beta) > -0.2)
-   checkTrue(max(tbl3$beta) < 1)
-   checkTrue(c("SATB2") %in% rownames(subset(tbl2, abs(beta) > 0.15)))
+   tbl <- solve(trena, target.gene, tfs)
 
-   
+   # Check for empirical values
+   checkTrue(min(tbl$beta) > -0.1)
+   checkTrue(max(tbl$beta) < 0.3)
+   checkTrue(c("SATB2") %in% rownames(subset(tbl, abs(beta) > 0.15)))
+
 } # test_ampAD.mef2c.154tfs.278samples.lasso
 #----------------------------------------------------------------------------------------------------
 test_ampAD.mef2c.154tfs.278samples.bayesSpike <- function()
@@ -203,40 +180,23 @@ test_ampAD.mef2c.154tfs.278samples.bayesSpike <- function()
 
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    target.gene <- "MEF2C"
-   # print(fivenum(mtx.sub))   # 0.000000    1.753137   12.346965   43.247467 1027.765854
+   mtx.asinh <- asinh(mtx.sub)
+   #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
 
-    print("note!  without log transform of the data")
-    print("bayesSpike model is quite useless, even after")
-    print("filtering for abs(beta) and pval")
-
-   trena <- TReNA(mtx.assay=mtx.sub, solver="bayesSpike", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.sub), "MEF2C")
+   trena <- TReNA(mtx.assay=mtx.asinh, solver="bayesSpike", quiet=FALSE)
+   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
    tbl <- solve(trena, target.gene, tfs)
    tbl.trimmed <- subset(tbl, abs(beta) > 0.1 & pval < 0.01)
-   betas <- tbl.trimmed$beta
-   big.abs.betas <- betas[abs(betas) > 1]
-   checkTrue(length(big.abs.betas) > 20)
 
-   checkTrue(nrow(tbl) > 10)
-   checkTrue(cor(tbl.trimmed$beta, tbl.trimmed$gene.cor) < 0.2)
+   # I don't think we need these anymore
+   #betas <- tbl.trimmed$beta
+   #big.abs.betas <- betas[abs(betas) > 1]
+   #checkTrue(length(big.abs.betas) > 20)
 
-      # with log transform, justified how?
-      # good results are returned, as loosely checked
-      # by correlating betas against  expression
+   # Check number of results and correlation of results
+   checkTrue(nrow(tbl.trimmed) > 6)
+   checkTrue(cor(tbl.trimmed$beta, tbl.trimmed$gene.cor) > 0.6)
 
-   mtx.tmp <- mtx.sub - min(mtx.sub) + 0.001
-   mtx.log2 <- log2(mtx.tmp)
-   fivenum(mtx.log2)  # [1] -9.9657843  0.8107618  3.6262014  5.4345771 10.0052973
-
-   trena <- TReNA(mtx.assay=mtx.log2, solver="bayesSpike", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.log2), "MEF2C")
-   tbl2 <- solve(trena, target.gene, tfs)
-   tbl2.trimmed <- subset(tbl2, abs(beta) > 0.1 & pval < 0.01)
-   betas2 <- tbl2.trimmed$beta
-   big.abs.betas2 <- betas2[abs(betas2) > 1]
-   checkEquals(length(big.abs.betas2), 0)
-   checkTrue(cor(tbl2.trimmed$beta, tbl2.trimmed$gene.cor) > 0.6)
-   
 } # test_ampAD.mef2c.154tfs.278samples.bayesSpike
 #----------------------------------------------------------------------------------------------------
 test_ampAD.mef2c.154tfs.278samples.randomForest <- function()
@@ -245,49 +205,26 @@ test_ampAD.mef2c.154tfs.278samples.randomForest <- function()
 
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    target.gene <- "MEF2C"
-   # print(fivenum(mtx.sub))   # 0.000000    1.753137   12.346965   43.247467 1027.765854
+   mtx.asinh <- asinh(mtx.sub)
+   #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
 
-    print("note!  without log transform of the data")
-    print("bayesSpike model is quite useless, even after")
-    print("filtering for abs(beta) and pval")
-
-   trena <- TReNA(mtx.assay=mtx.sub, solver="randomForest", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.sub), "MEF2C")
+   # Set the seed and solve
+   set.seed(10101)
+   trena <- TReNA(mtx.assay=mtx.asinh, solver="randomForest", quiet=FALSE)
+   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
    rf.result <- solve(trena, target.gene, tfs)
    tbl.scores <- rf.result$edges
 
    tbl.scores <- tbl.scores[order(tbl.scores$IncNodePurity, decreasing=TRUE),, drop=FALSE]
 
-     # a loose test, ignoring rank of these 7 genes for now
-   actual.genes.reported <- sort(rownames(subset(tbl.scores, IncNodePurity > 100000)))
-   expected.genes <- sort(c("HLF", "STAT4", "SATB1", "SATB2", "FOXP2", "FOXO4","ATF2"))
-   printf("1: expected: %s", paste(expected.genes, collapse=","))
-   printf("1: actual: %s", paste(actual.genes.reported, collapse=","))
-#   checkEquals(actual.genes.reported, expected.genes)
+   # a loose test, ignoring rank of these 7 genes for now
+   actual.genes.reported <- sort(rownames(subset(tbl.scores, IncNodePurity > 2.8)))
+   # Updated to reflect asinh results
+   expected.genes <- sort(c("HLF", "STAT4", "SATB1", "SATB2", "FOXP2", "DRGX","TSHZ3"))
+   printf("expected: %s", paste(expected.genes, collapse=","))
+   printf("actual: %s", paste(actual.genes.reported, collapse=","))
+   checkEquals(actual.genes.reported, expected.genes)
 
-      # with log transform, justified how?
-      # good results are returned, as loosely checked
-      # by correlating betas against  expression
-
-   mtx.tmp <- mtx.sub - min(mtx.sub) + 0.001
-   mtx.log2 <- log2(mtx.tmp)
-   fivenum(mtx.log2)  # [1] -9.9657843  0.8107618  3.6262014  5.4345771 10.0052973
-
-   trena <- TReNA(mtx.assay=mtx.log2, solver="randomForest", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.log2), "MEF2C")
-   rf.result.2 <- solve(trena, target.gene, tfs)
-   tbl.scores.2 <- rf.result.2$edges
-   tbl.scores.2 <- tbl.scores.2[order(tbl.scores.2$IncNodePurity, decreasing=TRUE),, drop=FALSE]
-
-     # a loose test, ignoring rank of these 7 genes for now
-   actual.genes.reported <- sort(rownames(subset(tbl.scores.2, IncNodePurity > 5)))
-   expected.genes <- sort(c("HLF", "STAT4", "SATB1", "SATB2", "FOXP2", "DRGX","ATF2"))
-   printf("2: expected: %s", paste(expected.genes, collapse=","))
-   printf("2: actual: %s", paste(actual.genes.reported, collapse=","))
-#   checkTrue( length( intersect(actual.genes.reported, expected.genes)) > 3 )
-
-       # lasso reports, with log2 transformed data,
-       # rownames(subset(tbl2, abs(beta) > 0.15)) "CUX1"   "FOXK2"  "SATB2"  "HLF"    "STAT5B" "ATF2"
    
 } # test_ampAD.mef2c.154tfs.278samples.randomForest
 #----------------------------------------------------------------------------------------------------
@@ -313,10 +250,6 @@ test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes <- function()
 
    checkTrue(nrow(tbl) > 10)
    checkTrue(cor(tbl.trimmed$beta, tbl.trimmed$gene.cor) < 0.2)
-
-      # with log transform, justified how?
-      # good results are returned, as loosely checked
-      # by correlating betas against  expression
 
    mtx.tmp <- mtx.sub - min(mtx.sub) + 0.001
    mtx.log2 <- log2(mtx.tmp)

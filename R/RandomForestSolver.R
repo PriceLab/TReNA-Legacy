@@ -1,4 +1,8 @@
 #------------------------------------------------------------------------------------------------------------------------
+#' An S4 class to represent a Random Forest solver
+#'
+#' @include Solver.R
+
 .RandomForestSolver <- setClass ("RandomForestSolver", contains="Solver")
 #------------------------------------------------------------------------------------------------------------------------
 #' Create a Solver class object using the Random Forest Solver

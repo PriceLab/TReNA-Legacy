@@ -1,4 +1,10 @@
 #------------------------------------------------------------------------------------------------------------------------
+#' An S4 class to represent a solver
+#'
+#' @slot mtx.assay An assay matrix of gene expression data
+#' @slot quiet A logical element indicating whether the solver should produce output
+#' @slot state Environment
+
 .Solver <- setClass ("Solver",
                      representation = representation(mtx.assay="matrix",
                                                      quiet="logical",

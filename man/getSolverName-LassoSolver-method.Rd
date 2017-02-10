@@ -13,3 +13,7 @@
 \description{
 Get Lasso Solver name
 }
+\examples{
+solver <- LassoSolver()
+getSolverName(solver)
+}

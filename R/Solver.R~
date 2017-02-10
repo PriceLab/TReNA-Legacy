@@ -1,8 +1,4 @@
 #------------------------------------------------------------------------------------------------------------------------
-#' Define an object of class Solver
-#'
-#' @param mtx.assay An assay matrix of gene expression data
-
 .Solver <- setClass ("Solver",
                      representation = representation(mtx.assay="matrix",
                                                      quiet="logical",
@@ -19,6 +15,12 @@ setGeneric("rescalePredictorWeights",
                               signature="obj", function(obj, rawValue.min, rawValue.max, rawValues)
                                                                              standardGeneric ("rescalePredictorWeights"))
 #------------------------------------------------------------------------------------------------------------------------
+#' Define an object of class Solver
+#'
+#' @param mtx.assay An assay matrix of gene expression data
+#'
+#' @return An object of the Solver class
+
 Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
    env <- new.env(parent=emptyenv())
