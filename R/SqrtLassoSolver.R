@@ -59,7 +59,7 @@ setMethod("getSolverName", "SqrtLassoSolver",
 #' 
 
 ### Note: I've removed all references to alpha as I don't believe slim uses it
-### Similar note for tf.weights
+### Similar note for tf.weights and keep.metrics
 setMethod("run", "SqrtLassoSolver",
 
   function (obj, target.gene, tfs, extraArgs=list()){
@@ -68,13 +68,9 @@ setMethod("run", "SqrtLassoSolver",
        return(data.frame())
 
    lambda <- NULL
-   keep.metrics = FALSE
 
    if("lambda" %in% names(extraArgs))
      lambda <- extraArgs[["lambda"]]
-
-   if("keep.metrics" %in% names(extraArgs))
-     keep.metrics <- extraArgs[["keep.metrics"]]
 
         # we don't try to handle tf self-regulation
     deleters <- grep(target.gene, tfs)
@@ -100,22 +96,11 @@ setMethod("run", "SqrtLassoSolver",
        cor.target.feature = cor( target , features )[1,1]
        mtx.beta = data.frame( beta = mtx.beta[2] , intercept = mtx.beta[1] , gene.cor = cor.target.feature )
        rownames(mtx.beta) = tfs
-       if( keep.metrics == F ) return( mtx.beta )
-       if( keep.metrics == T ) return( list( mtx.beta = mtx.beta , lambda = NA , r2 = cor.target.feature^2 ) )
+       return( mtx.beta )
      }
 
-      ###Need to alter this for finding the lambda values
-     if( is.null(lambda) ) {
-     if(!obj@quiet)
-         printf("begining cross-validation for glmnet, using %d tfs, target %s", length(tfs), target.gene)
-	 fit <- cv.glmnet(features, target, grouped=FALSE)
-         lambda.min <- fit$lambda.min
-         lambda <-fit$lambda.1se
-     } else
-### Need to alter this for actually running the square root lasso (method="lq")
-     if( is.numeric(lambda) ) {
-         fit = glmnet(features, target, method = "lq", verbose=FALSE)
-     }
+     # Run square root lasso and return an object of class "slim"
+     fit <- slim(features, target, method = "lq", lambda = lambda, verbose=FALSE)
 
        # extract the exponents of the fit
      #tbl.out <- as.matrix(fit$beta)
@@ -124,14 +109,15 @@ setMethod("run", "SqrtLassoSolver",
      #   tbl.out <- tbl.out[-deleters, , drop=FALSE]
      #colnames(tbl.out) <- "beta"
 
-     mtx.beta <- as.matrix( predict( fit , newx = features , type = "coef" , s = lambda ) )
+     # Pull out the coefficients 
+     mtx.beta <- fit$beta
      colnames(mtx.beta) <- "beta"
      deleters <- as.integer(which(mtx.beta[,1] == 0))
      if( all( mtx.beta[,1] == 0 ) ) return( data.frame() )
      if(length(deleters) > 0)
         mtx.beta <- mtx.beta[-deleters, , drop=FALSE]
 
-        # put the intercept, admittedly with much redundancy, into its own column
+     # put the intercept, admittedly with much redundancy, into its own column
      intercept <- mtx.beta[1,1]
      mtx.beta <- mtx.beta[-1, , drop=FALSE]
      mtx.beta <- cbind(mtx.beta, intercept=rep(intercept, nrow(mtx.beta)))
@@ -139,26 +125,16 @@ setMethod("run", "SqrtLassoSolver",
      #browser()
      mtx.beta <- as.matrix(cbind( mtx.beta, gene.cor=correlations.of.betas.to.targetGene))
      if(!obj@quiet)
-        plot(fit.nolambda, xvar='lambda', label=TRUE)
+        plot(fit$nlambda, label=TRUE)
 
      if( nrow(mtx.beta) > 1 ) {
         ordered.indices <- order(abs(mtx.beta[, "beta"]), decreasing=TRUE)
         mtx.beta <- mtx.beta[ordered.indices,]
      }
 
-     mtx.beta = as.data.frame(mtx.beta)
-
-     if( keep.metrics == TRUE ) {
-        pred.values = predict( fit , newx = features , s = lambda , type = "link" )
-        r2 = (cor( target , pred.values )[1,1])^2
-        return( list( mtx.beta = mtx.beta , lambda = lambda , r2 = r2 ) )
-     }
-
-     if( keep.metrics == FALSE )
-        return(as.data.frame(mtx.beta))
-     })
-
-
+     mtx.beta <- as.data.frame(mtx.beta)
+     return(as.data.frame(mtx.beta))
+}
 #----------------------------------------------------------------------------------------------------
 #' Rescale LASSO Predictor Weights
 #'

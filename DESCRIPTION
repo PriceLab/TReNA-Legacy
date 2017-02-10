@@ -20,6 +20,7 @@ Collate:
     'PearsonSolver.R'
     'RandomForestSolver.R'
     'SpearmanSolver.R'
+    'SqrtLassoSolver.R'
     'TReNA.R'
     'VarianceFilter.R'
     'runTReNA.R'
