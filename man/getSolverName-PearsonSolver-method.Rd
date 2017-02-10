@@ -13,3 +13,7 @@
 \description{
 Get Pearson Solver name
 }
+\examples{
+solver <- PearsonSolver()
+getSolverName(solver)
+}

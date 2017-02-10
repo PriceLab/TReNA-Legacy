@@ -15,3 +15,6 @@ A Solver class object with Spearman correlation coefficients as the solver
 \description{
 Create a Solver class object using Spearman correlation coefficients as the solver
 }
+\examples{
+solver <- SpearmanSolver()
+}

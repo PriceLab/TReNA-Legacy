@@ -1,10 +1,20 @@
-
 #----------------------------------------------------------------------------------------------------
+#' An S4 class to represent a Pearson solver
+#'
+#' @include Solver.R
+#' @name PearsonSolver-class
+#' 
+
 .PearsonSolver <- setClass ("PearsonSolver", contains = "Solver")
 #----------------------------------------------------------------------------------------------------
 #' Create a Solver class object using  Pearson correlation coefficients as the solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
+#'
+#' @return A Solver class object with Pearson correlation coefficients as the solver
+#'
+#' @examples
+#' solver <- PearsonSolver()
 
 PearsonSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 {
@@ -12,11 +22,17 @@ PearsonSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 
     obj
 
-}
+} #PearsonSolver, the constructor
 #----------------------------------------------------------------------------------------------------
 #' Get Pearson Solver name
 #'
+#' @param obj An object of class PearsonSolver
+#'
 #' @return "PearsonSolver
+#'
+#' @examples
+#' solver <- PearsonSolver()
+#' getSolverName(solver)
 
 setMethod("getSolverName", "PearsonSolver",
 
@@ -25,9 +41,12 @@ setMethod("getSolverName", "PearsonSolver",
           })
 #----------------------------------------------------------------------------------------------------
 #' Run the Pearson Solver
+#' 
 #' @aliases run.PearsonSolver
 #' @description Given a TReNA object with Pearson as the solver, use the \code{\link{cor}} function to
 #' estimate coefficients for each transcription factor as a perdictor of the target gene's expression level
+#'
+#' @param obj An object of class PearsonSolver
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #'

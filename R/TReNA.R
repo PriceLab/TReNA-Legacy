@@ -22,7 +22,7 @@ setGeneric("solve",                    signature="obj", function(obj, target.gen
 #------------------------------------------------------------------------------------------------------------------------
 TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 {
-  stopifnot(solver %in% c("lasso", "randomForest", "bayesSpike", "pearson", "spearman"))
+  stopifnot(solver %in% c("lasso", "randomForest", "bayesSpike", "pearson", "spearman","sqrtlasso"))
 
   if(solver == "lasso")
       solver <- LassoSolver(mtx.assay)
@@ -34,6 +34,8 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
       solver <- PearsonSolver(mtx.assay)
   else if(solver == "spearman")
       solver <- SpearmanSolver(mtx.assay)
+  else if(solver == "sqrtlasso")
+      solver <- SqrtLassoSolver(mtx.assay)
 
   .TReNA(solver=solver, quiet=quiet)
 
@@ -42,7 +44,7 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 #' Solve the TReNA object
 #' @name solve
 #'
-#' @obj obj An object of class TReNA
+#' @param obj An object of class TReNA
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))

@@ -154,6 +154,12 @@ function( tflist , promoter_regions , verbose = 1 , cores = 5 , genome.db.uri , 
 
 } #getTfbsCountsPerPromoterMC
 #----------------------------------------------------------------------------------------------------
+#' Get Hi-C Enhancer Regions
+#'
+#' Connect to the SQL database of hg38 enhancers and select only those regions where method = Hi-C
+#' 
+#' @return A table of enhancers where the method is Hi-C
+
 getHiCEnhancerRegions <- function() {  
 
    enhancerdb <- 
@@ -163,6 +169,12 @@ getHiCEnhancerRegions <- function() {
    return( tbl )
 }
 #----------------------------------------------------------------------------------------------------
+#' Get DNase Enhancer Regions
+#'
+#' Connect to the SQL database of hg38 enhancers and select only those regions where method = DNase-DNase
+#'
+#' @return A table of enhancers where the method is DNase-DNase
+
 getDnaseEnhancerRegions <- function() {   
 
    enhancerdb <- 
@@ -172,6 +184,18 @@ getDnaseEnhancerRegions <- function() {
    return( tbl )
 }
 #----------------------------------------------------------------------------------------------------
+#' Get Gene List from Gtf
+#'
+#' Query the SQL gtf table to get a list of genes matching the supplied "biotype" and "moleculetype"
+#'
+#' @param genome.db.uri A web address to a genome database
+#' @param project.db.uri A web address to a project database
+#' @param biotype A string specifying the biotype of interest (default = "protein_coding") **What are the options?
+#' @param moleculetype A string specifying the moleculetype of interest (default = "gene") **What are the options?
+#' @param use_gene_ids A logical character indicating whether or not to use gene IDs as opposed to gene names (default = T)
+#'
+#' @return A list of genes resulting from the query
+
 getGenelistFromGtf <- function( genome.db.uri , project.db.uri , 
    biotype="protein_coding" , moleculetype="gene" , use_gene_ids = T ) {
 
@@ -194,6 +218,10 @@ getGenelistFromGtf <- function( genome.db.uri , project.db.uri ,
 
 } # getGenelistFromGtf
 #----------------------------------------------------------------------------------------------------
+#' Get Transcription Factor Binding Site Counts in Enhancers
+#'
+#' 
+
 getTfbsCountsInEnhancers <-
 function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 , 
    cores = 5 , genome.db.uri , project.db.uri , use_gene_ids = T ,

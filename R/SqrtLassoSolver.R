@@ -1,79 +1,77 @@
 #------------------------------------------------------------------------------------------------------------------------
-#' An S4 class to represent a LASSO solver
+#' An S4 class to represent a Square Root LASSO solver
 #'
 #' @include Solver.R
-#' @name LassoSolver-class
+#' @name SqrtLassoSolver-class
 
-.LassoSolver <- setClass ("LassoSolver", contains="Solver")
+.SqrtLassoSolver <- setClass ("SqrtLassoSolver", contains="Solver")
 #------------------------------------------------------------------------------------------------------------------------
-#' Create a Solver class object using the LASSO solver
+#' Create a Solver class object using the Square Root LASSO solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
 #'
-#' @return A Solver class object with LASSO as the solver
+#' @return A Solver class object with Square Root LASSO as the solver
 #'
 #' @examples
-#' solver <- LassoSolver()
+#' solver <- SqrtLassoSolver()
 
-LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
+SqrtLassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
-    obj <- .LassoSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
+    obj <- .SqrtLassoSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
 
     obj
 
-} # LassoSolver, the constructor
+} # SqrtLassoSolver, the constructor
 #------------------------------------------------------------------------------------------------------------------------
-#' Get Lasso Solver name
+#' Get SqrtLasso Solver name
 #'
-#' @param obj An object of class LassoSolver
+#' @param obj An object of class SqrtLassoSolver
 #' 
-#' @return "LassoSolver"
+#' @return "SqrtLassoSolver"
 #'
 #' @examples
-#' solver <- LassoSolver()
+#' solver <- SqrtLassoSolver()
 #' getSolverName(solver)
 
-setMethod("getSolverName", "LassoSolver",
+setMethod("getSolverName", "SqrtLassoSolver",
 
   function (obj){
-     return("LassoSolver")
+     return("SqrtLassoSolver")
      })
 
 #----------------------------------------------------------------------------------------------------
-#' Run the LASSO Solver
-#' @aliases run.LassoSolver
-#' @description Given a TReNA object with LASSO as the solver, use the \code{\link{glmnet}} function to estimate coefficients
+#' Run the Square Root LASSO Solver
+#'
+#' @aliases run.SqrtLassoSolver
+#' @description Given a TReNA object with Square Root LASSO as the solver, use the \code{\link{slim}} function to estimate coefficients
 #' for each transcription factor as a predictor of the target gene's expression level. 
 #'
-#' @param obj An object of class LassoSolver
+#' @param obj An object of class SqrtLassoSolver
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
-#' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
-#' @param extraArgs Modifiers to the LASSO solver
+#' @param extraArgs Modifiers to the Square RootLASSO solver
 #'
 #' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
 #'
-#' @seealso \code{\link{glmnet}}
+#' @seealso \code{\link{slim}}
 #'
 #' @examples
 #' 
 
-setMethod("run", "LassoSolver",
+### Note: I've removed all references to alpha as I don't believe slim uses it
+### Similar note for tf.weights
+setMethod("run", "SqrtLassoSolver",
 
-  function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
+  function (obj, target.gene, tfs, extraArgs=list()){
 
    if(length(tfs) == 0)
        return(data.frame())
 
    lambda <- NULL
-   alpha <- 1.0
    keep.metrics = FALSE
 
    if("lambda" %in% names(extraArgs))
      lambda <- extraArgs[["lambda"]]
-
-   if("alpha" %in% names(extraArgs))
-     alpha <- extraArgs[["alpha"]]
 
    if("keep.metrics" %in% names(extraArgs))
      keep.metrics <- extraArgs[["keep.metrics"]]
@@ -84,7 +82,7 @@ setMethod("run", "LassoSolver",
        tfs <- tfs[-deleters]
        tf.weights <- tf.weights[-deleters]
      if(!obj@quiet)
-	message(sprintf("LassoSolver removing target.gene from candidate regulators: %s", target.gene))
+	message(sprintf("SqrtLassoSolver removing target.gene from candidate regulators: %s", target.gene))
        }
 
      if( length(tfs) == 0 ) return( data.frame() )
@@ -106,16 +104,17 @@ setMethod("run", "LassoSolver",
        if( keep.metrics == T ) return( list( mtx.beta = mtx.beta , lambda = NA , r2 = cor.target.feature^2 ) )
      }
 
+      ###Need to alter this for finding the lambda values
      if( is.null(lambda) ) {
      if(!obj@quiet)
          printf("begining cross-validation for glmnet, using %d tfs, target %s", length(tfs), target.gene)
-	 fit <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE , alpha = alpha )
+	 fit <- cv.glmnet(features, target, grouped=FALSE)
          lambda.min <- fit$lambda.min
          lambda <-fit$lambda.1se
      } else
-
+### Need to alter this for actually running the square root lasso (method="lq")
      if( is.numeric(lambda) ) {
-         fit = glmnet(features, target, penalty.factor=tf.weights, alpha = alpha )
+         fit = glmnet(features, target, method = "lq", verbose=FALSE)
      }
 
        # extract the exponents of the fit

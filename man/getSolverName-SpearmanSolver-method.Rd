@@ -13,3 +13,7 @@
 \description{
 Get Spearman Solver Name
 }
+\examples{
+solver <- SpearmanSolver()
+getSolverName(solver)
+}

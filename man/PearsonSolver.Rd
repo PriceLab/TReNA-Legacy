@@ -9,6 +9,12 @@ PearsonSolver(mtx.assay = matrix(), quiet = TRUE)
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
 }
+\value{
+A Solver class object with Pearson correlation coefficients as the solver
+}
 \description{
 Create a Solver class object using  Pearson correlation coefficients as the solver
+}
+\examples{
+solver <- PearsonSolver()
 }
