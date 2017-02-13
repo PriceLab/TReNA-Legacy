@@ -454,8 +454,8 @@ test_ampAD.mef2c.154tfs.278samples.sqrtlasso <- function()
 #   checkTrue(max(tbl$beta) < 0.3)
    #   checkTrue(c("SATB2") %in% rownames(subset(tbl, abs(beta) > 0.15)))
    tbl <- tbl[order(abs(tbl$beta), decreasing=TRUE),, drop = FALSE]
-   printf("Top 5 genes: %s", paste(rownames(tbl[1:5,])))
-        
+   printf("Top 5 genes: %s", paste(rownames(tbl[1:5,]),collapse=","))
+   
 } # test_ampAD.mef2c.154tfs.278samples.sqrtlasso
 #----------------------------------------------------------------------------------------------------    
 if(!interactive()) runTests()

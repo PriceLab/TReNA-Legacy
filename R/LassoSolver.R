@@ -124,7 +124,7 @@ setMethod("run", "LassoSolver",
      #if(length(deleters) > 0)
      #   tbl.out <- tbl.out[-deleters, , drop=FALSE]
      #colnames(tbl.out) <- "beta"
-
+     browser()
      mtx.beta <- as.matrix( predict( fit , newx = features , type = "coef" , s = lambda ) )
      colnames(mtx.beta) <- "beta"
      deleters <- as.integer(which(mtx.beta[,1] == 0))
@@ -178,6 +178,7 @@ setMethod("run", "LassoSolver",
 # we have empirical evidence that <large but non-infinite number> functions as a full penalty
 # without distorting the scale so much that even good rawValues get reduced to nothing
 # which is what .Machine$double.xmax would do
+
 setMethod("rescalePredictorWeights", "LassoSolver",
 
    function (obj, rawValue.min, rawValue.max, rawValues){

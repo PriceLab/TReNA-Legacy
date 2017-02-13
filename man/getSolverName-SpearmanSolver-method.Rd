@@ -7,6 +7,9 @@
 \usage{
 \S4method{getSolverName}{SpearmanSolver}(obj)
 }
+\arguments{
+\item{obj}{An object of class SpearmanSolver}
+}
 \value{
 "SpearmanSolver"
 }

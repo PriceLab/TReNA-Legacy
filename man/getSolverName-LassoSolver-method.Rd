@@ -7,6 +7,9 @@
 \usage{
 \S4method{getSolverName}{LassoSolver}(obj)
 }
+\arguments{
+\item{obj}{An object of class LassoSolver}
+}
 \value{
 "LassoSolver"
 }

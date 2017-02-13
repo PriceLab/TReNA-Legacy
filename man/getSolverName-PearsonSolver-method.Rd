@@ -7,6 +7,9 @@
 \usage{
 \S4method{getSolverName}{PearsonSolver}(obj)
 }
+\arguments{
+\item{obj}{An object of class PearsonSolver}
+}
 \value{
 "PearsonSolver
 }
