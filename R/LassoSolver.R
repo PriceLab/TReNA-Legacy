@@ -124,7 +124,7 @@ setMethod("run", "LassoSolver",
      #if(length(deleters) > 0)
      #   tbl.out <- tbl.out[-deleters, , drop=FALSE]
      #colnames(tbl.out) <- "beta"
-     browser()
+     #browser()
      mtx.beta <- as.matrix( predict( fit , newx = features , type = "coef" , s = lambda ) )
      colnames(mtx.beta) <- "beta"
      deleters <- as.integer(which(mtx.beta[,1] == 0))

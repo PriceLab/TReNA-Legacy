@@ -1,7 +1,8 @@
 #' Filter genes based on footprints
 #'
-#' @param genome.database.uri The address of a genome database for use in filtering
-#' @param project.database.uri The address of a project database for use in filtering
+#' @name FootprintFinder-class
+#' @param genome.db The address of a genome database for use in filtering
+#' @param project.db The address of a project database for use in filtering
 #'
 #' @return An object of the Filter class that reduces a list of genes to a subset prior to forming a TReNA object
 

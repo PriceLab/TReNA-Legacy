@@ -80,6 +80,8 @@ setMethod("run", "PearsonSolver",
               # Calculate Pearson correlation coefficients
               fit <- cor( x = x, y = y)
 
-              # For now, just return the fit
-              return(fit)
-})     
+              # For now, just return the fit and the gene names
+              tbl <- data.frame(gene = rownames(mtx),coefficient = fit)
+              return(tbl)
+          })
+#----------------------------------------------------------------------------------------------------

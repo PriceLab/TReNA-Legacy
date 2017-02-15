@@ -103,19 +103,38 @@ setMethod("run", "SqrtLassoSolver",
                   rownames(mtx.beta) = tfs                  
                   return( mtx.beta )                  
               }
-              
+
+              # If no lambda, run a binary search for the best lasso using permutation of the data set
+              if(is.null(lambda)){
+                  set.seed(101010)
+                  target <- sample(target)
+                  threshold <- 1E-15
+                  lambda.change <- 10^(-7)
+                  lambda <- 1
+                  
+                  # Do a binary search
+                  step.size <- lambda/2 # Start at 0.5
+                  while(step.size > lambda.change){
+                      # Get the fit
+                      fit <- slim(features, target, method = "lq", verbose = FALSE, lambda = lambda)
+                      # Case 1: nonsense, need to lower lambda
+                      if(max(fit$beta) < threshold){
+                          lambda <- lambda - step.size
+                      }
+                      # Case 2: sense, need to raise lambda
+                      else{
+                          lambda <- lambda + step.size
+                      }
+                      # Halve the step size
+                      step.size <- step.size/2
+                  }
+              }
+              browser()
               # Run square root lasso and return an object of class "slim"              
               fit <- slim(features, target, method = "lq", lambda = lambda, verbose=FALSE)
               
-              # extract the exponents of the fit             
-              #tbl.out <- as.matrix(fit$beta)              
-              #deleters <- as.integer(which(tbl.out[,1] == 0))              
-              #if(length(deleters) > 0)              
-              #   tbl.out <- tbl.out[-deleters, , drop=FALSE]              
-              #colnames(tbl.out) <- "beta"
-              
-              # Pull out the coefficients from the final lambda        
-              mtx.beta <- as.matrix(fit$beta[,nlambda])
+              # Pull out the coefficients        
+              mtx.beta <- as.matrix(fit$beta)
               colnames(mtx.beta) <- "beta"
               rownames(mtx.beta) <- colnames(features)
               deleters <- as.integer(which(mtx.beta[,1] == 0))
@@ -124,16 +143,15 @@ setMethod("run", "SqrtLassoSolver",
                   mtx.beta <- mtx.beta[-deleters, , drop=FALSE]
 
               # put the intercept, admittedly with much redundancy, into its own column
-              mtx.beta <- cbind(mtx.beta, intercept=rep(fit$intercept[[nlambda]], nrow(mtx.beta)))
+              mtx.beta <- cbind(mtx.beta, intercept=rep(fit$intercept, nrow(mtx.beta)))
               
               #browser()              
               correlations.of.betas.to.targetGene <- unlist(lapply(rownames(mtx.beta),
                                                                    function(x) cor(mtx[x,], mtx[target.gene,])))
 
-              #browser()
               mtx.beta <- as.matrix(cbind( mtx.beta, gene.cor=correlations.of.betas.to.targetGene))
-              if(!obj@quiet)
-                  plot(fit$nlambda, label=TRUE)
+#              if(!obj@quiet)
+#                  plot(fit$nlambda, label=TRUE)
 
               if( nrow(mtx.beta) > 1 ) {
                   ordered.indices <- order(abs(mtx.beta[, "beta"]), decreasing=TRUE)
