@@ -81,3 +81,42 @@ findBinaryLambda <- function(){
     # 4) Return the final lambda
     return(lambda)
 }
+
+#----------------------------------------------------------------------------------------------------
+# Create dummy data and verify the LASSO and SqrtLasso both work
+
+testLassos <- function(){
+
+    # Create the dummy data
+    n = 100
+    p = 200
+    sigma = 0.1
+
+    # ten nonzero elements in beta
+    beta_nz_data <- 1:10
+    beta_nz_data <- sapply(beta_nz_data,function(x){x*(-1)^x})    
+    beta_data <- c(beta_nz_data,numeric(p-length(beta_nz_data)))
+
+    # X mean centered and normalized so sum of sqs in each col = N
+    X_data <- matrix(rnorm(n*p),nrow=n,ncol=p)
+    X_data <- scale(X_data)
+
+    # y mean centered and normalized so sum of sqs = N
+    y_data <- X_data %*% beta_data + sigma*rnorm(n);
+    y_data <- scale(y_data)
+
+    # Transpose matrix to work with solvers and add rownames
+    mtx.assay <- t(cbind(X_data,y_data))
+    rownames(mtx.assay) <- paste("Gene", 1:(p+1), sep="_")
+    
+    # Try fitting it using the LASSO
+    trena <- TReNA(mtx.assay=mtx.assay,solver="lasso",quiet=FALSE)
+    tfs <- setdiff(rownames(mtx.assay), "Gene_201")
+    tbl.lasso <- solve(trena, "Gene_201", tfs)
+
+    
+    # Try fitting it using the Sqrt LASSO
+    trena <- TReNA(mtx.assay=mtx.assay,solver="sqrtlasso",quiet=FALSE)
+    tbl.sqrtlasso <- solve(trena, "Gene_201", tfs)
+    
+}

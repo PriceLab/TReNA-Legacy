@@ -107,7 +107,7 @@ setMethod("run", "SqrtLassoSolver",
               # If no lambda, run a binary search for the best lasso using permutation of the data set
               if(is.null(lambda)){
                   set.seed(101010)
-                  target <- sample(target)
+                  target.mixed <- sample(target)
                   threshold <- 1E-15
                   lambda.change <- 10^(-7)
                   lambda <- 1
@@ -116,7 +116,7 @@ setMethod("run", "SqrtLassoSolver",
                   step.size <- lambda/2 # Start at 0.5
                   while(step.size > lambda.change){
                       # Get the fit
-                      fit <- slim(features, target, method = "lq", verbose = FALSE, lambda = lambda)
+                      fit <- slim(features, target.mixed, method = "lq", verbose = FALSE, lambda = lambda)
                       # Case 1: nonsense, need to lower lambda
                       if(max(fit$beta) < threshold){
                           lambda <- lambda - step.size
