@@ -440,21 +440,16 @@ test_ampAD.mef2c.154tfs.278samples.sqrtlasso <- function()
    mtx.asinh <- asinh(mtx.sub)
    #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
    
-   # check for expected non-sensical values
-   # I think this is now mostly unnecessary
-   #checkTrue(min(tbl$beta) < -7)
-   #checkTrue(max(tbl$beta) > 10)
-
    trena <- TReNA(mtx.assay=mtx.asinh, solver="sqrtlasso", quiet=FALSE)
    tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
    tbl <- solve(trena, target.gene, tfs)
 
    # Check for empirical values
-#   checkTrue(min(tbl$beta) > -0.1)
-#   checkTrue(max(tbl$beta) < 0.3)
-   #   checkTrue(c("SATB2") %in% rownames(subset(tbl, abs(beta) > 0.15)))
    tbl <- tbl[order(abs(tbl$beta), decreasing=TRUE),, drop = FALSE]
+   expected.genes <- sort(c("SATB2","STAT4","HLF","TSHZ3", "FOXP2"))
+   actual.genes <- sort(rownames(subset(tbl, abs(beta) > 0.1)))
    printf("Top 5 genes: %s", paste(rownames(tbl[1:5,]),collapse=","))
+   checkEquals(expected.genes,actual.genes)
    
 } # test_ampAD.mef2c.154tfs.278samples.sqrtlasso
 #----------------------------------------------------------------------------------------------------    

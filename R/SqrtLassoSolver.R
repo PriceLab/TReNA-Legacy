@@ -129,7 +129,7 @@ setMethod("run", "SqrtLassoSolver",
                       step.size <- step.size/2
                   }
               }
-              browser()
+
               # Run square root lasso and return an object of class "slim"              
               fit <- slim(features, target, method = "lq", lambda = lambda, verbose=FALSE)
               
