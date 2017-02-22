@@ -55,7 +55,7 @@ assess_methodsAgainstDistributions <- function(mtx.sub, target.gene, tfs)
     lasso2.top10 <- lasso2$gene[order(abs(lasso2$lasso.log2), decreasing=TRUE)][1:10]
     lasso3.top10 <- lasso3$gene[order(abs(lasso3$lasso.asinh), decreasing=TRUE)][1:10]
     lasso4.top10 <- lasso4$gene[order(abs(lasso4$lasso.voom), decreasing = TRUE)][1:10]
-
+ 
     printf("--- Testing Bayes Spike")
 
     trena <- TReNA(mtx.assay=mtx.sub, solver="bayesSpike", quiet=FALSE)
@@ -122,6 +122,43 @@ assess_methodsAgainstDistributions <- function(mtx.sub, target.gene, tfs)
     rf3.top10 <- rf3$gene[order(abs(rf3$rf.asinh), decreasing=TRUE)][1:10]    
     rf4.top10 <- rf4$gene[order(abs(rf4$rf.voom), decreasing=TRUE)][1:10]
 
+    # Use Square Root LASSO
+    printf("--- Testing Square Root LASSO")
+
+    trena <- TReNA(mtx.assay=mtx.sub, solver="sqrtlasso", quiet=FALSE)
+    sqrt.lasso1 <- solve(trena, target.gene, tfs)
+    sqrt.lasso1 <- data.frame(gene = rownames(sqrt.lasso1),
+                         sqrt.lasso.as.is = sqrt.lasso1$beta)
+   
+    
+    trena <- TReNA(mtx.assay=mtx.log2, solver="sqrtlasso", quiet=FALSE)
+    sqrt.lasso2 <- solve(trena, target.gene, tfs)
+    sqrt.lasso2 <- data.frame(sqrt.lasso.log2 = sqrt.lasso2$beta,
+                         gene = rownames(sqrt.lasso2))
+    
+    trena <- TReNA(mtx.assay=mtx.asinh, solver="sqrtlasso", quiet=FALSE)
+    sqrt.lasso3 <- solve(trena, target.gene, tfs)
+    sqrt.lasso3 <- data.frame(sqrt.lasso.asinh = sqrt.lasso3$beta,
+                         gene = rownames(sqrt.lasso3))
+
+    trena <- TReNA(mtx.assay=mtx.voom, solver="sqrtlasso", quiet=FALSE)
+    sqrt.lasso4 <- solve(trena, target.gene, tfs)
+    sqrt.lasso4 <- data.frame(sqrt.lasso.voom = sqrt.lasso4$beta,
+                         gene = rownames(sqrt.lasso4))
+
+
+    sqrt.lasso1$gene <- as.character(sqrt.lasso1$gene)
+    sqrt.lasso2$gene <- as.character(sqrt.lasso2$gene)
+    sqrt.lasso3$gene <- as.character(sqrt.lasso3$gene)
+    sqrt.lasso4$gene <- as.character(sqrt.lasso4$gene)
+
+    # Grab the top 10 genes from each
+    sqrt.lasso1.top10 <- sqrt.lasso1$gene[order(abs(sqrt.lasso1$sqrt.lasso.as.is), decreasing=TRUE)][1:10]
+    sqrt.lasso2.top10 <- sqrt.lasso2$gene[order(abs(sqrt.lasso2$sqrt.lasso.log2), decreasing=TRUE)][1:10]
+    sqrt.lasso3.top10 <- sqrt.lasso3$gene[order(abs(sqrt.lasso3$sqrt.lasso.asinh), decreasing=TRUE)][1:10]
+    sqrt.lasso4.top10 <- sqrt.lasso4$gene[order(abs(sqrt.lasso4$sqrt.lasso.voom), decreasing = TRUE)][1:10]
+ 
+    
     # Take the union of all the genes
     all.genes <- unique(c(lasso1.top10,
                        lasso2.top10,
@@ -134,7 +171,11 @@ assess_methodsAgainstDistributions <- function(mtx.sub, target.gene, tfs)
                        rf1.top10,
                        rf2.top10,
                        rf3.top10,
-                       rf4.top10)) # Returns 41 genes
+                       rf4.top10,
+                       sqrt.lasso1.top10,
+                       sqrt.lasso2.top10,
+                       sqrt.lasso3.top10,
+                       sqrt.lasso4.top10)) # Returns 41 genes
 
     # Pull out the specified genes and assemble a table
     lasso1.sub <- subset(lasso1, lasso1$gene %in% all.genes)
@@ -149,6 +190,10 @@ assess_methodsAgainstDistributions <- function(mtx.sub, target.gene, tfs)
     rf2.sub <- subset(rf2, rf2$gene %in% all.genes)
     rf3.sub <- subset(rf3, rf3$gene %in% all.genes)
     rf4.sub <- subset(rf4, rf4$gene %in% all.genes)
+    sqrt.lasso1.sub <- subset(sqrt.lasso1, sqrt.lasso1$gene %in% all.genes)
+    sqrt.lasso2.sub <- subset(sqrt.lasso2, sqrt.lasso2$gene %in% all.genes)
+    sqrt.lasso3.sub <- subset(sqrt.lasso3, sqrt.lasso3$gene %in% all.genes)
+    sqrt.lasso4.sub <- subset(sqrt.lasso4, sqrt.lasso4$gene %in% all.genes)
 
     # Join it all in a table (requires plyr package)
     tbl.all <- join_all(list(lasso1.sub,
@@ -162,7 +207,11 @@ assess_methodsAgainstDistributions <- function(mtx.sub, target.gene, tfs)
                              rf1.sub,
                              rf2.sub,
                              rf3.sub,
-                             rf4.sub),
+                             rf4.sub,
+                             sqrt.lasso1.sub,
+                             sqrt.lasso2.sub,
+                             sqrt.lasso3.sub,
+                             sqrt.lasso4.sub),
                         by = 'gene', type = 'full')
 
     # Replace NA's in LASSO columns with 0s
