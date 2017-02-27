@@ -22,7 +22,8 @@ export(
     SqrtLassoSolver,
     Filter,
     NullFilter,
-    VarianceFilter
+    VarianceFilter,
+    LassoPVSolver
     )
 
 exportMethods(

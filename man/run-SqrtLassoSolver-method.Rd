@@ -15,7 +15,7 @@
 
 \item{tfs}{The designated set of transcription factors that could be associated with the target gene.}
 
-\item{extraArgs}{Modifiers to the Square RootLASSO solver}
+\item{extraArgs}{Modifiers to the Square Root LASSO solver}
 }
 \value{
 A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.

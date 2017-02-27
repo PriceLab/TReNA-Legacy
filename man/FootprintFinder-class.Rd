@@ -6,9 +6,9 @@
 \alias{.FootprintFinder}
 \title{Filter genes based on footprints}
 \arguments{
-\item{genome.database.uri}{The address of a genome database for use in filtering}
+\item{genome.db}{The address of a genome database for use in filtering}
 
-\item{project.database.uri}{The address of a project database for use in filtering}
+\item{project.db}{The address of a project database for use in filtering}
 }
 \value{
 An object of the Filter class that reduces a list of genes to a subset prior to forming a TReNA object

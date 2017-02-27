@@ -49,7 +49,7 @@ setMethod("getSolverName", "SqrtLassoSolver",
 #' @param obj An object of class SqrtLassoSolver
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
-#' @param extraArgs Modifiers to the Square RootLASSO solver
+#' @param extraArgs Modifiers to the Square Root LASSO solver
 #'
 #' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
 #'
@@ -69,14 +69,10 @@ setMethod("run", "SqrtLassoSolver",
 
               # Set default lambda and number of lambdas
               lambda <- NULL              
-              nlambda <- 5
                     
               if("lambda" %in% names(extraArgs))                  
                   lambda <- extraArgs[["lambda"]]
 
-              if("nlambda" %in% names(extraArgs))
-                  nlambda <- 5
-        
         # we don't try to handle tf self-regulation
                   deleters <- grep(target.gene, tfs)              
               if(length(deleters) > 0){                  
