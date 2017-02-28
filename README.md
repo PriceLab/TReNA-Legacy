@@ -6,11 +6,11 @@ To build and test:
  - clone this repository
  - install R 3.2.3 or later; RUnit 0.4.31 or later (see below)
  - install the following solver packages:
- -- glmnet R package 2.0.3 or later
- -- randomForest
- -- vbsr
- -- flare
- -- lassopv
+   - glmnet R package 2.0.3 or later
+   - randomForest
+   - vbsr
+   - flare
+   - lassopv
  - cd TReNA
  - R CMD INSTALL .
  - open an R session
