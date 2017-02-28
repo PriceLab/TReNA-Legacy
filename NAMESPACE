@@ -23,7 +23,8 @@ export(
     Filter,
     NullFilter,
     VarianceFilter,
-    LassoPVSolver
+    LassoPVSolver,
+    RidgeSolver
     )
 
 exportMethods(
