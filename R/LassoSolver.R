@@ -72,6 +72,7 @@ setMethod("run", "LassoSolver",
    if("lambda" %in% names(extraArgs))
      lambda <- extraArgs[["lambda"]]
 
+      browser()
    if("alpha" %in% names(extraArgs))
      alpha <- extraArgs[["alpha"]]
 
