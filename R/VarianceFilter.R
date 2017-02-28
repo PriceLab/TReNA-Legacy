@@ -30,15 +30,15 @@ setMethod("getCandidates", "VarianceFilter",
     function(obj,target.gene){
         # Designate the target genes and tfs
 	tfs <- setdiff(rownames(obj@mtx.assay), target.gene)
-	tf.mtx <- mtx.assay[-c(which(rownames(obj@mtx.assay) == target.gene)),]
-	target.mtx <- mtx.assay[which(rownames(obj@mtx.assay) == target.gene),]
+	tf.mtx <- obj@mtx.assay[-c(which(rownames(obj@mtx.assay) == target.gene)),]
+	target.mtx <- obj@mtx.assay[which(rownames(obj@mtx.assay) == target.gene),]
 
 	# Find the variances
 	tf.var <- apply(tf.mtx,1,var)
 	target.var <- var(target.mtx)
 
-	# Return only the genes with variances less than the target gene
-	return(names(tf.var < target.var))
+	# Return only the genes with variances within 50% of target gene variance
+	return(names(which(tf.var > 0.5*target.var & tf.var < 1.5*target.var)))
 	}
 )
 #----------------------------------------------------------------------------------------------------
