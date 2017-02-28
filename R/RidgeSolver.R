@@ -1,11 +1,12 @@
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #' An S4 class to represent a Ridge Regression solver
 #'
 #' @include Solver.R
+#' @include TReNA.R
 #' @name RidgeSolver-class
 
 .RidgeSolver <- setClass ("RidgeSolver", contains="Solver")
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #' Create a Solver class object using the Ridge Regression solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
@@ -62,12 +63,23 @@ setMethod("run", "RidgeSolver",
 
   function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
 
-      # Run LassoSolver, but use alpha = 0
+      # Run Elastic Net, but use alpha = 0
+      alpha = 0
+      lambda <- NULL
+      keep.metrics = FALSE
 
-      trena <- TReNA(mtx.assay = obj@solver@mtx.assay, solver = "lasso")
-      tbl <- solve(trena, target.gene, tfs, extraArgs = list("alpha" = 0))
+      if("alpha" %in% names(extraArgs))
+          alpha <- extraArgs[["alpha"]]
 
-      return(tbl)
+      if("lambda" %in% names(extraArgs))
+          lambda <- extraArgs[["lambda"]]
+
+      if("keep.metrics" %in% names(extraArgs))
+          keep.metrics <- extraArgs[["keep.metrics"]]
+
+      mtx.beta <- .elasticNetSolver(obj, target.gene, tfs, tf.weights, alpha, lambda, keep.metrics)
+
+      return(mtx.beta)
 })
 #----------------------------------------------------------------------------------------------------
 #' Rescale Ridge Regression Predictor Weights

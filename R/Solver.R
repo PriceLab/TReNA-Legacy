@@ -1,4 +1,4 @@
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #' An S4 class to represent a solver
 #'
 #' @slot mtx.assay An assay matrix of gene expression data
@@ -11,16 +11,16 @@
                                state="environment")
                      )
 
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 setGeneric("getSolverName",   signature="obj", function(obj, target.gene, tfs) standardGeneric ("getSolverName"))
 setGeneric("getAssayData",    signature="obj", function(obj) standardGeneric ("getAssayData"))
 setGeneric("run",             signature="obj", function(obj, target.gene, tfs, tf.weights, extraArgs=list()) standardGeneric ("run"))
 setGeneric("rescalePredictorWeights",
                               signature="obj", function(obj, rawValue.min, rawValue.max, rawValues)
                                                                              standardGeneric ("rescalePredictorWeights"))
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #' Define an object of class Solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
@@ -33,7 +33,7 @@ Solver <- function(mtx.assay=matrix(), quiet=TRUE)
   .Solver(mtx.assay=mtx.assay, quiet=quiet, state=env)
 
 } # TReNA, the constructor
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #' Get Assay Data from Solver
 #'
 #' @param obj An object of class Solver
@@ -46,4 +46,4 @@ setMethod("getAssayData", "Solver",
       obj@mtx.assay
       })
 
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
