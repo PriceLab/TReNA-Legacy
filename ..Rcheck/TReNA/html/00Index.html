@@ -13,7 +13,7 @@ priors, machine learning
 <div style="text-align: center;">
 <a href="../../../doc/html/packages.html"><img class="arrow" src="../../../doc/html/left.jpg" alt="[Up]" /></a>
 <a href="../../../doc/html/index.html"><img class="arrow" src="../../../doc/html/up.jpg" alt="[Top]" /></a>
-</div><h2>Documentation for package &lsquo;TReNA&rsquo; version 0.99.66</h2>
+</div><h2>Documentation for package &lsquo;TReNA&rsquo; version 0.99.72</h2>
 
 <ul><li><a href="../DESCRIPTION">DESCRIPTION file</a>.</li>
 </ul>
@@ -30,14 +30,24 @@ priors, machine learning
 <td>An S4 class to represent a filter</td></tr>
 <tr><td style="width: 25%;"><a href="FootprintFinder-class.html">.FootprintFinder</a></td>
 <td>Filter genes based on footprints</td></tr>
+<tr><td style="width: 25%;"><a href="LassoPVSolver-class.html">.LassoPVSolver</a></td>
+<td>An S4 class to represent a LASSO P-Value solver</td></tr>
 <tr><td style="width: 25%;"><a href="LassoSolver-class.html">.LassoSolver</a></td>
 <td>An S4 class to represent a LASSO solver</td></tr>
 <tr><td style="width: 25%;"><a href="NullFilter-class.html">.NullFilter</a></td>
 <td>Apply a null filter</td></tr>
+<tr><td style="width: 25%;"><a href="PearsonSolver-class.html">.PearsonSolver</a></td>
+<td>An S4 class to represent a Pearson solver</td></tr>
 <tr><td style="width: 25%;"><a href="RandomForestSolver-class.html">.RandomForestSolver</a></td>
 <td>An S4 class to represent a Random Forest solver</td></tr>
+<tr><td style="width: 25%;"><a href="RidgeSolver-class.html">.RidgeSolver</a></td>
+<td>An S4 class to represent a Ridge Regression solver</td></tr>
 <tr><td style="width: 25%;"><a href="Solver-class.html">.Solver</a></td>
 <td>An S4 class to represent a solver</td></tr>
+<tr><td style="width: 25%;"><a href="SpearmanSolver-class.html">.SpearmanSolver</a></td>
+<td>An S4 class to represent a Spearman solver</td></tr>
+<tr><td style="width: 25%;"><a href="SqrtLassoSolver-class.html">.SqrtLassoSolver</a></td>
+<td>An S4 class to represent a Square Root LASSO solver</td></tr>
 <tr><td style="width: 25%;"><a href="TReNA-class.html">.TReNA</a></td>
 <td>An S4 class to represent a TReNA object</td></tr>
 <tr><td style="width: 25%;"><a href="VarianceFilter-class.html">.VarianceFilter</a></td>
@@ -64,20 +74,42 @@ priors, machine learning
 <td>Get candidate genes using the null filter</td></tr>
 <tr><td style="width: 25%;"><a href="getCandidates-VarianceFilter-method.html">getCandidates-VarianceFilter</a></td>
 <td>Get candidate genes using the variance filter</td></tr>
+<tr><td style="width: 25%;"><a href="getDnaseEnhancerRegions.html">getDnaseEnhancerRegions</a></td>
+<td>Get DNase Enhancer Regions</td></tr>
 <tr><td style="width: 25%;"><a href="getFootprintsForTF.html">getFootprintsForTF</a></td>
 <td>Get Footprints for a TF</td></tr>
+<tr><td style="width: 25%;"><a href="getGenelistFromGtf.html">getGenelistFromGtf</a></td>
+<td>Get Gene List from Gtf</td></tr>
 <tr><td style="width: 25%;"><a href="getGenePromoterRegions.html">getGenePromoterRegions</a></td>
 <td>Get Gene Promoter Regions</td></tr>
+<tr><td style="width: 25%;"><a href="getHiCEnhancerRegions.html">getHiCEnhancerRegions</a></td>
+<td>Get Hi-C Enhancer Regions</td></tr>
 <tr><td style="width: 25%;"><a href="getSolverName-BayesSpikeSolver-method.html">getSolverName-method</a></td>
 <td>Get Bayes Spike Solver name</td></tr>
+<tr><td style="width: 25%;"><a href="getSolverName-LassoPVSolver-method.html">getSolverName-method</a></td>
+<td>Get LassoPV Solver name</td></tr>
 <tr><td style="width: 25%;"><a href="getSolverName-LassoSolver-method.html">getSolverName-method</a></td>
 <td>Get Lasso Solver name</td></tr>
 <tr><td style="width: 25%;"><a href="getSolverName-PearsonSolver-method.html">getSolverName-method</a></td>
 <td>Get Pearson Solver name</td></tr>
 <tr><td style="width: 25%;"><a href="getSolverName-RandomForestSolver-method.html">getSolverName-method</a></td>
 <td>Get Random Forest Solver name</td></tr>
+<tr><td style="width: 25%;"><a href="getSolverName-RidgeSolver-method.html">getSolverName-method</a></td>
+<td>Get Ridge Solver name</td></tr>
 <tr><td style="width: 25%;"><a href="getSolverName-SpearmanSolver-method.html">getSolverName-method</a></td>
 <td>Get Spearman Solver Name</td></tr>
+<tr><td style="width: 25%;"><a href="getSolverName-SqrtLassoSolver-method.html">getSolverName-method</a></td>
+<td>Get SqrtLasso Solver name</td></tr>
+<tr><td style="width: 25%;"><a href="getTfbsCountsInEnhancers.html">getTfbsCountsInEnhancers</a></td>
+<td>Get Transcription Factor Binding Site Counts in Enhancers</td></tr>
+<tr><td style="width: 25%;"><a href="getTfbsCountsPerPromoter.html">getTfbsCountsPerPromoter</a></td>
+<td>Get Transcription Factor Binding Site Counts Per Promoter</td></tr>
+<tr><td style="width: 25%;"><a href="getTfbsCountsPerPromoterMC.html">getTfbsCountsPerPromoterMC</a></td>
+<td>Get Transcription Factor Binding Site Counts Per Promoter with Clustering</td></tr>
+<tr><td style="width: 25%;"><a href="LassoPVSolver.html">LassoPVSolver</a></td>
+<td>Create a Solver class object using the LASSO P-Value solver</td></tr>
+<tr><td style="width: 25%;"><a href="LassoPVSolver-class.html">LassoPVSolver-class</a></td>
+<td>An S4 class to represent a LASSO P-Value solver</td></tr>
 <tr><td style="width: 25%;"><a href="LassoSolver.html">LassoSolver</a></td>
 <td>Create a Solver class object using the LASSO solver</td></tr>
 <tr><td style="width: 25%;"><a href="LassoSolver-class.html">LassoSolver-class</a></td>
@@ -88,39 +120,69 @@ priors, machine learning
 <td>Apply a null filter</td></tr>
 <tr><td style="width: 25%;"><a href="PearsonSolver.html">PearsonSolver</a></td>
 <td>Create a Solver class object using Pearson correlation coefficients as the solver</td></tr>
+<tr><td style="width: 25%;"><a href="PearsonSolver-class.html">PearsonSolver-class</a></td>
+<td>An S4 class to represent a Pearson solver</td></tr>
 <tr><td style="width: 25%;"><a href="RandomForestSolver.html">RandomForestSolver</a></td>
 <td>Create a Solver class object using the Random Forest Solver</td></tr>
 <tr><td style="width: 25%;"><a href="RandomForestSolver-class.html">RandomForestSolver-class</a></td>
 <td>An S4 class to represent a Random Forest solver</td></tr>
 <tr><td style="width: 25%;"><a href="rescalePredictorWeights.html">rescalePredictorWeights</a></td>
 <td>Rescale Bayes Spike Predictor Weights</td></tr>
+<tr><td style="width: 25%;"><a href="rescalePredictorWeights-LassoPVSolver-method.html">rescalePredictorWeights-method</a></td>
+<td>Rescale LASSO P-Value Predictor Weights</td></tr>
 <tr><td style="width: 25%;"><a href="rescalePredictorWeights-LassoSolver-method.html">rescalePredictorWeights-method</a></td>
 <td>Rescale LASSO Predictor Weights</td></tr>
+<tr><td style="width: 25%;"><a href="rescalePredictorWeights-RidgeSolver-method.html">rescalePredictorWeights-method</a></td>
+<td>Rescale Ridge Regression Predictor Weights</td></tr>
+<tr><td style="width: 25%;"><a href="rescalePredictorWeights-SqrtLassoSolver-method.html">rescalePredictorWeights-method</a></td>
+<td>Rescale Square Root LASSO Predictor Weights</td></tr>
 <tr><td style="width: 25%;"><a href="rescalePredictorWeights.html">rescalePredictorWeights.BayesSpikeSolver</a></td>
 <td>Rescale Bayes Spike Predictor Weights</td></tr>
+<tr><td style="width: 25%;"><a href="rescalePredictorWeights-LassoPVSolver-method.html">rescalePredictorWeights.LassoPVSolver</a></td>
+<td>Rescale LASSO P-Value Predictor Weights</td></tr>
 <tr><td style="width: 25%;"><a href="rescalePredictorWeights-LassoSolver-method.html">rescalePredictorWeights.LassoSolver</a></td>
 <td>Rescale LASSO Predictor Weights</td></tr>
+<tr><td style="width: 25%;"><a href="rescalePredictorWeights-RidgeSolver-method.html">rescalePredictorWeights.RidgeSolver</a></td>
+<td>Rescale Ridge Regression Predictor Weights</td></tr>
+<tr><td style="width: 25%;"><a href="rescalePredictorWeights-SqrtLassoSolver-method.html">rescalePredictorWeights.SqrtLassoSolver</a></td>
+<td>Rescale Square Root LASSO Predictor Weights</td></tr>
+<tr><td style="width: 25%;"><a href="RidgeSolver.html">RidgeSolver</a></td>
+<td>Create a Solver class object using the Ridge Regression solver</td></tr>
+<tr><td style="width: 25%;"><a href="RidgeSolver-class.html">RidgeSolver-class</a></td>
+<td>An S4 class to represent a Ridge Regression solver</td></tr>
 <tr><td style="width: 25%;"><a href="run-BayesSpikeSolver-method.html">run-method</a></td>
 <td>Run the Bayes Spike Solver</td></tr>
+<tr><td style="width: 25%;"><a href="run-LassoPVSolver-method.html">run-method</a></td>
+<td>Run the LASSO P-Value Solver</td></tr>
 <tr><td style="width: 25%;"><a href="run-LassoSolver-method.html">run-method</a></td>
 <td>Run the LASSO Solver</td></tr>
 <tr><td style="width: 25%;"><a href="run-PearsonSolver-method.html">run-method</a></td>
 <td>Run the Pearson Solver</td></tr>
 <tr><td style="width: 25%;"><a href="run-RandomForestSolver-method.html">run-method</a></td>
 <td>Run the Random Forest Solver</td></tr>
+<tr><td style="width: 25%;"><a href="run-RidgeSolver-method.html">run-method</a></td>
+<td>Run the Ridge Regression Solver</td></tr>
 <tr><td style="width: 25%;"><a href="run-SpearmanSolver-method.html">run-method</a></td>
 <td>Run the Spearman Solver</td></tr>
+<tr><td style="width: 25%;"><a href="run-SqrtLassoSolver-method.html">run-method</a></td>
+<td>Run the Square Root LASSO Solver</td></tr>
 <tr><td style="width: 25%;"><a href="run-BayesSpikeSolver-method.html">run.BayesSpikeSolver</a></td>
 <td>Run the Bayes Spike Solver</td></tr>
+<tr><td style="width: 25%;"><a href="run-LassoPVSolver-method.html">run.LassoPVSolver</a></td>
+<td>Run the LASSO P-Value Solver</td></tr>
 <tr><td style="width: 25%;"><a href="run-LassoSolver-method.html">run.LassoSolver</a></td>
 <td>Run the LASSO Solver</td></tr>
 <tr><td style="width: 25%;"><a href="run-PearsonSolver-method.html">run.PearsonSolver</a></td>
 <td>Run the Pearson Solver</td></tr>
 <tr><td style="width: 25%;"><a href="run-RandomForestSolver-method.html">run.RandomForestSolver</a></td>
 <td>Run the Random Forest Solver</td></tr>
+<tr><td style="width: 25%;"><a href="run-RidgeSolver-method.html">run.RidgeSolver</a></td>
+<td>Run the Ridge Regression Solver</td></tr>
 <tr><td style="width: 25%;"><a href="run-SpearmanSolver-method.html">run.SpearmanSolver</a></td>
 <td>Run the Spearman Solver</td></tr>
-<tr><td style="width: 25%;"><a href="solve-TReNA.html">solve-method</a></td>
+<tr><td style="width: 25%;"><a href="run-SqrtLassoSolver-method.html">run.SqrtLassoSolver</a></td>
+<td>Run the Square Root LASSO Solver</td></tr>
+<tr><td style="width: 25%;"><a href="solve.html">solve</a></td>
 <td>Solve the TReNA object</td></tr>
 <tr><td style="width: 25%;"><a href="Solver.html">Solver</a></td>
 <td>Define an object of class Solver</td></tr>
@@ -128,6 +190,12 @@ priors, machine learning
 <td>An S4 class to represent a solver</td></tr>
 <tr><td style="width: 25%;"><a href="SpearmanSolver.html">SpearmanSolver</a></td>
 <td>Create a Solver class object using Spearman correlation coefficients as the solver</td></tr>
+<tr><td style="width: 25%;"><a href="SpearmanSolver-class.html">SpearmanSolver-class</a></td>
+<td>An S4 class to represent a Spearman solver</td></tr>
+<tr><td style="width: 25%;"><a href="SqrtLassoSolver.html">SqrtLassoSolver</a></td>
+<td>Create a Solver class object using the Square Root LASSO solver</td></tr>
+<tr><td style="width: 25%;"><a href="SqrtLassoSolver-class.html">SqrtLassoSolver-class</a></td>
+<td>An S4 class to represent a Square Root LASSO solver</td></tr>
 <tr><td style="width: 25%;"><a href="TReNA-package.html">TReNA</a></td>
 <td>TReNA: Fit transcriptional regulatory networks using transcription factor binding sites and lasso regression</td></tr>
 <tr><td style="width: 25%;"><a href="TReNA-class.html">TReNA-class</a></td>

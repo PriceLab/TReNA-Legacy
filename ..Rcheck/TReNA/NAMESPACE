@@ -19,9 +19,12 @@ export(
     makeTrnFromPromoterCountsAndExpression,
     PearsonSolver,
     SpearmanSolver,
+    SqrtLassoSolver,
     Filter,
     NullFilter,
-    VarianceFilter
+    VarianceFilter,
+    LassoPVSolver,
+    RidgeSolver
     )
 
 exportMethods(

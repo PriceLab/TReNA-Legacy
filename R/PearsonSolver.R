@@ -81,7 +81,8 @@ setMethod("run", "PearsonSolver",
               fit <- cor( x = x, y = y)
 
               # For now, just return the fit and the gene names
-              tbl <- data.frame(gene = rownames(mtx),coefficient = fit)
+              tbl <- data.frame(gene = setdiff(rownames(mtx),target.gene),
+                                coefficient = fit)
               return(tbl)
           })
 #----------------------------------------------------------------------------------------------------

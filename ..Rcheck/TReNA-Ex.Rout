@@ -1,7 +1,7 @@
 
 R version 3.3.2 (2016-10-31) -- "Sincere Pumpkin Patch"
 Copyright (C) 2016 The R Foundation for Statistical Computing
-Platform: x86_64-apple-darwin11.4.2 (64-bit)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
@@ -82,6 +82,38 @@ Loading required package: IRanges
 Loading required package: GenomeInfoDb
 Loading required package: doParallel
 Loading required package: iterators
+Loading required package: flare
+Loading required package: lattice
+Loading required package: MASS
+Loading required package: igraph
+
+Attaching package: ‘igraph’
+
+The following object is masked from ‘package:GenomicRanges’:
+
+    union
+
+The following objects are masked from ‘package:IRanges’:
+
+    simplify, union
+
+The following objects are masked from ‘package:S4Vectors’:
+
+    compare, union
+
+The following objects are masked from ‘package:BiocGenerics’:
+
+    normalize, union
+
+The following objects are masked from ‘package:stats’:
+
+    decompose, spectrum
+
+The following object is masked from ‘package:base’:
+
+    union
+
+Loading required package: lassopv
 
 Attaching package: ‘TReNA’
 
@@ -104,6 +136,22 @@ The following objects are masked from ‘package:base’:
 > 
 > base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
 > cleanEx()
+> nameEx("LassoPVSolver")
+> ### * LassoPVSolver
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: LassoPVSolver
+> ### Title: Create a Solver class object using the LASSO P-Value solver
+> ### Aliases: LassoPVSolver
+> 
+> ### ** Examples
+> 
+> solver <- LassoPVSolver()
+> 
+> 
+> 
+> cleanEx()
 > nameEx("LassoSolver")
 > ### * LassoSolver
 > 
@@ -116,6 +164,90 @@ The following objects are masked from ‘package:base’:
 > ### ** Examples
 > 
 > solver <- LassoSolver()
+> 
+> 
+> 
+> cleanEx()
+> nameEx("PearsonSolver")
+> ### * PearsonSolver
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: PearsonSolver
+> ### Title: Create a Solver class object using Pearson correlation
+> ###   coefficients as the solver
+> ### Aliases: PearsonSolver
+> 
+> ### ** Examples
+> 
+> solver <- PearsonSolver()
+> 
+> 
+> 
+> cleanEx()
+> nameEx("RidgeSolver")
+> ### * RidgeSolver
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: RidgeSolver
+> ### Title: Create a Solver class object using the Ridge Regression solver
+> ### Aliases: RidgeSolver
+> 
+> ### ** Examples
+> 
+> solver <- RidgeSolver()
+> 
+> 
+> 
+> cleanEx()
+> nameEx("SpearmanSolver")
+> ### * SpearmanSolver
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: SpearmanSolver
+> ### Title: Create a Solver class object using Spearman correlation
+> ###   coefficients as the solver
+> ### Aliases: SpearmanSolver
+> 
+> ### ** Examples
+> 
+> solver <- SpearmanSolver()
+> 
+> 
+> 
+> cleanEx()
+> nameEx("SqrtLassoSolver")
+> ### * SqrtLassoSolver
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: SqrtLassoSolver
+> ### Title: Create a Solver class object using the Square Root LASSO solver
+> ### Aliases: SqrtLassoSolver
+> 
+> ### ** Examples
+> 
+> solver <- SqrtLassoSolver()
+> 
+> 
+> 
+> cleanEx()
+> nameEx("getSolverName-LassoPVSolver-method")
+> ### * getSolverName-LassoPVSolver-method
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: getSolverName,LassoPVSolver-method
+> ### Title: Get LassoPV Solver name
+> ### Aliases: getSolverName,LassoPVSolver-method
+> 
+> ### ** Examples
+> 
+> solver <- LassoPVSolver()
+> getSolverName(solver)
+[1] "LassoPVSolver"
 > 
 > 
 > 
@@ -137,11 +269,83 @@ The following objects are masked from ‘package:base’:
 > 
 > 
 > 
+> cleanEx()
+> nameEx("getSolverName-PearsonSolver-method")
+> ### * getSolverName-PearsonSolver-method
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: getSolverName,PearsonSolver-method
+> ### Title: Get Pearson Solver name
+> ### Aliases: getSolverName,PearsonSolver-method
+> 
+> ### ** Examples
+> 
+> solver <- PearsonSolver()
+> getSolverName(solver)
+[1] "PearsonSolver"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("getSolverName-RidgeSolver-method")
+> ### * getSolverName-RidgeSolver-method
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: getSolverName,RidgeSolver-method
+> ### Title: Get Ridge Solver name
+> ### Aliases: getSolverName,RidgeSolver-method
+> 
+> ### ** Examples
+> 
+> solver <- RidgeSolver()
+> getSolverName(solver)
+[1] "RidgeSolver"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("getSolverName-SpearmanSolver-method")
+> ### * getSolverName-SpearmanSolver-method
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: getSolverName,SpearmanSolver-method
+> ### Title: Get Spearman Solver Name
+> ### Aliases: getSolverName,SpearmanSolver-method
+> 
+> ### ** Examples
+> 
+> solver <- SpearmanSolver()
+> getSolverName(solver)
+[1] "SpearmanSolver"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("getSolverName-SqrtLassoSolver-method")
+> ### * getSolverName-SqrtLassoSolver-method
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: getSolverName,SqrtLassoSolver-method
+> ### Title: Get SqrtLasso Solver name
+> ### Aliases: getSolverName,SqrtLassoSolver-method
+> 
+> ### ** Examples
+> 
+> solver <- SqrtLassoSolver()
+> getSolverName(solver)
+[1] "SqrtLassoSolver"
+> 
+> 
+> 
 > ### * <FOOTER>
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  4.117 0.066 4.193 0 0 
+Time elapsed:  2.554 0.068 2.63 0 0 
 > grDevices::dev.off()
 null device 
           1 

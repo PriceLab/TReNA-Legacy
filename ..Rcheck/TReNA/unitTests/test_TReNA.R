@@ -8,18 +8,24 @@ runTests <- function()
    test_emptyConstructor()
    test_developAndFitDummyTestData()
    test_LassoSolverConstructor()
+   test_RidgeSolverConstructor()
+   test_SqrtLassoSolverConstructor()
+   test_LassoPVSolverConstructor()
    test_fitDummyData()
 
    test_ampAD.mef2c.154tfs.278samples.lasso()
    test_ampAD.mef2c.154tfs.278samples.bayesSpike()
 #   test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes()
    test_ampAD.mef2c.154tfs.278samples.randomForest()
+   test_ampAD.mef2c.154tfs.278samples.ridge()
+   test_ampAD.mef2c.154tfs.278samples.sqrtlasso()
+   test_ampAD.mef2c.154tfs.278samples.lassopv()
 
    test_scalePredictorPenalties.lasso()
    test_eliminateSelfTFs()
    test_NullFilter()
    test_VarianceFilter()
-
+   
 } # runTests
 #----------------------------------------------------------------------------------------------------
 test_emptyConstructor <- function()
@@ -415,5 +421,107 @@ test_VarianceFilter <- function()
     checkTrue(length(var.filter) > 0)
 
 } # test_VarianceFilter
+#----------------------------------------------------------------------------------------------------
+test_SqrtLassoSolverConstructor <- function()
+{
+    printf("--- test_SqrtLassoSolverConstructor")
+
+    # Construct the SqrtLassoSolver and check that it's correct
+    solver <- SqrtLassoSolver()
+    checkEquals(getSolverName(solver), "SqrtLassoSolver")
+    checkTrue(all(c("SqrtLassoSolver", "Solver") %in% is(solver)))
+}
+
+# test_SqrtLassoSolverConstructor   
+#----------------------------------------------------------------------------------------------------    
+test_ampAD.mef2c.154tfs.278samples.sqrtlasso <- function()
+{
+   printf("--- test_ampAD.mef2c.154tfs.278samples.sqrtlasso")
+
+   # Load matrix and transform via arcsinh
+   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+   target.gene <- "MEF2C"
+   mtx.asinh <- asinh(mtx.sub)
+   #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
+   
+   trena <- TReNA(mtx.assay=mtx.asinh, solver="sqrtlasso", quiet=FALSE)
+   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
+   tbl <- solve(trena, target.gene, tfs)
+
+   # Check for empirical values
+   tbl <- tbl[order(abs(tbl$beta), decreasing=TRUE),, drop = FALSE]
+   expected.genes <- sort(c("SATB2","STAT4","HLF","TSHZ3", "FOXP2"))
+   actual.genes <- sort(rownames(subset(tbl, abs(beta) > 0.1)))
+   printf("Top 5 genes: %s", paste(rownames(tbl[1:5,]),collapse=","))
+   checkEquals(expected.genes,actual.genes)
+   
+} # test_ampAD.mef2c.154tfs.278samples.sqrtlasso
+#----------------------------------------------------------------------------------------------------    
+test_LassoPVSolverConstructor <- function()
+{
+    printf("--- test_LassoPvSolverConstructor")
+
+    # Construct the SqrtLassoSolver and check that it's correct
+
+    solver <- LassoPVSolver()
+    checkEquals(getSolverName(solver), "LassoPVSolver")
+    checkTrue(all(c("LassoPVSolver", "Solver") %in% is(solver)))
+}
+
+# test_LassoPVSolverConstructor
+#----------------------------------------------------------------------------------------------------
+test_ampAD.mef2c.154tfs.278samples.lassopv <- function()
+{
+   printf("--- test_ampAD.mef2c.154tfs.278samples.lassopv")
+
+   # Load matrix and transform via arcsinh
+   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+   target.gene <- "MEF2C"
+   mtx.asinh <- asinh(mtx.sub)
+   #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
+   
+   trena <- TReNA(mtx.assay=mtx.asinh, solver="lassopv", quiet=FALSE)
+   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
+   tbl <- solve(trena, target.gene, tfs)
+
+   # Check for significant P-values; make sure they match the empirical value
+   sig.genes <- tbl$p.values[tbl$p.values < 0.01]
+   checkEquals(length(sig.genes),30)
+   
+} # test_ampAD.mef2c.154tfs.278samples.lassopv
+#----------------------------------------------------------------------------------------------------
+test_RidgeSolverConstructor <- function()
+{
+    printf("--- test_RidgeSolverConstructor")
+
+    # Construct the RidgeSolver and check that it's correct
+
+    solver <- RidgeSolver()
+    checkEquals(getSolverName(solver), "RidgeSolver")
+    checkTrue(all(c("RidgeSolver", "Solver") %in% is(solver)))
+}
+
+# test_RidgeSolverConstructor
+#----------------------------------------------------------------------------------------------------
+test_ampAD.mef2c.154tfs.278samples.ridge <- function()
+{
+   printf("--- test_ampAD.mef2c.154tfs.278samples.ridge")
+
+   # Load matrix and transform via arcsinh
+   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+   target.gene <- "MEF2C"
+   mtx.asinh <- asinh(mtx.sub)
+   #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
+   
+   trena <- TReNA(mtx.assay=mtx.asinh, solver="ridge", quiet=FALSE)
+   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
+   tbl <- solve(trena, target.gene, tfs)
+
+   # Check for empirical values
+   checkTrue(min(tbl$beta) > -0.15)
+   checkTrue(max(tbl$beta) < 0.15)
+   checkTrue(c("FOXP1") %in% rownames(subset(tbl, abs(beta) > 0.08)))
+
+} # test_ampAD.mef2c.154tfs.278samples.ridge
 #----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()

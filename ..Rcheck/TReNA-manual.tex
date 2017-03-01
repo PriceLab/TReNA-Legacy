@@ -16,20 +16,22 @@
 \item[Type]\AsIs{Package}
 \item[Title]\AsIs{Fit transcriptional regulatory networks using gene expression,
 priors, machine learning}
-\item[Version]\AsIs{0.99.66}
-\item[Date]\AsIs{2017-02-09}
+\item[Version]\AsIs{0.99.72}
+\item[Date]\AsIs{2017-02-28}
 \item[Author]\AsIs{Seth Ament }\email{seth.ament@systemsbiology.org}\AsIs{, Paul Shannon }\email{pshannon@systemsbioloyg.org}\AsIs{, Matthew Richards }\email{mrichard@systemsbiology.org}\AsIs{}
 \item[Maintainer]\AsIs{Seth Ament }\email{seth.ament@systemsbiology.org}\AsIs{, Paul Shannon }\email{pshannon@systemsbioloyg.org}\AsIs{, Matthew Richards }\email{mrichard@systemsbiology.org}\AsIs{}
 \item[Depends]\AsIs{R (>= 3.2.3), glmnet (>= 2.0.3), randomForest, vbsr,
-RPostgreSQL , GenomicRanges , foreach , doParallel}
+RPostgreSQL , GenomicRanges , foreach , doParallel, flare,
+lassopv}
 \item[Suggests]\AsIs{RUnit}
 \item[Description]\AsIs{Methods for reconstructing transcriptional regulatory networks, especially in species
 for which genome-wide TF binding site information is available.}
 \item[License]\AsIs{GPL-3}
 \item[Collate]\AsIs{'Solver.R' 'BayesSpikeSolver.R' 'Filter.R' 'FootprintFinder.R'
-'LassoSolver.R' 'NullFilter.R' 'PearsonSolver.R'
-'RandomForestSolver.R' 'SpearmanSolver.R' 'TReNA.R'
-'VarianceFilter.R' 'runTReNA.R'}
+'LassoPVSolver.R' 'LassoSolver.R' 'NullFilter.R'
+'PearsonSolver.R' 'RandomForestSolver.R' 'TReNA.R'
+'RidgeSolver.R' 'SpearmanSolver.R' 'SqrtLassoSolver.R'
+'VarianceFilter.R' 'runTReNA.R' 'sharedFunctions.R'}
 \item[RoxygenNote]\AsIs{6.0.1}
 \end{description}
 \Rdcontents{\R{} topics documented:}
@@ -85,9 +87,9 @@ Filter genes based on footprints
 %
 \begin{Arguments}
 \begin{ldescription}
-\item[\code{genome.database.uri}] The address of a genome database for use in filtering
+\item[\code{genome.db}] The address of a genome database for use in filtering
 
-\item[\code{project.database.uri}] The address of a project database for use in filtering
+\item[\code{project.db}] The address of a project database for use in filtering
 \end{ldescription}
 \end{Arguments}
 %
@@ -108,6 +110,12 @@ getAssayData(obj)
 \end{verbatim}
 \end{Usage}
 %
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class Solver
+\end{ldescription}
+\end{Arguments}
+%
 \begin{Value}
 The assay matrix of gene expression data associated with a Solver object
 \end{Value}
@@ -124,6 +132,12 @@ Get candidate genes using the selected filter
 Filter(mtx.assay = matrix(), quiet = TRUE)
 \end{verbatim}
 \end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
 %
 \begin{Value}
 A vector containing all genes selected as candidates by the filter
@@ -142,6 +156,12 @@ Get candidate genes using the null filter
 getCandidates(obj)
 \end{verbatim}
 \end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class NullFilter
+\end{ldescription}
+\end{Arguments}
 %
 \begin{Value}
 A vector containing all genes in the assay matrix
@@ -163,12 +183,30 @@ getCandidates(obj, target.gene)
 %
 \begin{Arguments}
 \begin{ldescription}
+\item[\code{obj}] An object of class VarianceFilter
+
 \item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
 \end{ldescription}
 \end{Arguments}
 %
 \begin{Value}
 A vector containing all genes with variances less than the target gene
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{getDnaseEnhancerRegions}{Get DNase Enhancer Regions}{getDnaseEnhancerRegions}
+%
+\begin{Description}\relax
+Connect to the SQL database of hg38 enhancers and select only those regions where method = DNase-DNase
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+getDnaseEnhancerRegions()
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+A table of enhancers where the method is DNase-DNase
 \end{Value}
 \inputencoding{utf8}
 \HeaderA{getFootprintsForTF}{Get Footprints for a TF}{getFootprintsForTF}
@@ -185,9 +223,42 @@ getFootprintsForTF(obj, tf)
 %
 \begin{Arguments}
 \begin{ldescription}
+\item[\code{obj}] An object of class FootprintFilter (??)
+
 \item[\code{tf}] A transcription factor
 \end{ldescription}
 \end{Arguments}
+\inputencoding{utf8}
+\HeaderA{getGenelistFromGtf}{Get Gene List from Gtf}{getGenelistFromGtf}
+%
+\begin{Description}\relax
+Query the SQL gtf table to get a list of genes matching the supplied "biotype" and "moleculetype"
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+getGenelistFromGtf(genome.db.uri, project.db.uri, biotype = "protein_coding",
+  moleculetype = "gene", use_gene_ids = T)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{genome.db.uri}] A web address to a genome database
+
+\item[\code{project.db.uri}] A web address to a project database
+
+\item[\code{biotype}] A string specifying the biotype of interest (default = "protein\_coding") **What are the options?
+
+\item[\code{moleculetype}] A string specifying the moleculetype of interest (default = "gene") **What are the options?
+
+\item[\code{use\_gene\_ids}] A logical character indicating whether or not to use gene IDs as opposed to gene names (default = T)
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A list of genes resulting from the query
+\end{Value}
 \inputencoding{utf8}
 \HeaderA{getGenePromoterRegions}{Get Gene Promoter Regions}{getGenePromoterRegions}
 %
@@ -205,6 +276,8 @@ getGenePromoterRegions(obj, genelist, size.upstream = 10000,
 %
 \begin{Arguments}
 \begin{ldescription}
+\item[\code{obj}] An object of class FootprintFilter(??)
+
 \item[\code{genelist}] A gene list
 
 \item[\code{size.upstream}] Number of basepairs to grab upstream of each gene (default = 10000)
@@ -212,6 +285,22 @@ getGenePromoterRegions(obj, genelist, size.upstream = 10000,
 \item[\code{size.downstream}] Number of basepairs to grab downstream of each gene (default = 10000)
 \end{ldescription}
 \end{Arguments}
+\inputencoding{utf8}
+\HeaderA{getHiCEnhancerRegions}{Get Hi-C Enhancer Regions}{getHiCEnhancerRegions}
+%
+\begin{Description}\relax
+Connect to the SQL database of hg38 enhancers and select only those regions where method = Hi-C
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+getHiCEnhancerRegions()
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+A table of enhancers where the method is Hi-C
+\end{Value}
 \inputencoding{utf8}
 \HeaderA{getSolverName,BayesSpikeSolver-method}{Get Bayes Spike Solver name}{getSolverName,BayesSpikeSolver.Rdash.method}
 %
@@ -226,9 +315,45 @@ getSolverName(obj)
 \end{verbatim}
 \end{Usage}
 %
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of the class BayesSpikeSolver
+\end{ldescription}
+\end{Arguments}
+%
 \begin{Value}
 "BayesSpikeSolver"
 \end{Value}
+\inputencoding{utf8}
+\HeaderA{getSolverName,LassoPVSolver-method}{Get LassoPV Solver name}{getSolverName,LassoPVSolver.Rdash.method}
+%
+\begin{Description}\relax
+Get LassoPV Solver name
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'LassoPVSolver'
+getSolverName(obj)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class LassoPVSolver
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+"LassoPVSolver"
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+solver <- LassoPVSolver()
+getSolverName(solver)
+\end{ExampleCode}
+\end{Examples}
 \inputencoding{utf8}
 \HeaderA{getSolverName,LassoSolver-method}{Get Lasso Solver name}{getSolverName,LassoSolver.Rdash.method}
 %
@@ -242,6 +367,12 @@ Get Lasso Solver name
 getSolverName(obj)
 \end{verbatim}
 \end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class LassoSolver
+\end{ldescription}
+\end{Arguments}
 %
 \begin{Value}
 "LassoSolver"
@@ -267,9 +398,22 @@ getSolverName(obj)
 \end{verbatim}
 \end{Usage}
 %
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class PearsonSolver
+\end{ldescription}
+\end{Arguments}
+%
 \begin{Value}
 "PearsonSolver
 \end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+solver <- PearsonSolver()
+getSolverName(solver)
+\end{ExampleCode}
+\end{Examples}
 \inputencoding{utf8}
 \HeaderA{getSolverName,RandomForestSolver-method}{Get Random Forest Solver name}{getSolverName,RandomForestSolver.Rdash.method}
 %
@@ -284,9 +428,45 @@ getSolverName(obj)
 \end{verbatim}
 \end{Usage}
 %
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class RandomForestSolver
+\end{ldescription}
+\end{Arguments}
+%
 \begin{Value}
 "RandomForestSolver"
 \end{Value}
+\inputencoding{utf8}
+\HeaderA{getSolverName,RidgeSolver-method}{Get Ridge Solver name}{getSolverName,RidgeSolver.Rdash.method}
+%
+\begin{Description}\relax
+Get Ridge Solver name
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'RidgeSolver'
+getSolverName(obj)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class RidgeSolver
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+"RidgeSolver"
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+solver <- RidgeSolver()
+getSolverName(solver)
+\end{ExampleCode}
+\end{Examples}
 \inputencoding{utf8}
 \HeaderA{getSolverName,SpearmanSolver-method}{Get Spearman Solver Name}{getSolverName,SpearmanSolver.Rdash.method}
 %
@@ -301,9 +481,163 @@ getSolverName(obj)
 \end{verbatim}
 \end{Usage}
 %
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class SpearmanSolver
+\end{ldescription}
+\end{Arguments}
+%
 \begin{Value}
 "SpearmanSolver"
 \end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+solver <- SpearmanSolver()
+getSolverName(solver)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{getSolverName,SqrtLassoSolver-method}{Get SqrtLasso Solver name}{getSolverName,SqrtLassoSolver.Rdash.method}
+%
+\begin{Description}\relax
+Get SqrtLasso Solver name
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'SqrtLassoSolver'
+getSolverName(obj)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class SqrtLassoSolver
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+"SqrtLassoSolver"
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+solver <- SqrtLassoSolver()
+getSolverName(solver)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{getTfbsCountsInEnhancers}{Get Transcription Factor Binding Site Counts in Enhancers}{getTfbsCountsInEnhancers}
+%
+\begin{Description}\relax
+Get Transcription Factor Binding Site Counts in Enhancers
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+getTfbsCountsInEnhancers(tflist = NULL, genelist = NULL,
+  enhancertype = "Hi-C", verbose = 2, cores = 5, genome.db.uri,
+  project.db.uri, use_gene_ids = T, biotype = "protein_coding",
+  moleculetype = "gene")
+\end{verbatim}
+\end{Usage}
+\inputencoding{utf8}
+\HeaderA{getTfbsCountsPerPromoter}{Get Transcription Factor Binding Site Counts Per Promoter}{getTfbsCountsPerPromoter}
+%
+\begin{Description}\relax
+For a FootprintFilter object, get the transcription factor binding site counts for each promoter
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+getTfbsCountsPerPromoter(obj, tflist, promoter_regions, verbose = 1)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class FootprintFilter
+
+\item[\code{tflist}] A list of transcription factors
+
+\item[\code{verbose}] A logical indicating whether the function should produce verbose output (default = 1)
+
+\item[\code{promotor\_regions}] A list of promoter regions
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A numeric vector containing transcription factor binding site counts per promoter
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{getTfbsCountsPerPromoterMC}{Get Transcription Factor Binding Site Counts Per Promoter with Clustering}{getTfbsCountsPerPromoterMC}
+%
+\begin{Description}\relax
+Get the transription factor binding site counts for each promoter and cluster
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+getTfbsCountsPerPromoterMC(tflist, promoter_regions, verbose = 1, cores = 5,
+  genome.db.uri, project.db.uri)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{tflist}] A list of transcription factors
+
+\item[\code{promoter\_regions}] A list of promoter regions
+
+\item[\code{verbose}] A logical indicating whether the function should produce verbose output (default = 1)
+
+\item[\code{cores}] The number of computational cores to be devoted to the calculation (default = 5)
+
+\item[\code{genome.db.uri}] A web address to the genome database
+
+\item[\code{project.db.uri}] A web address to the project database
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A numeric vector containing transcription factor binding site counts per gene
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{LassoPVSolver}{Create a Solver class object using the LASSO P-Value solver}{LassoPVSolver}
+%
+\begin{Description}\relax
+Create a Solver class object using the LASSO P-Value solver
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+LassoPVSolver(mtx.assay = matrix(), quiet = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A Solver class object with LASSO P-Value as the solver
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+solver <- LassoPVSolver()
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{LassoPVSolver-class}{An S4 class to represent a LASSO P-Value solver}{LassoPVSolver.Rdash.class}
+\aliasA{.LassoPVSolver}{LassoPVSolver-class}{.LassoPVSolver}
+%
+\begin{Description}\relax
+An S4 class to represent a LASSO P-Value solver
+\end{Description}
 \inputencoding{utf8}
 \HeaderA{LassoSolver}{Create a Solver class object using the LASSO solver}{LassoSolver}
 %
@@ -396,6 +730,23 @@ PearsonSolver(mtx.assay = matrix(), quiet = TRUE)
 \item[\code{mtx.assay}] An assay matrix of gene expression data
 \end{ldescription}
 \end{Arguments}
+%
+\begin{Value}
+A Solver class object with Pearson correlation coefficients as the solver
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+solver <- PearsonSolver()
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{PearsonSolver-class}{An S4 class to represent a Pearson solver}{PearsonSolver.Rdash.class}
+\aliasA{.PearsonSolver}{PearsonSolver-class}{.PearsonSolver}
+%
+\begin{Description}\relax
+An S4 class to represent a Pearson solver
+\end{Description}
 \inputencoding{utf8}
 \HeaderA{RandomForestSolver}{Create a Solver class object using the Random Forest Solver}{RandomForestSolver}
 %
@@ -441,6 +792,39 @@ rescalePredictorWeights(obj, rawValue.min, rawValue.max, rawValues)
 %
 \begin{Arguments}
 \begin{ldescription}
+\item[\code{obj}] An object of class BayesSpikeSolver
+
+\item[\code{rawValue.min}] The minimum value of the raw expression values
+
+\item[\code{rawValue.max}] The maximum value of the raw expression values
+
+\item[\code{rawValues}] A matrix of raw expression values
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A matrix of the raw values re-scaled using the minimum and maximum values
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{rescalePredictorWeights,LassoPVSolver-method}{Rescale LASSO P-Value Predictor Weights}{rescalePredictorWeights,LassoPVSolver.Rdash.method}
+\aliasA{rescalePredictorWeights.LassoPVSolver}{rescalePredictorWeights,LassoPVSolver-method}{rescalePredictorWeights.LassoPVSolver}
+%
+\begin{Description}\relax
+Rescale LASSO P-Value Predictor Weights
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'LassoPVSolver'
+rescalePredictorWeights(obj, rawValue.min,
+  rawValue.max, rawValues)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class LassoPVSolver
+
 \item[\code{rawValue.min}] The minimum value of the raw expression values
 
 \item[\code{rawValue.max}] The maximum value of the raw expression values
@@ -470,6 +854,8 @@ rescalePredictorWeights(obj, rawValue.min, rawValue.max,
 %
 \begin{Arguments}
 \begin{ldescription}
+\item[\code{obj}] An object of class LassoSolver
+
 \item[\code{rawValue.min}] The minimum value of the raw expression values
 
 \item[\code{rawValue.max}] The maximum value of the raw expression values
@@ -481,6 +867,103 @@ rescalePredictorWeights(obj, rawValue.min, rawValue.max,
 \begin{Value}
 A matrix of the raw values re-scaled using the minimum and maximum values
 \end{Value}
+\inputencoding{utf8}
+\HeaderA{rescalePredictorWeights,RidgeSolver-method}{Rescale Ridge Regression Predictor Weights}{rescalePredictorWeights,RidgeSolver.Rdash.method}
+\aliasA{rescalePredictorWeights.RidgeSolver}{rescalePredictorWeights,RidgeSolver-method}{rescalePredictorWeights.RidgeSolver}
+%
+\begin{Description}\relax
+Rescale Ridge Regression Predictor Weights
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'RidgeSolver'
+rescalePredictorWeights(obj, rawValue.min, rawValue.max,
+  rawValues)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class RidgeSolver
+
+\item[\code{rawValue.min}] The minimum value of the raw expression values
+
+\item[\code{rawValue.max}] The maximum value of the raw expression values
+
+\item[\code{rawValues}] A matrix of raw expression values
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A matrix of the raw values re-scaled using the minimum and maximum values
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{rescalePredictorWeights,SqrtLassoSolver-method}{Rescale Square Root LASSO Predictor Weights}{rescalePredictorWeights,SqrtLassoSolver.Rdash.method}
+\aliasA{rescalePredictorWeights.SqrtLassoSolver}{rescalePredictorWeights,SqrtLassoSolver-method}{rescalePredictorWeights.SqrtLassoSolver}
+%
+\begin{Description}\relax
+Rescale Square Root LASSO Predictor Weights
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'SqrtLassoSolver'
+rescalePredictorWeights(obj, rawValue.min,
+  rawValue.max, rawValues)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class SqrtLassoSolver
+
+\item[\code{rawValue.min}] The minimum value of the raw expression values
+
+\item[\code{rawValue.max}] The maximum value of the raw expression values
+
+\item[\code{rawValues}] A matrix of raw expression values
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A matrix of the raw values re-scaled using the minimum and maximum values
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{RidgeSolver}{Create a Solver class object using the Ridge Regression solver}{RidgeSolver}
+%
+\begin{Description}\relax
+Create a Solver class object using the Ridge Regression solver
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+RidgeSolver(mtx.assay = matrix(), quiet = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A Solver class object with Ridge Regression as the solver
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+solver <- RidgeSolver()
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{RidgeSolver-class}{An S4 class to represent a Ridge Regression solver}{RidgeSolver.Rdash.class}
+\aliasA{.RidgeSolver}{RidgeSolver-class}{.RidgeSolver}
+%
+\begin{Description}\relax
+An S4 class to represent a Ridge Regression solver
+\end{Description}
 \inputencoding{utf8}
 \HeaderA{run,BayesSpikeSolver-method}{Run the Bayes Spike Solver}{run,BayesSpikeSolver.Rdash.method}
 \aliasA{run.BayesSpikeSolver}{run,BayesSpikeSolver-method}{run.BayesSpikeSolver}
@@ -500,6 +983,8 @@ run(obj, target.gene, tfs, tf.weights = rep(1,
 %
 \begin{Arguments}
 \begin{ldescription}
+\item[\code{obj}] An object of the class BayesSpikeSolver
+
 \item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
 
 \item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
@@ -516,6 +1001,42 @@ A data frame containing the coefficients relating the target gene to each transc
 %
 \begin{SeeAlso}\relax
 \code{\LinkA{vbsr}{vbsr}}
+\end{SeeAlso}
+\inputencoding{utf8}
+\HeaderA{run,LassoPVSolver-method}{Run the LASSO P-Value Solver}{run,LassoPVSolver.Rdash.method}
+\aliasA{run.LassoPVSolver}{run,LassoPVSolver-method}{run.LassoPVSolver}
+%
+\begin{Description}\relax
+Given a TReNA object with LASSO P-Value as the solver, use the \code{\LinkA{lassopv}{lassopv}} function to estimate coefficients
+for each transcription factor as a predictor of the target gene's expression level.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'LassoPVSolver'
+run(obj, target.gene, tfs, extraArgs = list())
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class LassoPVSolver
+
+\item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
+
+\item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
+
+\item[\code{extraArgs}] Modifiers to the LASSO P-Value solver
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A data frame containing the p-values for each transcription factor pertaining to the target gene
+plus the Pearson correlations between each transcription factor and the target gene.
+\end{Value}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{lassopv}{lassopv}}
 \end{SeeAlso}
 \inputencoding{utf8}
 \HeaderA{run,LassoSolver-method}{Run the LASSO Solver}{run,LassoSolver.Rdash.method}
@@ -536,6 +1057,8 @@ run(obj, target.gene, tfs, tf.weights = rep(1,
 %
 \begin{Arguments}
 \begin{ldescription}
+\item[\code{obj}] An object of class LassoSolver
+
 \item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
 
 \item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
@@ -572,6 +1095,8 @@ run(obj, target.gene, tfs, tf.weights = rep(1,
 %
 \begin{Arguments}
 \begin{ldescription}
+\item[\code{obj}] An object of class PearsonSolver
+
 \item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
 
 \item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
@@ -603,6 +1128,8 @@ run(obj, target.gene, tfs, tf.weights = rep(1,
 %
 \begin{Arguments}
 \begin{ldescription}
+\item[\code{obj}] An object of class RandomForestSolver
+
 \item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
 
 \item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
@@ -616,6 +1143,44 @@ run(obj, target.gene, tfs, tf.weights = rep(1,
 \begin{Value}
 A list containing various parameters of the Random Forest fit.
 \end{Value}
+\inputencoding{utf8}
+\HeaderA{run,RidgeSolver-method}{Run the Ridge Regression Solver}{run,RidgeSolver.Rdash.method}
+\aliasA{run.RidgeSolver}{run,RidgeSolver-method}{run.RidgeSolver}
+%
+\begin{Description}\relax
+Given a TReNA object with Ridge Regression as the solver, use the \code{\LinkA{glmnet}{glmnet}} function to estimate coefficients
+for each transcription factor as a predictor of the target gene's expression level.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'RidgeSolver'
+run(obj, target.gene, tfs, tf.weights = rep(1,
+  length(tfs)), extraArgs = list())
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class RidgeSolver
+
+\item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
+
+\item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
+
+\item[\code{tf.weights}] A set of weights on the transcription factors (default = rep(1, length(tfs)))
+
+\item[\code{extraArgs}] Modifiers to the Ridge Regression solver
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
+\end{Value}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{glmnet}{glmnet}}
+\end{SeeAlso}
 \inputencoding{utf8}
 \HeaderA{run,SpearmanSolver-method}{Run the Spearman Solver}{run,SpearmanSolver.Rdash.method}
 \aliasA{run.SpearmanSolver}{run,SpearmanSolver-method}{run.SpearmanSolver}
@@ -636,6 +1201,8 @@ run(obj, target.gene, tfs, tf.weights = rep(1,
 %
 \begin{Arguments}
 \begin{ldescription}
+\item[\code{obj}] An object of class SpearmanSolver
+
 \item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
 
 \item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
@@ -650,7 +1217,42 @@ fit The set of Spearman Correlation Coefficients between each transcription fact
 \code{\LinkA{cor}{cor}}
 \end{SeeAlso}
 \inputencoding{utf8}
-\HeaderA{solve,TReNA-method}{Solve the TReNA object}{solve,TReNA.Rdash.method}
+\HeaderA{run,SqrtLassoSolver-method}{Run the Square Root LASSO Solver}{run,SqrtLassoSolver.Rdash.method}
+\aliasA{run.SqrtLassoSolver}{run,SqrtLassoSolver-method}{run.SqrtLassoSolver}
+%
+\begin{Description}\relax
+Given a TReNA object with Square Root LASSO as the solver, use the \code{\LinkA{slim}{slim}} function to estimate coefficients
+for each transcription factor as a predictor of the target gene's expression level.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'SqrtLassoSolver'
+run(obj, target.gene, tfs, extraArgs = list())
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{obj}] An object of class SqrtLassoSolver
+
+\item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
+
+\item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
+
+\item[\code{extraArgs}] Modifiers to the Square Root LASSO solver
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
+\end{Value}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{slim}{slim}}
+\end{SeeAlso}
+\inputencoding{utf8}
+\HeaderA{solve}{Solve the TReNA object}{solve}
 %
 \begin{Description}\relax
 Solve the TReNA object
@@ -666,6 +1268,8 @@ solve(obj, target.gene, tfs, tf.weights = rep(1,
 %
 \begin{Arguments}
 \begin{ldescription}
+\item[\code{obj}] An object of class TReNA
+
 \item[\code{target.gene}] A designated target gene that should be part of the mtx.assay data
 
 \item[\code{tfs}] The designated set of transcription factors that could be associated with the target gene.
@@ -717,7 +1321,7 @@ An S4 class to represent a solver
 
 \item[\code{quiet}] A logical element indicating whether the solver should produce output
 
-\item[\code{state}] Environment
+\item[\code{state}] Environment variable
 
 \end{description}
 \end{Section}
@@ -743,6 +1347,54 @@ SpearmanSolver(mtx.assay = matrix(), quiet = TRUE)
 \begin{Value}
 A Solver class object with Spearman correlation coefficients as the solver
 \end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+solver <- SpearmanSolver()
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{SpearmanSolver-class}{An S4 class to represent a Spearman solver}{SpearmanSolver.Rdash.class}
+\aliasA{.SpearmanSolver}{SpearmanSolver-class}{.SpearmanSolver}
+%
+\begin{Description}\relax
+An S4 class to represent a Spearman solver
+\end{Description}
+\inputencoding{utf8}
+\HeaderA{SqrtLassoSolver}{Create a Solver class object using the Square Root LASSO solver}{SqrtLassoSolver}
+%
+\begin{Description}\relax
+Create a Solver class object using the Square Root LASSO solver
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+SqrtLassoSolver(mtx.assay = matrix(), quiet = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{mtx.assay}] An assay matrix of gene expression data
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A Solver class object with Square Root LASSO as the solver
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+solver <- SqrtLassoSolver()
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{SqrtLassoSolver-class}{An S4 class to represent a Square Root LASSO solver}{SqrtLassoSolver.Rdash.class}
+\aliasA{.SqrtLassoSolver}{SqrtLassoSolver-class}{.SqrtLassoSolver}
+%
+\begin{Description}\relax
+An S4 class to represent a Square Root LASSO solver
+\end{Description}
 \inputencoding{utf8}
 \HeaderA{TReNA}{TReNA:  Fit transcriptional regulatory networks using transcription factor binding sites and lasso regression}{TReNA}
 \aliasA{TReNA-package}{TReNA}{TReNA.Rdash.package}

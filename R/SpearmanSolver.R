@@ -83,7 +83,8 @@ setMethod("run", "SpearmanSolver",
               fit <- cor( x = x, y = y, method = "spearman")
 
               # Return the coefficients and gene names
-              tbl <- data.frame(gene = rownames(mtx), coefficient = fit)
+              tbl <- data.frame(gene = setdiff(rownames(mtx),target.gene),
+                                coefficient = fit)
               return(tbl)
           })
 #----------------------------------------------------------------------------------------------------

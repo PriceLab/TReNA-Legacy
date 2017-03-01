@@ -16,6 +16,10 @@ BayesSpikeSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
     obj <- .BayesSpikeSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
 
+    # Check the distribution to see if it's too big
+    if((max(mtx.assay) - min(mtx.assay)) > 1E4)
+        warning("Matrix range exceeds 10,000; consider using a different solver")
+    
     obj
 
 } # TReNA, the constructor

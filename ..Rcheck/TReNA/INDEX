@@ -4,6 +4,9 @@ BayesSpikeSolver-class
                         An S4 class to represent a Bayes Spike solver
 Filter-class            An S4 class to represent a filter
 FootprintFinder-class   Filter genes based on footprints
+LassoPVSolver           Create a Solver class object using the LASSO
+                        P-Value solver
+LassoPVSolver-class     An S4 class to represent a LASSO P-Value solver
 LassoSolver             Create a Solver class object using the LASSO
                         solver
 LassoSolver-class       An S4 class to represent a LASSO solver
@@ -11,14 +14,24 @@ NullFilter              Define an object of class Null Filter
 NullFilter-class        Apply a null filter
 PearsonSolver           Create a Solver class object using Pearson
                         correlation coefficients as the solver
+PearsonSolver-class     An S4 class to represent a Pearson solver
 RandomForestSolver      Create a Solver class object using the Random
                         Forest Solver
 RandomForestSolver-class
                         An S4 class to represent a Random Forest solver
+RidgeSolver             Create a Solver class object using the Ridge
+                        Regression solver
+RidgeSolver-class       An S4 class to represent a Ridge Regression
+                        solver
 Solver                  Define an object of class Solver
 Solver-class            An S4 class to represent a solver
 SpearmanSolver          Create a Solver class object using Spearman
                         correlation coefficients as the solver
+SpearmanSolver-class    An S4 class to represent a Spearman solver
+SqrtLassoSolver         Create a Solver class object using the Square
+                        Root LASSO solver
+SqrtLassoSolver-class   An S4 class to represent a Square Root LASSO
+                        solver
 TReNA                   TReNA: Fit transcriptional regulatory networks
                         using transcription factor binding sites and
                         lasso regression
@@ -31,31 +44,62 @@ getCandidates,NullFilter-method
                         Get candidate genes using the null filter
 getCandidates,VarianceFilter-method
                         Get candidate genes using the variance filter
+getDnaseEnhancerRegions
+                        Get DNase Enhancer Regions
 getFootprintsForTF      Get Footprints for a TF
 getGenePromoterRegions
                         Get Gene Promoter Regions
+getGenelistFromGtf      Get Gene List from Gtf
+getHiCEnhancerRegions   Get Hi-C Enhancer Regions
 getSolverName,BayesSpikeSolver-method
                         Get Bayes Spike Solver name
+getSolverName,LassoPVSolver-method
+                        Get LassoPV Solver name
 getSolverName,LassoSolver-method
                         Get Lasso Solver name
 getSolverName,PearsonSolver-method
                         Get Pearson Solver name
 getSolverName,RandomForestSolver-method
                         Get Random Forest Solver name
+getSolverName,RidgeSolver-method
+                        Get Ridge Solver name
 getSolverName,SpearmanSolver-method
                         Get Spearman Solver Name
+getSolverName,SqrtLassoSolver-method
+                        Get SqrtLasso Solver name
+getTfbsCountsInEnhancers
+                        Get Transcription Factor Binding Site Counts in
+                        Enhancers
+getTfbsCountsPerPromoter
+                        Get Transcription Factor Binding Site Counts
+                        Per Promoter
+getTfbsCountsPerPromoterMC
+                        Get Transcription Factor Binding Site Counts
+                        Per Promoter with Clustering
 rescalePredictorWeights
                         Rescale Bayes Spike Predictor Weights
+rescalePredictorWeights,LassoPVSolver-method
+                        Rescale LASSO P-Value Predictor Weights
 rescalePredictorWeights,LassoSolver-method
                         Rescale LASSO Predictor Weights
+rescalePredictorWeights,RidgeSolver-method
+                        Rescale Ridge Regression Predictor Weights
+rescalePredictorWeights,SqrtLassoSolver-method
+                        Rescale Square Root LASSO Predictor Weights
 run,BayesSpikeSolver-method
                         Run the Bayes Spike Solver
+run,LassoPVSolver-method
+                        Run the LASSO P-Value Solver
 run,LassoSolver-method
                         Run the LASSO Solver
 run,PearsonSolver-method
                         Run the Pearson Solver
 run,RandomForestSolver-method
                         Run the Random Forest Solver
+run,RidgeSolver-method
+                        Run the Ridge Regression Solver
 run,SpearmanSolver-method
                         Run the Spearman Solver
-solve,TReNA-method      Solve the TReNA object
+run,SqrtLassoSolver-method
+                        Run the Square Root LASSO Solver
+solve                   Solve the TReNA object

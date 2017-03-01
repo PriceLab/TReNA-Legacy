@@ -1,250 +1,106 @@
-* using log directory ‘/Users/mrichard/Documents/TReNA/..Rcheck’
+* using log directory ‘/Users/mrichard/Documents/Github/TReNA/..Rcheck’
 * using R version 3.3.2 (2016-10-31)
-* using platform: x86_64-apple-darwin11.4.2 (64-bit)
+* using platform: x86_64-apple-darwin13.4.0 (64-bit)
 * using session charset: UTF-8
 * checking for file ‘./DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘TReNA’ version ‘0.99.66’
+* this is package ‘TReNA’ version ‘0.99.72’
 * checking package namespace information ... OK
 * checking package dependencies ... NOTE
 Depends: includes the non-default packages:
   ‘glmnet’ ‘randomForest’ ‘vbsr’ ‘RPostgreSQL’ ‘GenomicRanges’
-  ‘foreach’ ‘doParallel’
+  ‘foreach’ ‘doParallel’ ‘flare’ ‘lassopv’
 Adding so many packages to the search path is excessive and importing
 selectively is preferable.
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... WARNING
 Found the following executable files:
-  .git/objects/00/7d30fdbef67697f57d4983937cf2e0cacb2cae
-  .git/objects/00/f72f059223480ecf81c2152d45858c51ec39e1
-  .git/objects/02/6b08029ff970e240d1d6b9978410f0aae7a53b
-  .git/objects/03/08beda60b53dde76790ac5d75962e6db6f33e0
-  .git/objects/03/b45862b6261e78a9588ef33232093548eff747
-  .git/objects/05/bd1bdbcf285d1802181e87c84408a68c680c53
-  .git/objects/06/bb4d710d716d0b0d7cfdb5ddb8bc06879db859
-  .git/objects/07/3403511150603430f1aac24521610beb82bb96
-  .git/objects/07/4dee80697ba151621863a66e7a6cfc577a5f35
-  .git/objects/09/6117117132884ce3b20af7b65de6da986e30af
-  .git/objects/09/ef4bca323307b747838fbc3a0fb55fcab31abc
-  .git/objects/0b/6e9fc35492bd07b56deff84b2a0f178b279894
-  .git/objects/0b/a175fa47fa7608aaa9476529b36aa1829aeceb
-  .git/objects/0b/d8a287b3a2dc0fa863c926eabdcaaa9b134544
-  .git/objects/0d/cc01d01b9c835cf1576165dd2df1c87dd7afe0
-  .git/objects/0e/6eed7834f594bf19d4cfffa109c11aeda8cceb
-  .git/objects/0e/901628f538d2df1936f6e4f701635bbcbe8d2c
-  .git/objects/0e/aec0d57ee3f43040c670e341a162e6e4ff04d4
-  .git/objects/0f/8d4d84d72f9934e5422fc6bfdcb1a82c2fc845
-  .git/objects/10/73e883aa5abb5380b9b7d4a2d3e617bcd65656
-  .git/objects/12/a61597d41fe502aae7b2df889c7177500f399b
-  .git/objects/14/24321468f5fe04913f86ba68137ba7e687030a
-  .git/objects/15/cfbb2c1d70a5d96cd8e5219f22f543ede1e5a3
-  .git/objects/17/2200fd7932e5cb7f6711b1b2b06315d114a4a8
-  .git/objects/18/c0fea8bd74845a681e8e80fdb8709d47a572b7
-  .git/objects/18/c3ebcaea2aaef5744e1e1bbb7b96c22d59de96
-  .git/objects/19/56fceb7d839c58d065c2ff7041f40d03859c35
-  .git/objects/19/b6dc12ce62699d186d0ed5874f03779a597592
-  .git/objects/19/e149f4b1048d668ac8a7b91d2fd1f183c89adb
-  .git/objects/1b/18d796f0a5a69e9ccead6b00fc5b26e61a32b3
-  .git/objects/1e/b375840db24f3c22468a72245fe2ab2f43616d
-  .git/objects/1f/213c689b1e05708f251c4745767e27068f1177
-  .git/objects/21/1cac724c196391f2268a7535c3b1c5024d0b20
-  .git/objects/21/93c220248fd2cd3c8e073a10955a6931db96be
-  .git/objects/22/1a356cbca56f3a9639bb95082b40416f56a6b5
-  .git/objects/23/c7f4508ae765f6a6fac3ffff67f7dd8dd93c43
-  .git/objects/24/9ba361166fa69a60a48da5757005eef89f08aa
-  .git/objects/25/c808061ee4c6fcbbb3e2ecf94b7f124379ea73
-  .git/objects/26/9056c1b5fe9acfa6f92781c2d1c15a1dc0a0e3
-  .git/objects/27/c423156eb68a2993de016e032f5aab7912e7fc
-  .git/objects/29/33308f6eda3db6c6780418af4bb1a0283e0068
-  .git/objects/2a/7dede84b73290f937e4d086cfbdc7981d06f24
-  .git/objects/2a/9757e666c6f69f69a76d0841954cf90cb1fcd0
-  .git/objects/2b/0f2ba51d4e86faf4295514e5f5e4385c3a7084
-  .git/objects/2d/e0616c305b17f79143e1ce1ae2e1b5b3c1da09
-  .git/objects/2e/a708e8a5386f5f4248d3db43c49d2a09618127
-  .git/objects/30/acc7878bafa1054b39728b4d6b33f53e40267f
-  .git/objects/33/364233423dfd96d8c62c3ef942b10acd06d338
-  .git/objects/34/6739da298e4f5591277614e3158c9c1f0327cc
-  .git/objects/34/7f712799ef4a13e0bbd284ae7bc04636581f52
-  .git/objects/35/e5814d8f7dbe48a245b20755dd43ad959ed7fc
-  .git/objects/37/621c562145c6c6d2bef27e92813d3ad84f1c1f
-  .git/objects/37/63d995e19eba3833b16c3731c770749c2725a9
-  .git/objects/38/38bfc06060e203e15a0004d7a74ad1dd152f6d
-  .git/objects/39/4da7cf99cef00c1f0b4a5963895962b78c670b
-  .git/objects/3a/7376bf8fdf2865a6a6e4cc93ad15273744ea49
-  .git/objects/3a/a22d7ba61919216db4002517c57816cf5b6663
-  .git/objects/3b/8e9f4a676dd65353d1ed936bcec08e49053e32
-  .git/objects/3b/a89107dbb0ecb04fdcc9fa35e50d74db68ea12
-  .git/objects/3d/0f0c0ad8a6cb3626aaf47aac8327d4292e4098
-  .git/objects/3d/c47c028ec5cf42c95f34888f3d9fe1eb5ef682
-  .git/objects/3e/1a6a291d622cdf51add618d64b6eb6e9d99efd
-  .git/objects/3e/7b155f13db95e3fb819d298810be9d7ea43fa0
-  .git/objects/40/ba9474414d05fd1687c105d80bb7b7769645da
-  .git/objects/44/2bf065d94932078fdee20f9726451a67ebc582
-  .git/objects/44/b2c2907532f093cdcd6d614e8b6d84daf432b5
-  .git/objects/45/1b4594e25ccf0706b16089ad3888fc92b70e6b
-  .git/objects/45/7da67995a817a96fd40c38238a3d119d6cbf01
-  .git/objects/46/1a1dc1769c3d3e63d2cf5fce1cfd8f076070dc
-  .git/objects/48/292db2086ca8dfafd2c7a9614b8d53711e7dc0
-  .git/objects/48/d8314dd55dd19e9c1f3ed8cc9bec70324d7a5c
-  .git/objects/49/92ab5c5b850b4dd9585f86731f371e9db63ae4
-  .git/objects/4a/52b1ebdca108c4a40deaa26534ecbf0dc3be57
-  .git/objects/4c/108c9f89652c2424ba0b95304814fc32770ba2
-  .git/objects/4c/6d817245569cf22e3852a490e66bf7f6a5f962
-  .git/objects/4c/df6e230af16958243117db590b1bc9d838a3f5
-  .git/objects/4d/6a9336fc83e46ba89e3fa1470a58b66b0741fd
-  .git/objects/50/1ec206ff2e359c22b099cb48169f2a4f0212d6
-  .git/objects/51/894714be5667ca97929fd8dca1e65f1b5e0ed7
-  .git/objects/56/979ba1e2e864fa33c84c3d1840d237e9144fb3
-  .git/objects/57/b645acda6fdb9e2d07d98277bae9d4070a7975
-  .git/objects/58/1b5f8605e4c64bca4ef117ba8e74da0b21c38e
-  .git/objects/58/338ab6884de3d37d87f199109f1f1e7e48ccaf
-  .git/objects/58/b3367175f03e4f41365a47ae7910e449a294ee
-  .git/objects/59/4f5e2ff98e51c1aaa21f650762c9c5edaa2b06
-  .git/objects/59/7427c2e81db43a0c247c7445134590ef005ef9
-  .git/objects/5d/9e0b77e801ecb91f7bbc3cee18fce0277ce931
-  .git/objects/5e/090db0725a8ae391b6e321549e897afff6f8e4
-  .git/objects/5f/6ec66ebd57a4dc035475d22dd4d582a8bbd17c
-  .git/objects/5f/f681a3a34bff797a7850a30b85584c3dbff4fb
-  .git/objects/60/949c83bf8ade99ccf1d5deb0238d75c029ff05
-  .git/objects/62/1916fd3b25f57615eee988994e326c07763c12
-  .git/objects/67/69bc072c2c1173ede5d359bc8e81b7932b0eb4
-  .git/objects/6e/9ecc72f6bd8028f4b8450cd5faf8d12eff26e9
-  .git/objects/6e/d6c60882fcc47c8da536beb1d9751c274ec8e8
-  .git/objects/6f/5c1ccd6e476a1882198ee3e5dffbd41502596c
-  .git/objects/6f/dcc3fd4a4d2160e4fe032c36a5f26d5c5e5d80
-  .git/objects/6f/e8d2c9ad126d7a223f294b2c403b346af283ff
-  .git/objects/70/51ef1bc79109c5d146fdec90f4062989482b91
-  .git/objects/71/810991f1489c228d6d86372d59e708cdf7302e
-  .git/objects/71/8f6e7ff2beacd149bc5a9431f34e760dbcd609
-  .git/objects/71/a032cf1beb7a7419edf6c0586cae6055fcfeca
-  .git/objects/74/4e711c4069b9f982cc1115d0112a8f1c310b6c
-  .git/objects/74/b3fdb0809cdeec3c74314fa77c03cc22bf9ecb
-  .git/objects/75/26218930100fb0d3bdc2fb189d8fa84e78c760
-  .git/objects/75/6c356f36f9304c0df62a8aad77bf3cb3802db8
-  .git/objects/76/504aed1c05433323cddfea700f28433b812200
-  .git/objects/76/9ad4adc03bdcab6775784c125468219af0d123
-  .git/objects/79/587f0b460848372ea25ecf408b6c76c713e9c2
-  .git/objects/79/cf247fc7f4a7680f94f822dc5662e129db42f8
-  .git/objects/79/e0895298f72e99ba80d8d22944a40b9becd3ec
-  .git/objects/79/f790e8a330284a73f24970ebbf4c493bdee4c3
-  .git/objects/7b/1b797d8e0b5f1b201c27cbefad7bb401a40a38
-  .git/objects/7b/3670761f0bec3a0d2318e8b563297ad4ceb854
-  .git/objects/7c/8493f69a0660da9b1d590b0aa0a081cf54e2e6
-  .git/objects/7e/5cb23c9e3f5bf61bfaa70e233b06d255300a4c
-  .git/objects/81/3c7650bb1f31b60bce101722e98423dcef8b1f
-  .git/objects/81/76ad759e39a6028d4142df0079995a47060507
-  .git/objects/81/9843463a5d968c483c0cb8a590fec0fbc930c6
-  .git/objects/82/0c7996fcd2d561cebbccbf48ea2cd8fb3d9492
-  .git/objects/82/992210e2f584a13fe0fbbfccdf19bdd5f5b191
-  .git/objects/83/0984a866f318be66531e152e18d057e9bc158e
-  .git/objects/83/2cdc5ce4c24909427077122983c5f75f9cfa9d
-  .git/objects/83/b7fed8f61bfbbc68b1fd3c0ceb2b95aa21c73b
-  .git/objects/84/097ef4756318d6a810e387aab42d893e48c898
-  .git/objects/85/37c49e7b91c951685039115a1962c811fc2e1c
-  .git/objects/85/ae511c10260cbcd9a9ca1b04eb034f5a84b320
-  .git/objects/86/38fe9b10ee237bb539f0ca8b406339cdd4305a
-  .git/objects/86/e8863e9baf2367d181c3988e185b7fd82be652
-  .git/objects/89/acdce99ee4d151ba0207fe018cdd959dab7ff5
-  .git/objects/8a/4a57b5304507ac055117a7951642e73ea9b921
-  .git/objects/8b/0408833000b391bf1abd5d5888fd54d814c183
-  .git/objects/8b/0de4018f5c69a84cd9a99c5484f694307a47a1
-  .git/objects/8b/b4dec51726b32a07342be8fa0d19ee30989264
-  .git/objects/8d/329b31e1e304f2b3b66c24552e3d1ab446c59b
-  .git/objects/8d/9298db9a183221d3e7bf8e51774558a94d5a7a
-  .git/objects/8d/e3fc3d814059ada990fe6693e046c2bb0ec93a
-  .git/objects/8f/f91a40d38b41b08bdce2553a9527e2c95f7f72
-  .git/objects/90/db1a727edea836ce7b0e9024fa15c3424df542
-  .git/objects/93/f34664cb918137825bebd4dd165429d6d8c0de
-  .git/objects/94/ddcdc5ed53d363dda5e903b11eed6cee8f40f5
-  .git/objects/95/f5dca9c9f149bc3d03f0f880dd768ecd9175d8
-  .git/objects/96/baf81f0780074232dff722b0b1fcdd362c0aee
-  .git/objects/98/c2c68448d241c599b61a3d953ead86cd4c16ca
-  .git/objects/99/dc106e034523bcd8c809c28b760fa9b6c38e30
-  .git/objects/9c/be7e6621a69fc68b88dba6e3ec5180240bbbc7
-  .git/objects/9d/7a7b90733a8466d74a2e2de158b6bffe3b5b9f
-  .git/objects/9e/63b2f7cac7690f69e58cf5cd8cc8f2ce72ae44
-  .git/objects/a0/6e919c2df7656cee59d72433dc457c59410696
-  .git/objects/a0/b5df6b5e1bec7a1cea99e87304126b04845969
-  .git/objects/a0/ea71301ac10e5c8eeb4813d9b219706aaa9485
-  .git/objects/a1/4a2a330424400472ada7db0ca34cd1c982405a
-  .git/objects/a1/90cda42c3d9b0c9ba0d964a89dc7bcaae1db67
-  .git/objects/a6/4d066f639babffb95c789bc7513ad33c197e13
-  .git/objects/a7/c1742937b543a8c83a6a98d98329e8d317b205
-  .git/objects/aa/741c2d85fe846e4c8e03c43658bbfe342ade89
-  .git/objects/ab/0e3e2bc7834a8d51fa074b6f510207d22c8e51
-  .git/objects/ac/957ec007642d82b763c23b4e93748ecf4deec5
-  .git/objects/af/2c9cf2bc443169bb8b8c3455cfc8b4c034d83b
-  .git/objects/b0/58d555651a88c0c4b7f8ba85d3485c2f6b0006
-  .git/objects/b1/acaeca8faf011b78b2c1b2f86f51baa8de6aae
-  .git/objects/b3/c8032702775c7986865b118d0808601055c3ba
-  .git/objects/b4/48fb9798c99349bd2a14e75f8d096be7e0362c
-  .git/objects/b4/a10fdcf4a00558c1c5a7728251166cbb5d9415
-  .git/objects/b5/51302dfd5d7f8b2db587df994af3e47dd69d0c
-  .git/objects/b5/af9e3bcb4f8f62d630c514869093f42f4c0606
-  .git/objects/b5/babc27af531774725994fb2a9ab5d0f71319b2
-  .git/objects/b9/4eed2cc8e6500a9ca20d587a14599c0c9a9cae
-  .git/objects/b9/cc41e2aac972031e0162f50dabeceb76437bfb
-  .git/objects/ba/b4b4e926c45d0c99b0799654b7d59794ab37ad
-  .git/objects/bf/ce70984a3b7b8e30d6d468dd0cbe12cd30b7d1
-  .git/objects/c0/144ad90f03f9e0069f109b5b74234cd658220a
-  .git/objects/c0/b253017fea42feaa028635959a1ae50d161922
-  .git/objects/c2/f0c1907b5e20ba7623ed65a2696dca7dfc9abb
-  .git/objects/c4/5ac2e4612fc9a6f7e7a606b8cd60deff9bcc02
-  .git/objects/c5/1116b4f03ae45eccc0aabfe024047a85b59111
-  .git/objects/c5/122edd3b61e694ddcb5c9a1a27fcf18701155c
-  .git/objects/c6/af4670855d69338387ab34c765349b5e09ed59
-  .git/objects/c7/7578218f76985f8f033c382ab0ba98f2aaed1e
-  .git/objects/ca/b266249b063ed80215c5ec7ddf931e93b2a2f1
-  .git/objects/ca/e9460d9a21098ec69ca0d1014eb0d32932b7d0
-  .git/objects/ce/f5f9d572975ec95442d54219d6c8e93e7c875d
-  .git/objects/d3/a51d7dced50234f8281543c90bece35a699972
-  .git/objects/d4/5b994a5b04b48922f4108032682ab2d17177c7
-  .git/objects/d6/9fbfc5351d8b5ee96e017582883e40025ca6ff
-  .git/objects/d7/4f5d8cf8679524be6d99f692a829a4141c7203
-  .git/objects/d7/acf399d200cfd611fa535c70033858ddb0170e
-  .git/objects/d8/bad1bf2515d72a774ad29bdd7cb70ea4d07a8b
-  .git/objects/d8/d1f58f10e75e6d41f55fa21f3a1f18a70ab4eb
-  .git/objects/d9/dca38a52d9f545d3de5c692c7c89acb2399f73
-  .git/objects/dc/b25f47d5dcf778b64566c57ab52c4ea6beaa83
-  .git/objects/df/a4b9d8d0da53db75cd07b212e18202443a65d1
-  .git/objects/e0/76e16e162a5118f12ad3afca20d2731451761a
-  .git/objects/e0/bbd8bd37b8defefab7a3f4112ccc0e72feead3
-  .git/objects/e2/e5af584e45209421323b3775edbf825a7f9352
-  .git/objects/e3/2ccd889a1c375ae03316e2999f2bc399736730
-  .git/objects/e3/b4ecff3e05290d0da971a4e5fd2068b2259a5d
-  .git/objects/e5/7587032512ea364e22ba4bde4e69a2ac108218
-  .git/objects/e6/0afc07255c73dd83909edbc77ca73aae43afd1
-  .git/objects/e6/f387e208ca0f76fe57d6aa6321be1e60c2f6dc
-  .git/objects/e7/1fb1a22c6173ab7450f1ab3f589aad353d55b1
-  .git/objects/e7/a18c96ce793d1877464eba98a3774f1883d5da
-  .git/objects/ea/0d2a3ad65d4974cc499fc8263cd3480a4043eb
-  .git/objects/ec/dc29c3c8356b65bc83d8edfc88417837949388
-  .git/objects/ef/256389b3b78677dc18ada59ae57f05f10aec58
-  .git/objects/ef/40f36e930df59b0683dc6d42189f788b928341
-  .git/objects/ef/a92df64f2730800512e513d64020b652df60ec
-  .git/objects/f0/ab908a9b33ebbaf10a6e758eef6e127ed1653b
-  .git/objects/f1/14a3181eab67c4215b98ae5e6140c5194ba0b8
-  .git/objects/f2/c0c0ea21d30766c6088161d22a02ff63e055e1
-  .git/objects/f4/4e7ba202dc1b3f4976c743713f1fc3580b1810
-  .git/objects/f4/c3662e96b3e23065497cddf3ba403d57450f7a
-  .git/objects/f5/67a3d603b119689f08d84a26c1b6224929f54e
-  .git/objects/f6/2afac5c69f9508c6948191d20b332628dac4dd
-  .git/objects/f6/caf53ec3b6b57a5bebe5440a5f0a8a9e53119e
-  .git/objects/f7/0b408c178f92c99b0bce448d20ea6f46da26b8
-  .git/objects/f7/9df0dd733c53fd098cebf829e1726ff552667c
-  .git/objects/f8/3344672ccb23f32653827120aa79770f7365e2
-  .git/objects/fc/48fda193bf201c96b998a8d84910d6d33cadb5
-  .git/objects/fc/88abeaab71ff62d8e056516e5a8af438fe6fa1
-  .git/objects/fe/6abcb9eb752ad3ead9facbbabae10d4e0bb4a0
-  .git/objects/fe/98bfedf0f2730f303f0e41cc9dddd916a1175f
+  .git/objects/05/6eec8a061ebd56ce5374981205cb2bf2a1bc19
+  .git/objects/0c/dfcc348bb6e7bc8cf5c5f4d23eeebfb3fd60d0
+  .git/objects/0d/5ea36017e793c4de2cd89562213f181599defa
+  .git/objects/12/16e287d9792974a6531999a14a0f9719e37c56
+  .git/objects/15/97173e2757dac8d593f217133fdcb5088b87e1
+  .git/objects/16/73d47f8b3ab0651c4b4e19c0ef78df2aca7ff2
+  .git/objects/1d/bbdf63d4afd7e7355b792bc2e611bbecf1ab33
+  .git/objects/20/c4191789cef0cb220dd67abbd09612cb842808
+  .git/objects/23/2aa61ef28f7bc669ded0058988e23bec5bfd88
+  .git/objects/26/eb04929653dc2efc0cfcc50a000d3bf41a4771
+  .git/objects/27/cfad0e2e1fe66e55453aca88672b76d079e9ec
+  .git/objects/28/1caeeb7480f0677014e907c0a574e51b2f0bc5
+  .git/objects/28/956c9d49d8418eaffab6394989d367f4cafdef
+  .git/objects/2c/b02bd78d2ad855fbc5a394a7138c0a78c8dfc7
+  .git/objects/35/ed45a59d08d747fffa1d3d5e0abc273fd0ca25
+  .git/objects/3b/806f568f4ee2c99f8448c377b61c5c04ba077b
+  .git/objects/3b/cf9d4fc327c1678032e4a55339adffde13582c
+  .git/objects/3d/71c657567605c0544d87b7f0e280a9c090fffb
+  .git/objects/3f/3573631c9f554b90f48ee952f2fcd485ea6016
+  .git/objects/3f/e367096939481a5f51594cc9011ec5e93983f5
+  .git/objects/42/d5e079d41d7849fb5c29e357968e65a1836e2b
+  .git/objects/45/cc49e148321aaf56ea737fd98de160699ff939
+  .git/objects/49/47c99278e6a2df047c3bc6ccb3c6d106c39cf6
+  .git/objects/4a/0f3addb34115eeeb83970cf5cc88916d988a79
+  .git/objects/50/1696cdd0933d639c38c0831cf031c7d6f10764
+  .git/objects/56/3d5affe3cfac81c99edcd3fc7ef95d1be6edd0
+  .git/objects/59/7ed55101c888d3b44c64d090cf02178070ff73
+  .git/objects/59/aeaa0d7b4a7d51233ec1ea63db3c5a70e3fda5
+  .git/objects/65/b462f367bf4d0c47e85b5e876a7be793cd3892
+  .git/objects/66/a8a631a5c91971b91ea570d1bdbcbb41e5634b
+  .git/objects/68/afb952c15d1b2b9dcf672d171e36fc535111a2
+  .git/objects/69/63afaadb90017a1e42a1ca486892cf9160e4e9
+  .git/objects/69/d9d03c4e4df0cb60875e3bed71937a5a5fba63
+  .git/objects/6b/ac23d39034c9e534438a7791e4519d8ab5de0d
+  .git/objects/71/53baca36f24afa5d786bd79e292c8c47ff92d6
+  .git/objects/76/9d7a4b496632c6f4f2c210b3df2582f8992278
+  .git/objects/85/0728e7ee150613c65c8068a584edb91559a0ce
+  .git/objects/85/9817ea15b8de6c27865a7b1bdd9d394be39a39
+  .git/objects/86/0dd0af515c8c778b5f4d9162123d260aa6298f
+  .git/objects/87/2a4ab363ea78171e5f8b077d70a9898bfa7ea9
+  .git/objects/87/d68b6a480c7af8768e24e28641098301d13492
+  .git/objects/8e/6de1be649bdba62a7630653b94f59002ba820f
+  .git/objects/8f/9bda662875b36bf62eee9077d41c3c2940d80e
+  .git/objects/8f/a2307ce211bf35714c92ace6f40cc9ecf0c8d5
+  .git/objects/98/599b6045fc86761e4ba885e9649ec423c97427
+  .git/objects/98/894740db6e45eebb7115f953c4b229322015f9
+  .git/objects/99/2093782e2be395806825ecb0cb2307681ca2b1
+  .git/objects/9a/6afabab5bc601c7e17cbc5a775022d88e12457
+  .git/objects/9b/9cdbf78ef8cdbb986f6ce0a2356a0fcb41d34e
+  .git/objects/9c/917edb8652cbb2fe4546f5519f74ab48fab80b
+  .git/objects/9c/e347c8857b6d5f1f3d0aa6e380c60a62f85dd9
+  .git/objects/a7/2d02c6f5e8949edbbf94d84650abd02f653d1e
+  .git/objects/aa/67c69755f1e7d9172590eb59f3302fc033a69a
+  .git/objects/ad/3e66d6de40921cbba0545e2c95d1eb5c38004a
+  .git/objects/b0/d6b97cb2ce2aefb57ada867e957dd515b2655a
+  .git/objects/b1/1cb012e7411ceaf52e86a4474e38e80f9be13e
+  .git/objects/b1/6aecd50e8e42186842f4388963cd18edac3a09
+  .git/objects/b1/cb56a6a8511165e1e1348656558e67ea21c418
+  .git/objects/c0/55781b1c718c44a1562ee4bb3a60618083bf39
+  .git/objects/c5/abf4ffbe4982e5f8dc2e1e124e9b5712f3dd52
+  .git/objects/c7/ac23dd527b553aa29c5d8c1123561561737a61
+  .git/objects/ca/3a79aaf2e84dc57f380b0026b44fa4efc23842
+  .git/objects/cd/a8b4603e93caa26f8d25786c6597eaa7cae4fb
+  .git/objects/d1/1da426315ff43b88938d9f656eb8f71a23c502
+  .git/objects/d3/8c6a0cdbd89cb2ff3e5ae64af39408550bc798
+  .git/objects/d4/d5ae6401ef483dd8be743f5cc60fec65ba130c
+  .git/objects/d6/815b14177a6536c6140f68abd00fdcaa75e3a2
+  .git/objects/db/3376effb94c0a8fbc39ca78668dba2d3a895c5
+  .git/objects/dd/498515b59f1795eda9f770808a7a4fa6d5b045
+  .git/objects/dd/d856cafd94728dd1efbb4316e4d366fd693eef
+  .git/objects/f0/102cb631bf4e4df7f5d503bb2687d183894585
+  .git/objects/f0/315e758340af190db44fb15975da787abbb1a7
+  .git/objects/f0/bf3c23614a014c09c047bf842f602bdc284548
+  .git/objects/f8/dc996c024a81944b28bd9ffb0ade4bbd4b2c9c
+  .git/objects/fa/77c33c279641f6bffc822e270457d44423959e
+  .git/objects/fa/a5dafa14fed84a5dffcc79addd711183e8b3eb
+  .git/objects/fb/dd3af13d346d7cf7182c9fe961081ef21a3774
+  .git/objects/fd/24a351dfa68d7d0d99b6d988231e04340b9c49
+  .git/objects/ff/be8befdc8d39072d7966c1a7af6028ba31c0f3
 Source packages should not contain undeclared executable files.
 See section ‘Package structure’ in the ‘Writing R Extensions’ manual.
 * checking for hidden files and directories ... NOTE
 Found the following hidden files and directories:
   .DS_Store
   .RData
-  .Rhistory
   .gitignore
   R/.DS_Store
   inst/.DS_Store
@@ -260,9 +116,10 @@ structure’ in the ‘Writing R Extensions’ manual.
 * checking for sufficient/correct file permissions ... OK
 * checking whether package ‘TReNA’ can be installed ... OK
 * checking installed package size ... NOTE
-  installed size is 36.7Mb
+  installed size is 36.9Mb
   sub-directories of 1Mb or more:
-    prep  34.6Mb
+    demos   1.0Mb
+    prep   34.6Mb
 * checking package directory ... OK
 * checking DESCRIPTION meta-information ... NOTE
 Checking should be performed on sources prepared by ‘R CMD build’.
@@ -282,8 +139,8 @@ Most likely, these were included erroneously.
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking dependencies in R code ... NOTE
 Packages in Depends field not imported from:
-  ‘GenomicRanges’ ‘RPostgreSQL’ ‘doParallel’ ‘foreach’ ‘glmnet’
-  ‘randomForest’ ‘vbsr’
+  ‘GenomicRanges’ ‘RPostgreSQL’ ‘doParallel’ ‘flare’ ‘foreach’ ‘glmnet’
+  ‘lassopv’ ‘randomForest’ ‘vbsr’
   These packages need to be imported from (in the NAMESPACE file)
   for when this namespace is loaded but not attached.
 package 'methods' is used but not declared
@@ -294,14 +151,29 @@ package 'methods' is used but not declared
 .BayesSpikeSolver: no visible global function definition for ‘new’
 .Filter: no visible global function definition for ‘new’
 .FootprintFinder: no visible global function definition for ‘new’
+.LassoPVSolver: no visible global function definition for ‘new’
 .LassoSolver: no visible global function definition for ‘new’
 .NullFilter: no visible global function definition for ‘new’
 .PearsonSolver: no visible global function definition for ‘new’
 .RandomForestSolver: no visible global function definition for ‘new’
+.RidgeSolver: no visible global function definition for ‘new’
 .Solver: no visible global function definition for ‘new’
 .SpearmanSolver: no visible global function definition for ‘new’
+.SqrtLassoSolver: no visible global function definition for ‘new’
 .TReNA: no visible global function definition for ‘new’
 .VarianceFilter: no visible global function definition for ‘new’
+.elasticNetSolver: no visible global function definition for ‘lm’
+.elasticNetSolver: no visible global function definition for ‘coef’
+.elasticNetSolver: no visible global function definition for ‘cor’
+.elasticNetSolver: no visible global function definition for
+  ‘cv.glmnet’
+.elasticNetSolver: no visible global function definition for ‘glmnet’
+.elasticNetSolver: no visible global function definition for ‘predict’
+.elasticNetSolver : <anonymous>: no visible global function definition
+  for ‘cor’
+.elasticNetSolver: no visible global function definition for ‘plot’
+.elasticNetSolver: no visible binding for global variable
+  ‘fit.nolambda’
 FootprintFinder: no visible global function definition for ‘PostgreSQL’
 FootprintFinder: no visible global function definition for ‘dbConnect’
 FootprintFinder: no visible global function definition for ‘dbGetQuery’
@@ -412,8 +284,6 @@ closeDatabaseConnections,FootprintFinder: no visible global function
 closeDatabaseConnections,FootprintFinder: no visible global function
   definition for ‘dbDisconnect’
 getCandidates,VarianceFilter: no visible binding for global variable
-  ‘mtx.assay’
-getCandidates,VarianceFilter: no visible binding for global variable
   ‘var’
 getCandidates,VarianceFilter: no visible global function definition for
   ‘var’
@@ -434,16 +304,9 @@ mapMotifsToTFsMergeIntoTable,FootprintFinder: no visible global
 run,BayesSpikeSolver: no visible global function definition for ‘vbsr’
 run,BayesSpikeSolver : <anonymous>: no visible global function
   definition for ‘cor’
-run,LassoSolver: no visible global function definition for ‘lm’
-run,LassoSolver: no visible global function definition for ‘coef’
-run,LassoSolver: no visible global function definition for ‘cor’
-run,LassoSolver: no visible global function definition for ‘cv.glmnet’
-run,LassoSolver: no visible global function definition for ‘glmnet’
-run,LassoSolver: no visible global function definition for ‘predict’
-run,LassoSolver : <anonymous>: no visible global function definition
+run,LassoPVSolver: no visible global function definition for ‘lassopv’
+run,LassoPVSolver : <anonymous>: no visible global function definition
   for ‘cor’
-run,LassoSolver: no visible global function definition for ‘plot’
-run,LassoSolver: no visible binding for global variable ‘fit.nolambda’
 run,PearsonSolver: no visible global function definition for ‘cor’
 run,RandomForestSolver: no visible global function definition for
   ‘randomForest’
@@ -453,13 +316,19 @@ run,RandomForestSolver: no visible global function definition for ‘cor’
 run,RandomForestSolver : <anonymous>: no visible global function
   definition for ‘cor’
 run,SpearmanSolver: no visible global function definition for ‘cor’
+run,SqrtLassoSolver: no visible global function definition for ‘lm’
+run,SqrtLassoSolver: no visible global function definition for ‘coef’
+run,SqrtLassoSolver: no visible global function definition for ‘cor’
+run,SqrtLassoSolver: no visible global function definition for ‘slim’
+run,SqrtLassoSolver : <anonymous>: no visible global function
+  definition for ‘cor’
 Undefined global functions or variables:
   %dopar% IncNodePurity PostgreSQL coef cor countOverlaps cv.glmnet
   dbConnect dbDisconnect dbGetQuery dbListTables dbReadTable
-  detectCores enorm fit.nolambda fivenum foreach gene glmnet is lm
-  makeForkCluster makeGRangesFromDataFrame median mtx.assay new plot
-  predict pval quantile randomForest rbind.fill reduce
-  registerDoParallel sd stopCluster target.gene var vbsr x
+  detectCores enorm fit.nolambda fivenum foreach gene glmnet is lassopv
+  lm makeForkCluster makeGRangesFromDataFrame median new plot predict
+  pval quantile randomForest rbind.fill reduce registerDoParallel sd
+  slim stopCluster target.gene var vbsr x
 Consider adding
   importFrom("graphics", "plot")
   importFrom("methods", "is", "new")
@@ -468,22 +337,20 @@ Consider adding
 to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
 contains 'methods').
 * checking Rd files ... NOTE
-prepare_Rd: run-LassoSolver-method.Rd:28-30: Dropping empty section \examples
+prepare_Rd: run-LassoPVSolver-method.Rd:28-30: Dropping empty section \examples
+prepare_Rd: run-LassoSolver-method.Rd:30-32: Dropping empty section \examples
+prepare_Rd: run-RidgeSolver-method.Rd:30-32: Dropping empty section \examples
+prepare_Rd: run-SqrtLassoSolver-method.Rd:27-29: Dropping empty section \examples
 * checking Rd metadata ... OK
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... WARNING
 Undocumented code objects:
   ‘FootprintFinder’ ‘VarianceFilter’ ‘closeDatabaseConnections’
-  ‘getAssayData’ ‘getChromLoc’ ‘getDnaseEnhancerRegions’
-  ‘getFootprintsForGene’ ‘getFootprintsInRegion’
-  ‘getGenePromoterRegion’ ‘getGenelistFromGtf’ ‘getGtfGeneBioTypes’
-  ‘getGtfMoleculeTypes’ ‘getHiCEnhancerRegions’
-  ‘getPromoterRegionsAllGenes’ ‘getSolverName’
-  ‘getTfbsCountsInEnhancers’ ‘getTfbsCountsInPromoters’
-  ‘getTfbsCountsPerPromoter’ ‘getTfbsCountsPerPromoterMC’
-  ‘makeTrnFromPromoterCountsAndExpression’
+  ‘getAssayData’ ‘getChromLoc’ ‘getFootprintsForGene’
+  ‘getFootprintsInRegion’ ‘getGenePromoterRegion’ ‘getGtfGeneBioTypes’
+  ‘getGtfMoleculeTypes’ ‘getPromoterRegionsAllGenes’ ‘getSolverName’
+  ‘getTfbsCountsInPromoters’ ‘makeTrnFromPromoterCountsAndExpression’
   ‘mapMotifsToTFsMergeIntoTable’ ‘printf’ ‘run’ ‘runAllSolversForGene’
-  ‘solve’
 Undocumented S4 methods:
   generic 'closeDatabaseConnections' and siglist 'FootprintFinder'
   generic 'getChromLoc' and siglist 'FootprintFinder'
@@ -495,6 +362,7 @@ Undocumented S4 methods:
   generic 'getPromoterRegionsAllGenes' and siglist 'FootprintFinder'
   generic 'mapMotifsToTFsMergeIntoTable' and siglist 'FootprintFinder'
   generic 'rescalePredictorWeights' and siglist 'BayesSpikeSolver'
+  generic 'solve' and siglist 'TReNA'
 All user-level objects in a package (including S4 classes and methods)
 should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
@@ -502,6 +370,9 @@ Extensions’ manual.
 * checking for code/documentation mismatches ... OK
 * checking Rd \usage sections ... WARNING
 Undocumented arguments in documentation object 'BayesSpikeSolver'
+  ‘quiet’
+
+Undocumented arguments in documentation object 'LassoPVSolver'
   ‘quiet’
 
 Undocumented arguments in documentation object 'LassoSolver'
@@ -516,68 +387,38 @@ Undocumented arguments in documentation object 'PearsonSolver'
 Undocumented arguments in documentation object 'RandomForestSolver'
   ‘quiet’
 
+Undocumented arguments in documentation object 'RidgeSolver'
+  ‘quiet’
+
 Undocumented arguments in documentation object 'Solver'
   ‘quiet’
 
 Undocumented arguments in documentation object 'SpearmanSolver'
   ‘quiet’
 
-Undocumented arguments in documentation object 'getAssayData,Solver-method'
-  ‘obj’
-
-Undocumented arguments in documentation object 'getCandidates,NullFilter-method'
-  ‘obj’
-
-Undocumented arguments in documentation object 'getCandidates,VarianceFilter-method'
-  ‘obj’
+Undocumented arguments in documentation object 'SqrtLassoSolver'
+  ‘quiet’
 
 Undocumented arguments in documentation object 'getCandidates'
-  ‘mtx.assay’ ‘quiet’
+  ‘quiet’
 
-Undocumented arguments in documentation object 'getFootprintsForTF'
-  ‘obj’
+Undocumented arguments in documentation object 'getTfbsCountsInEnhancers'
+  ‘tflist’ ‘genelist’ ‘enhancertype’ ‘verbose’ ‘cores’ ‘genome.db.uri’
+  ‘project.db.uri’ ‘use_gene_ids’ ‘biotype’ ‘moleculetype’
 
-Undocumented arguments in documentation object 'getGenePromoterRegions'
-  ‘obj’
-
-Undocumented arguments in documentation object 'getSolverName,BayesSpikeSolver-method'
-  ‘obj’
-
-Undocumented arguments in documentation object 'getSolverName,LassoSolver-method'
-  ‘obj’
-
-Undocumented arguments in documentation object 'getSolverName,PearsonSolver-method'
-  ‘obj’
-
-Undocumented arguments in documentation object 'getSolverName,RandomForestSolver-method'
-  ‘obj’
-
-Undocumented arguments in documentation object 'getSolverName,SpearmanSolver-method'
-  ‘obj’
-
-Undocumented arguments in documentation object 'rescalePredictorWeights,LassoSolver-method'
-  ‘obj’
-
-Undocumented arguments in documentation object 'rescalePredictorWeights'
-  ‘obj’
-
-Undocumented arguments in documentation object 'run,BayesSpikeSolver-method'
-  ‘obj’
-
-Undocumented arguments in documentation object 'run,LassoSolver-method'
-  ‘obj’
+Undocumented arguments in documentation object 'getTfbsCountsPerPromoter'
+  ‘promoter_regions’
+Documented arguments not in \usage in documentation object 'getTfbsCountsPerPromoter':
+  ‘promotor_regions’
 
 Undocumented arguments in documentation object 'run,PearsonSolver-method'
-  ‘obj’ ‘tf.weights’
-
-Undocumented arguments in documentation object 'run,RandomForestSolver-method'
-  ‘obj’
+  ‘tf.weights’
 
 Undocumented arguments in documentation object 'run,SpearmanSolver-method'
-  ‘obj’ ‘tf.weights’
+  ‘tf.weights’
 
-Undocumented arguments in documentation object 'solve,TReNA-method'
-  ‘obj’
+Objects in \usage without \alias in documentation object 'solve':
+  ‘\S4method{solve}{TReNA}’
 
 Functions with \usage entries need to have the appropriate \alias
 entries, and all their arguments documented.
