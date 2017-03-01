@@ -52,7 +52,7 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
-#' @param extraArgs Modifiers to the Bayes Spike solver
+#' @param extraArgs Modifiers to the solver
 #'
 #' @return A data frame containing coefficients relating the target gene to each transcription factor
 

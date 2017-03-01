@@ -17,7 +17,7 @@
 
 \item{tf.weights}{A set of weights on the transcription factors (default = rep(1, length(tfs)))}
 
-\item{extraArgs}{Modifiers to the Bayes Spike solver}
+\item{extraArgs}{Modifiers to the solver}
 }
 \value{
 A data frame containing coefficients relating the target gene to each transcription factor

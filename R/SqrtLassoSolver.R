@@ -19,6 +19,10 @@ SqrtLassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
     obj <- .SqrtLassoSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
 
+    # Send a warning if there's a row of zeros
+    if(!is.na(max(mtx.assay)) & any(rowSums(mtx.assay) == 0))
+       warning("One or more gene has zero expression; this may cause problems when using Square Root LASSO. You may want to try 'lasso' or 'ridge' instead.")
+
     obj
 
 } # SqrtLassoSolver, the constructor

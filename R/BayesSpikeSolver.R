@@ -16,10 +16,10 @@ BayesSpikeSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
     obj <- .BayesSpikeSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
 
-    # If a matrix is supplied, check the distribution to see if it's too big
-    if(!is.na(max(mtx.assay)) & (max(mtx.assay) - min(mtx.assay)) > 1E4)
-        warning("Matrix range exceeds 10,000 and may indicate skewed data; consider transforming your matrix to control the mean-variance relationship or using a different solver")
-    
+    # Send a warning if there's a row of zeros
+    if(!is.na(max(mtx.assay)) & any(rowSums(mtx.assay) == 0))
+       warning("One or more gene has zero expression; this may cause difficulty when using Bayes Spike. You may want to try 'lasso' or 'ridge' instead.")
+
     obj
 
 } # TReNA, the constructor
@@ -102,7 +102,6 @@ setMethod("run", "BayesSpikeSolver",
 # without distorting the scale so much that even good rawValues get reduced to nothing
 # which is what .Machine$double.xmax would do
 
-setGeneric("rescalePredictorWeights", function(obj, rawValue.min, rawValue.max, rawValues) standardGeneric("rescalePredictorWeights"))
 setMethod("rescalePredictorWeights", "BayesSpikeSolver",
 
    function (obj, rawValue.min, rawValue.max, rawValues){
@@ -110,4 +109,3 @@ setMethod("rescalePredictorWeights", "BayesSpikeSolver",
       })
 
 #----------------------------------------------------------------------------------------------------
-

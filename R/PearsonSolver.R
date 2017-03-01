@@ -20,6 +20,11 @@ PearsonSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 {
     obj <- .PearsonSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
 
+
+    # Send a warning if there's a row of zeros
+    if(!is.na(max(mtx.assay)) & any(rowSums(mtx.assay) == 0))
+       warning("One or more gene has zero expression; this may yield 'NA' results and warnings when using Pearson correlations")
+
     obj
 
 } #PearsonSolver, the constructor

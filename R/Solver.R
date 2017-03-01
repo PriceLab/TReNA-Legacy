@@ -17,9 +17,9 @@ printf <- function(...) print(noquote(sprintf(...)))
 setGeneric("getSolverName",   signature="obj", function(obj, target.gene, tfs) standardGeneric ("getSolverName"))
 setGeneric("getAssayData",    signature="obj", function(obj) standardGeneric ("getAssayData"))
 setGeneric("run",             signature="obj", function(obj, target.gene, tfs, tf.weights, extraArgs=list()) standardGeneric ("run"))
+
 setGeneric("rescalePredictorWeights",
-                              signature="obj", function(obj, rawValue.min, rawValue.max, rawValues)
-                                                                             standardGeneric ("rescalePredictorWeights"))
+                              signature="obj", function(obj, rawValue.min, rawValue.max, rawValues) standardGeneric ("rescalePredictorWeights"))
 #----------------------------------------------------------------------------------------------------
 #' Define an object of class Solver
 #'
@@ -29,8 +29,13 @@ setGeneric("rescalePredictorWeights",
 
 Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
-   env <- new.env(parent=emptyenv())
-  .Solver(mtx.assay=mtx.assay, quiet=quiet, state=env)
+
+    # If a matrix is supplied, check the distribution to see if it's too big
+    if(!is.na(max(mtx.assay)) & (max(mtx.assay) - min(mtx.assay)) > 1E4)
+        warning("Matrix range exceeds 10,000 and may indicate skewed data; consider transforming your matrix.")
+
+    env <- new.env(parent=emptyenv())
+   .Solver(mtx.assay=mtx.assay, quiet=quiet, state=env)
 
 } # TReNA, the constructor
 #----------------------------------------------------------------------------------------------------
