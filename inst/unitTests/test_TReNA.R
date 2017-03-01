@@ -6,13 +6,16 @@ printf <- function(...) print(noquote(sprintf(...)))
 runTests <- function()
 {
    test_emptyConstructor()
-   test_developAndFitDummyTestData()
    test_LassoSolverConstructor()
    test_RidgeSolverConstructor()
+   test_RandomForestSolverConstructor()
+   test_BayesSpikeSolverConstructor()
    test_SqrtLassoSolverConstructor()
    test_LassoPVSolverConstructor()
    test_PearsonSolverConstructor()
    test_SpearmanSolverConstructor()
+   
+   test_developAndFitDummyTestData()
    test_fitDummyData()
 
    test_ampAD.mef2c.154tfs.278samples.lasso()
@@ -27,6 +30,7 @@ runTests <- function()
 
    test_scalePredictorPenalties.lasso()
    test_eliminateSelfTFs()
+
    test_NullFilter()
    test_VarianceFilter()
    
@@ -57,6 +61,24 @@ test_LassoSolverConstructor <- function()
    checkTrue(all(c("LassoSolver", "Solver") %in% is(solver)))
 
 } # test_LassoSolverConstructor
+#----------------------------------------------------------------------------------------------------
+test_RandomForestSolverConstructor <- function()
+{
+   printf("--- test_RandomForestSolverConstructor")
+   solver <- RandomForestSolver()
+   checkEquals(getSolverName(solver), "RandomForestSolver")
+   checkTrue(all(c("RandomForestSolver", "Solver") %in% is(solver)))
+
+} # test_RandomForestSolverConstructor
+#----------------------------------------------------------------------------------------------------
+test_BayesSpikeSolverConstructor <- function()
+{
+   printf("--- test_BayesSpikeSolverConstructor")
+   solver <- BayesSpikeSolver()
+   checkEquals(getSolverName(solver), "BayesSpikeSolver")
+   checkTrue(all(c("BayesSpikeSolver", "Solver") %in% is(solver)))
+
+} # test_BayesSpikeSolverConstructor
 #----------------------------------------------------------------------------------------------------
 test_developAndFitDummyTestData <- function(quiet=FALSE)
 {

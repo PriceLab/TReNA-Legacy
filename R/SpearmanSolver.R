@@ -82,9 +82,11 @@ setMethod("run", "SpearmanSolver",
               # Calculate Spearman correlation coefficients
               fit <- cor( x = x, y = y, method = "spearman")
 
-              # Return the coefficients and gene names
-              tbl <- data.frame(gene = setdiff(rownames(mtx),target.gene),
-                                coefficient = fit)
+              # Return the coefficients as a data frame in order of coefficient size
+
+              tbl <- data.frame(row.names = rownames(fit)[order(abs(fit), decreasing = TRUE)],
+                                coefficient = fit[order(abs(fit), decreasing = TRUE)])
+
               return(tbl)
           })
 #----------------------------------------------------------------------------------------------------

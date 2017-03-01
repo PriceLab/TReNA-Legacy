@@ -16,9 +16,9 @@ BayesSpikeSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
     obj <- .BayesSpikeSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
 
-    # Check the distribution to see if it's too big
-    if((max(mtx.assay) - min(mtx.assay)) > 1E4)
-        warning("Matrix range exceeds 10,000; consider using a different solver")
+    # If a matrix is supplied, check the distribution to see if it's too big
+    if(!is.na(max(mtx.assay)) & (max(mtx.assay) - min(mtx.assay)) > 1E4)
+        warning("Matrix range exceeds 10,000 and may indicate skewed data; consider transforming your matrix to control the mean-variance relationship or using a different solver")
     
     obj
 

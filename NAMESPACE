@@ -24,7 +24,9 @@ export(
     NullFilter,
     VarianceFilter,
     LassoPVSolver,
-    RidgeSolver
+    RidgeSolver,
+    RandomForestSolver,
+    BayesSpikeSolver
     )
 
 exportMethods(
