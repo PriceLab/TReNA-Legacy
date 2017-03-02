@@ -33,6 +33,7 @@ runTests <- function()
 
    test_NullFilter()
    test_VarianceFilter()
+   test_FootprintFilter()
    
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -263,23 +264,32 @@ test_ampAD.mef2c.154tfs.278samples.randomForest <- function()
 #----------------------------------------------------------------------------------------------------
 test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes <- function()
 {
-   printf("--- test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes")
-   print(load(system.file(package="TReNA", "extdata/mtx.AD.noncodingNearPiez02.RData")))
-   target.genes <- genes.noncoding.near.piez02.active
-   mtx <- log2(mtx.nonCoding + 0.0001)
-   tfs <- setdiff(rownames(mtx), target.genes)
+    printf("--- test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes")
+    
+    print(load(system.file(package="TReNA", "extdata/mtx.AD.noncodingNearPiez02.RData")))
+    
+    target.genes <- genes.noncoding.near.piez02.active
+    
+    mtx <- log2(mtx.nonCoding + 0.0001)
+    
+    tfs <- setdiff(rownames(mtx), target.genes)
+    
 
-   trena <- TReNA(mtx.assay=mtx, solver="bayesSpike", quiet=FALSE)
-   findings <- list()
-   for(target.gene in target.genes){
-     tbl <- solve(trena, target.gene, tfs)
-     tbl <- subset(tbl, pval < 0.01)
-     findings[[target.gene]] <- tbl
-     }
-   tbl.trimmed <- subset(tbl, abs(beta) > 0.1 & pval < 0.01)
-   betas <- tbl.trimmed$beta
-   big.abs.betas <- betas[abs(betas) > 1]
-   checkTrue(length(big.abs.betas) > 20)
+    trena <- TReNA(mtx.assay=mtx, solver="bayesSpike", quiet=FALSE)
+    
+    findings <- list()
+    
+    for(target.gene in target.genes){        
+        tbl <- solve(trena, target.gene, tfs)        
+        tbl <- subset(tbl, pval < 0.01)       
+        findings[[target.gene]] <- tbl
+    }
+    
+    tbl.trimmed <- subset(tbl, abs(beta) > 0.1 & pval < 0.01)
+    betas <- tbl.trimmed$beta
+    big.abs.betas <- betas[abs(betas) > 1]
+    checkTrue(length(big.abs.betas) > 20)
+    
 
    checkTrue(nrow(tbl) > 10)
    checkTrue(cor(tbl.trimmed$beta, tbl.trimmed$gene.cor) < 0.2)
@@ -398,12 +408,12 @@ test_eliminateSelfTFs <- function()
    checkTrue(target.gene %in% tfs)         # our test case
    tbl.betas <- solve(trena, target.gene, tfs)
    checkTrue(!target.gene %in% rownames(tbl.betas))
-#   checkTrue(cor(tbl.betas$beta[1:10], tbl.betas$gene.cor[1:10]) > 0.6)
+   checkTrue(cor(tbl.betas$beta[1:10], tbl.betas$gene.cor[1:10]) > 0.6)
 
    trena2 <- TReNA(mtx.assay=mtx.log2, solver="bayesSpike", quiet=FALSE)
    tbl.betas2 <- solve(trena2, target.gene, tfs)
    checkTrue(!target.gene %in% rownames(tbl.betas2))
-#   checkTrue(cor(tbl.betas2$beta[1:10], tbl.betas2$gene.cor[1:10]) > 0.7)
+   checkTrue(cor(tbl.betas2$beta[1:10], tbl.betas2$gene.cor[1:10]) > 0.7)
 
 } # test_eliminateSelfTFs
 #----------------------------------------------------------------------------------------------------
@@ -444,7 +454,7 @@ test_VarianceFilter <- function()
     # Create dummy data and filter it based on variance
     x <- test_developAndFitDummyTestData(quiet=TRUE)
     var.filter <- VarianceFilter(mtx.assay = x$assay)
-    checkTrue(length(var.filter) > 0)
+    checkTrue(length(getCandidates(var.filter, x$correlated.target)) > 0)
 
 } # test_VarianceFilter
 #----------------------------------------------------------------------------------------------------
@@ -587,5 +597,26 @@ test_ampAD.mef2c.154tfs.278samples.spearman <- function()
    checkTrue(nrow(subset(tbl, abs(coefficient) > 0.8)) > 7)
 
 } # test_ampAD.mef2c.154tfs.278samples.spearman
+#----------------------------------------------------------------------------------------------------
+test_FootprintFilter <- function()
+{
+    printf("--- test_FootprintFilter")
+
+    # Load ampAD data and filter it based on footprints
+    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+    footprint.filter <- FootprintFilter(mtx.assay = mtx.sub)
+
+    genome.db.uri <- "postgres://whovian/hg38"
+    project.db.uri <-  "postgres://whovian/brain_wellington"
+    target.gene <- "MEF2C"
+    tfs <- getCandidates(footprint.filter, target.gene,
+                         genome.db.uri, project.db.uri,
+                         size.upstream = 1000,
+                         size.downstream = 1000)
+
+    # Make sure it grabs the right number of genes
+    checkEquals(length(tfs),580)
+
+} # test_FootprintFilter
 #----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()

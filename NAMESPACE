@@ -26,7 +26,8 @@ export(
     LassoPVSolver,
     RidgeSolver,
     RandomForestSolver,
-    BayesSpikeSolver
+    BayesSpikeSolver,
+    FootprintFilter
     )
 
 exportMethods(
