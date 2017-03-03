@@ -4,15 +4,28 @@
 \name{TReNA-class}
 \alias{TReNA-class}
 \alias{.TReNA}
-\title{An S4 class to represent a TReNA object}
-\arguments{
-\item{mtx.assay}{An assay matrix of gene expression data}
-
-\item{solver}{A string matching the designated solver for relating a target gene to transcription factors. (default = "lasso")}
+\alias{TReNA}
+\alias{TReNA-class}
+\alias{TReNA}
+\title{Class TReNA}
+\usage{
+TReNA(mtx.assay = matrix(), solver = "lasso", quiet = TRUE)
 }
 \value{
 An object of the TReNA class
 }
 \description{
-An S4 class to represent a TReNA object
+Class \code{TReNA} defines a TReNA object and contains an assay matrix, which contains expression data over a set of
+samples for a group of genes, and a string representing the name of a chosen solver.
+}
+\section{Slots}{
+
+\describe{
+\item{\code{mtx.assay}}{An assay matrix of gene expression data}
+
+\item{\code{solver}}{A string matching the designated solver for relating a target gene to transcription factors. (default = "lasso")}
+}}
+
+\seealso{
+\code{\link{solve}}
 }

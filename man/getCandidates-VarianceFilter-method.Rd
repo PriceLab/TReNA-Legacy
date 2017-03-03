@@ -6,12 +6,15 @@
 \alias{getCandidates-VarianceFilter}
 \title{Get candidate genes using the variance filter}
 \usage{
-\S4method{getCandidates}{VarianceFilter}(obj, target.gene)
+\S4method{getCandidates}{VarianceFilter}(obj, target.gene, var.size = 0.5)
 }
 \arguments{
 \item{obj}{An object of class VarianceFilter}
 
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
+
+\item{var.size}{A user-specified percentage (0-1) of the target gene variance to use as a filter
+(default = 0.5)}
 }
 \value{
 A vector containing all genes with variances less than the target gene
