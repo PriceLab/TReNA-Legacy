@@ -10,7 +10,7 @@
   project.db.uri, size.upstream = 1000, size.downstream = 1000)
 }
 \arguments{
-\item{obj}{An object of class VarianceFilter}
+\item{obj}{An object of class FootprintFilter}
 
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 

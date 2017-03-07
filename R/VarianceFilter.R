@@ -1,18 +1,18 @@
 #' Filter based on gene expression variance
 #'
-#' @include Filter.R
+#' @include CandidateFilter.R
 #' @name VarianceFilter-class
 #' @param mtx.assay An assay matrix of gene expression data
 
 #----------------------------------------------------------------------------------------------------
-.VarianceFilter <- setClass("VarianceFilter", contains = "Filter")
+.VarianceFilter <- setClass("VarianceFilter", contains = "CandidateFilter")
 
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
 VarianceFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 {
-    .VarianceFilter(Filter(mtx.assay = mtx.assay, quiet = quiet))
+    .VarianceFilter(CandidateFilter(mtx.assay = mtx.assay, quiet = quiet))
 
 } # VarianceFilter, the constructor
 #----------------------------------------------------------------------------------------------------

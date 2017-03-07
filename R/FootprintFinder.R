@@ -1,10 +1,15 @@
 #' Filter genes based on footprints
 #'
-#' @name FootprintFinder-class
-#' @param genome.db The address of a genome database for use in filtering
-#' @param project.db The address of a project database for use in filtering
+#' @description 
 #'
-#' @return An object of the Filter class that reduces a list of genes to a subset prior to forming a TReNA object
+#' @name FootprintFinder-class
+#' @rdname FootprintFinder
+#' @slot genome.db The address of a genome database for use in filtering
+#' @slot project.db The address of a project database for use in filtering
+#' @slot quiet A logical argument denoting whether the FootprintFinder object should behave quietly
+#' 
+#' @return An object of the FootprintFinder class that can reduce a list of genes to a subset prior
+#' to forming a TReNA object
 
 
 #----------------------------------------------------------------------------------------------------
@@ -19,31 +24,43 @@ printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
 # a FootprintFinder needs, at present, this sort of information
 #
-#   1) a complete table of genome features, for which our current model is ensembl's Homo_sapiens.GRCh38.84.chr.gtf
+#   1) a complete table of genome features, for which our current model is ensembl's
+#   Homo_sapiens.GRCh38.84.chr.gtf
 #   2) a footprint table, the output from cory's pipeline
 #   3) a motif/TF map, with scores & etc
 #			    
 #----------------------------------------------------------------------------------------------------
-setGeneric("getChromLoc", signature="obj", function(obj, name, biotype="protein_coding",
-                                                    moleculetype="gene") standardGeneric("getChromLoc"))
-setGeneric("getGenePromoterRegion", signature="obj", function(obj,  gene, size.upstream=1000, size.downstream=0,
-                                                              biotype="protein_coding", moleculetype="gene")
+setGeneric("getChromLoc", signature="obj",
+           function(obj, name, biotype="protein_coding",moleculetype="gene")
+               standardGeneric("getChromLoc"))
+setGeneric("getGenePromoterRegion", signature="obj",
+           function(obj,  gene, size.upstream=1000, size.downstream=0,
+                    biotype="protein_coding", moleculetype="gene")
                                                       standardGeneric("getGenePromoterRegion"))
-setGeneric("getFootprintsForGene", signature="obj", function(obj,  gene, size.upstream=1000, size.downstream=0,
-                                                                   biotype="protein_coding", moleculetype="gene")
+setGeneric("getFootprintsForGene", signature="obj",
+           function(obj,  gene, size.upstream=1000, size.downstream=0,
+                    biotype="protein_coding", moleculetype="gene")
                                                       standardGeneric("getFootprintsForGene"))
-setGeneric("getFootprintsInRegion", signature="obj", function(obj, chromosome, start, end) standardGeneric("getFootprintsInRegion"))
-setGeneric("getGtfGeneBioTypes", signature="obj", function(obj) standardGeneric("getGtfGeneBioTypes"))
-setGeneric("getGtfMoleculeTypes", signature="obj", function(obj) standardGeneric("getGtfMoleculeTypes"))
-setGeneric("closeDatabaseConnections", signature="obj", function(obj) standardGeneric("closeDatabaseConnections"))
-setGeneric("getPromoterRegionsAllGenes",signature="obj", function(obj ,size.upstream=10000 , size.downstream=10000 , use_gene_ids = T ) standardGeneric("getPromoterRegionsAllGenes"))
-setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj", function(obj, tbl) standardGeneric("mapMotifsToTFsMergeIntoTable"))
+setGeneric("getFootprintsInRegion", signature="obj",
+           function(obj, chromosome, start, end) standardGeneric("getFootprintsInRegion"))
+setGeneric("getGtfGeneBioTypes", signature="obj",
+           function(obj) standardGeneric("getGtfGeneBioTypes"))
+setGeneric("getGtfMoleculeTypes", signature="obj",
+           function(obj) standardGeneric("getGtfMoleculeTypes"))
+setGeneric("closeDatabaseConnections", signature="obj",
+           function(obj) standardGeneric("closeDatabaseConnections"))
+setGeneric("getPromoterRegionsAllGenes",signature="obj",
+           function(obj ,size.upstream=10000 , size.downstream=10000 , use_gene_ids = T )
+               standardGeneric("getPromoterRegionsAllGenes"))
+setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
+           function(obj, tbl) standardGeneric("mapMotifsToTFsMergeIntoTable"))
 #----------------------------------------------------------------------------------------------------
 .parseDatabaseUri <- function(database.uri)
 {
    topLevel.tokens <- strsplit(database.uri, "://")[[1]]
    database.brand <- topLevel.tokens[1]
-   secondLevel.tokens <- strsplit(topLevel.tokens[2], "/")[[1]]
+   #secondLevel.tokens <- strsplit(topLevel.tokens[2], "/")[[1]]
+   secondLevel.tokens <- strsplit(topLevel.tokens[2], "/(?=[^/]+$)", perl = TRUE)[[1]]
    host <- secondLevel.tokens[1]
    database.name <- secondLevel.tokens[2]
 
@@ -51,11 +68,16 @@ setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj", function(obj, tbl) st
 
 } # .parseDatabaseUri
 #----------------------------------------------------------------------------------------------------
+#'
+#' @name FootprintFinder-class
+#' @rdname FootprintFinder
+#' 
+
 FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRUE)
 {
    genome.db.info <- .parseDatabaseUri(genome.database.uri)
    project.db.info <- .parseDatabaseUri(project.database.uri)
-   stopifnot(genome.db.info$brand %in% c("postgres"))
+   stopifnot(genome.db.info$brand %in% c("postgres","sqlite"))
 
 
       # open the genome database
@@ -95,12 +117,50 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
          row.count <- dbGetQuery(project.db, "select count(*) from regions")[1,1]
          printf("%s: %d rows", sprintf("%s/regions", project.database.uri), row.count)
          }
-     } # if postgres
+   } # if postgres
+
+     # open the genome database
+   if(genome.db.info$brand == "sqlite"){
+      dbname <- paste(genome.db.info$host, genome.db.info$name, sep = "/")
+      driver <- SQLite()
+      genome.db <- dbConnect(driver, dbname=dbname)
+      stopifnot(file.exists(dbname))
+      expected.tables <- c("gtf", "motifsgenes")
+      stopifnot(all(expected.tables %in% dbListTables(genome.db)))
+      if(!quiet){
+         row.count <- dbGetQuery(genome.db, "select count(*) from gtf")[1,1]
+         printf("%s: %d rows", sprintf("%s/gtf", genome.database.uri), row.count)
+         row.count <- dbGetQuery(genome.db, "select count(*) from motifsgenes")[1,1]
+         printf("%s: %d rows", sprintf("%s/motifsgenes", genome.database.uri), row.count)
+
+         }
+      } # if sqlite
+
+      # open the project database
+   if(project.db.info$brand == "sqlite"){
+      dbname <- paste(project.db.info$host, project.db.info$name, sep = "/")
+      driver <- SQLite()
+      project.db <- dbConnect(driver, dbname = dbname)
+      stopifnot(file.exists(dbname))
+      expected.tables <- c("regions", "hits")
+      stopifnot(all(expected.tables %in% dbListTables(project.db)))
+      if(!quiet){
+         row.count <- dbGetQuery(project.db, "select count(*) from regions")[1,1]
+         printf("%s: %d rows", sprintf("%s/regions", project.database.uri), row.count)
+         }
+   } # if sqlite
 
    .FootprintFinder(genome.db=genome.db, project.db=project.db, quiet=quiet)
 
 } # FootprintFinder, the constructor
 #----------------------------------------------------------------------------------------------------
+#' Close a Footprint Database Connection
+#' 
+#' 
+#' 
+#' @param obj An object of class FootprintFinder
+#'
+
 setMethod("closeDatabaseConnections", "FootprintFinder",
 
      function(obj){

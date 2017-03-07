@@ -240,8 +240,8 @@ test_getFootprintsInRegion <- function()
 #----------------------------------------------------------------------------------------------------
 test_mapMotifsToTFsMergeIntoTable <- function()
 {
-   printf("--- test_mapMotifsToTFsMergeIntoTable")
-
+    printf("--- test_mapMotifsToTFsMergeIntoTable")
+    
    genome.db.uri <- "postgres://whovian/hg38"
    project.db.uri <-  "postgres://whovian/brain_hint"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)

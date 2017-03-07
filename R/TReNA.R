@@ -15,55 +15,56 @@
 #'
 #' @seealso \code{\link{solve}}
 
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 .TReNA <- setClass ("TReNA",
                     representation = representation(solver="Solver",
                                                     quiet="logical")
                     )
 
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 
 setGeneric("solve",                    signature="obj", function(obj, target.gene, tfs,
                                                                  tf.weights=rep(1, length(tfs)), extraArgs=list())
                                                            standardGeneric ("solve"))
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #'
 #' @name TReNA-class
 #' @rdname TReNA-class
 
 TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 {
-  stopifnot(solver %in% c("lasso", "randomForest", "bayesSpike", "pearson", "spearman","sqrtlasso","lassopv","ridge"))
+    stopifnot(solver %in% c("lasso", "randomForest", "bayesSpike", "pearson",
+                            "spearman","sqrtlasso","lassopv","ridge"))
 
-  if(solver == "lasso")
-      solver <- LassoSolver(mtx.assay)
-  else if(solver == "randomForest")
-      solver <- RandomForestSolver(mtx.assay)
-  else if(solver == "bayesSpike")
-      solver <- BayesSpikeSolver(mtx.assay)
-  else if(solver == "pearson")
-      solver <- PearsonSolver(mtx.assay)
-  else if(solver == "spearman")
-      solver <- SpearmanSolver(mtx.assay)
-  else if(solver == "sqrtlasso")
-      solver <- SqrtLassoSolver(mtx.assay)
-  else if(solver == "lassopv")
-      solver <- LassoPVSolver(mtx.assay)
-  else if(solver == "ridge")
-      solver <- RidgeSolver(mtx.assay)
+    if(solver == "lasso")     
+        solver <- LassoSolver(mtx.assay) 
+    else if(solver == "randomForest")    
+        solver <- RandomForestSolver(mtx.assay) 
+    else if(solver == "bayesSpike")  
+        solver <- BayesSpikeSolver(mtx.assay)    
+    else if(solver == "pearson")        
+        solver <- PearsonSolver(mtx.assay)    
+    else if(solver == "spearman")        
+        solver <- SpearmanSolver(mtx.assay)    
+    else if(solver == "sqrtlasso")        
+        solver <- SqrtLassoSolver(mtx.assay)    
+    else if(solver == "lassopv")        
+        solver <- LassoPVSolver(mtx.assay)    
+    else if(solver == "ridge")        
+        solver <- RidgeSolver(mtx.assay)    
 
-  .TReNA(solver=solver, quiet=quiet)
+    .TReNA(solver=solver, quiet=quiet)    
 
 } # TReNA, the constructor
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #' Solve a TReNA Object
 #'
-#' A TReNA object contains an assay matrix with expression data for genes of interest and a string representing the chosen
-#' solver. The \code{solve} method runs the specified solver given a target gene and a designated set of transcription
-#' factors, returning a list of parameters that quantify the relationship between the transcription factors and the
-#' target gene. 
+#' A TReNA object contains an assay matrix with expression data for genes of interest and a string
+#' representing the chosen solver. The \code{solve} method runs the specified solver given a target
+#' gene and a designated set of transcription factors, returning a list of parameters that quantify
+#' the relationship between the transcription factors and the target gene. 
 #'
 #' @name solve-methods
 #' @rdname solve
@@ -85,4 +86,4 @@ setMethod("solve", "TReNA",
       # printf("entering TReNA::solve")
       run(obj@solver, target.gene, tfs, tf.weights, extraArgs)
       })
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------

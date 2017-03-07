@@ -1,18 +1,18 @@
 #' Filter based on gene footprints
 #'
-#' @include Filter.R
+#' @include CandidateFilter.R
 #' @name FootprintFilter-class
 #' @param mtx.assay An assay matrix of gene expression data
 
 #----------------------------------------------------------------------------------------------------
-.FootprintFilter <- setClass("FootprintFilter", contains = "Filter")
+.FootprintFilter <- setClass("FootprintFilter", contains = "CandidateFilter")
 
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
 FootprintFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 {
-    .FootprintFilter(Filter(mtx.assay = mtx.assay, quiet = quiet))
+    .FootprintFilter(CandidateFilter(mtx.assay = mtx.assay, quiet = quiet))
 
 } # FootprintFilter, the constructor
 #----------------------------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ FootprintFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #'
 #' @aliases getCandidates-FootprintFilter
 #'
-#' @param obj An object of class VarianceFilter
+#' @param obj An object of class FootprintFilter
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param genome.db.uri A connection to a genome database containing footprint information
 #' @param project.db.uri A connection to a project database containing footprint information

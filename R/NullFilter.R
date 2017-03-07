@@ -1,13 +1,13 @@
 #' Apply a null filter
 #'
-#' @include Filter.R
+#' @include CandidateFilter.R
 #' @name NullFilter-class
 #'
 #' @param mtx.assay An assay matrix of gene expression data
 #' @return An object of class NullFilter
 
 #----------------------------------------------------------------------------------------------------
-.NullFilter <- setClass ("NullFilter", contains = "Filter")
+.NullFilter <- setClass ("NullFilter", contains = "CandidateFilter")
 
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
@@ -21,7 +21,7 @@ printf <- function(...) print(noquote(sprintf(...)))
 
 NullFilter <- function(mtx.assay=matrix(), quiet = TRUE)
 {
-    .NullFilter(Filter(mtx.assay = mtx.assay, quiet = quiet))
+    .NullFilter(CandidateFilter(mtx.assay = mtx.assay, quiet = quiet))
 
 } # NullFilter, the constructor
 #----------------------------------------------------------------------------------------------------

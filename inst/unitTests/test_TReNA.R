@@ -606,8 +606,9 @@ test_FootprintFilter <- function()
     load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
     footprint.filter <- FootprintFilter(mtx.assay = mtx.sub)
 
-    genome.db.uri <- "postgres://whovian/hg38"
-    project.db.uri <-  "postgres://whovian/brain_wellington"
+    db.address <- system.file(package="TReNA", "extdata")
+    genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+    project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
     target.gene <- "MEF2C"
     tfs <- getCandidates(footprint.filter, target.gene,
                          genome.db.uri, project.db.uri,

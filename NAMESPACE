@@ -20,7 +20,7 @@ export(
     PearsonSolver,
     SpearmanSolver,
     SqrtLassoSolver,
-    Filter,
+    CandidateFilter,
     NullFilter,
     VarianceFilter,
     LassoPVSolver,

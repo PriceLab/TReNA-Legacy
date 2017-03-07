@@ -25,10 +25,10 @@
 A data frame containing coefficients relating the target gene to each transcription factor
 }
 \description{
-A TReNA object contains an assay matrix with expression data for genes of interest and a string representing the chosen
-solver. The \code{solve} method runs the specified solver given a target gene and a designated set of transcription
-factors, returning a list of parameters that quantify the relationship between the transcription factors and the
-target gene.
+A TReNA object contains an assay matrix with expression data for genes of interest and a string
+representing the chosen solver. The \code{solve} method runs the specified solver given a target
+gene and a designated set of transcription factors, returning a list of parameters that quantify
+the relationship between the transcription factors and the target gene.
 }
 \seealso{
 \code{\link{TReNA}}

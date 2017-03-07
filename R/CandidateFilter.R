@@ -1,10 +1,10 @@
 #----------------------------------------------------------------------------------------------------
-#' An S4 class to represent a filter
+#' An S4 class to represent a gene candidate filter
 #'
-#' @name Filter
+#' @name CandidateFilter-class
 #' @param mtx.assay An assay matrix of gene expression data
 
-.Filter <- setClass("Filter",
+.CandidateFilter <- setClass("CandidateFilter",
                     slots = c(mtx.assay = "matrix",
 		              quiet = "logical"
 			      )
@@ -18,11 +18,13 @@ setGeneric("getCandidates", signature="obj", function(obj,...) standardGeneric("
 #' Get candidate genes using the selected filter
 #'
 #' @name getCandidates
+#' @param mtx.assay An assay matrix of gene expression data
+#'
 #' @return A vector containing all genes selected as candidates by the filter
 
-Filter <- function(mtx.assay = matrix(), quiet = TRUE)
+CandidateFilter <- function(mtx.assay = matrix(), quiet = TRUE)
 {
-    .Filter(mtx.assay = mtx.assay, quiet = quiet)
+    .CandidateFilter(mtx.assay = mtx.assay, quiet = quiet)
 
-} # Filter, the constructor
+} # CandidateFilter, the constructor
 #----------------------------------------------------------------------------------------------------
