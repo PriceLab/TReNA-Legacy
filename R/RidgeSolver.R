@@ -1,8 +1,8 @@
 #----------------------------------------------------------------------------------------------------
 #' An S4 class to represent a Ridge Regression solver
 #'
+#' @import glmnet
 #' @include Solver.R
-#' @include TReNA.R
 #' @name RidgeSolver-class
 
 .RidgeSolver <- setClass ("RidgeSolver", contains="Solver")

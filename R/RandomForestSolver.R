@@ -1,6 +1,7 @@
 #------------------------------------------------------------------------------------------------------------------------
 #' An S4 class to represent a Random Forest solver
 #'
+#' @import randomForest
 #' @include Solver.R
 #' @name RandomForestSolver-class
 

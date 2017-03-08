@@ -10,7 +10,7 @@
 #' @param lambda The penalty tuning parameter for elastic net
 #' @param keep.metrics A binary variable indicating whether or not to keep metrics
 #'
-#' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
+#' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters
 #'
 #' @seealso \code{\link{glmnet}}
 #'

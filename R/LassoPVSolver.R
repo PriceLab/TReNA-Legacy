@@ -2,6 +2,7 @@
 #' An S4 class to represent a LASSO P-Value solver
 #'
 #' @include Solver.R
+#' @import lassopv
 #' @name LassoPVSolver-class
 
 .LassoPVSolver <- setClass ("LassoPVSolver", contains="Solver")

@@ -1,6 +1,7 @@
 #------------------------------------------------------------------------------------------------------------------------
 #' An S4 class to represent a Bayes Spike solver
 #'
+#' @import vbsr
 #' @include Solver.R
 #' @name BayesSpikeSolver-class
 
