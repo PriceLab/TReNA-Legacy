@@ -30,6 +30,14 @@ representing the chosen solver. The \code{solve} method runs the specified solve
 gene and a designated set of transcription factors, returning a list of parameters that quantify
 the relationship between the transcription factors and the target gene.
 }
+\examples{
+# Load included Alzheimer's data, create a TReNA object, and solve
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+trena <- TReNA(mtx.assay = mtx.sub)
+target.gene <- "APOE"
+tfs <- setdiff(rownames(mtx.sub), target.gene)
+tbl <- solve(trena, target.gene, tfs)
+}
 \seealso{
 \code{\link{TReNA}}
 }

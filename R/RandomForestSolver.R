@@ -9,8 +9,15 @@
 #' Create a Solver class object using the Random Forest Solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
-#'
+#' @param quiet A logical denoting whether or not the solver should print output
+#' 
 #' @return A Solver class object with Random Forest as the solver
+#'
+#' @examples
+#' solver <- RandomForestSolver()
+#'
+#' @family solver methods
+
 
 RandomForestSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
@@ -22,13 +29,17 @@ RandomForestSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 
     obj
 
-} # TReNA, the constructor
+} # RandomForestSolver, the constructor
 #------------------------------------------------------------------------------------------------------------------------
 #' Get Random Forest Solver name
 #'
 #' @param obj An object of class RandomForestSolver
 #' 
 #' @return "RandomForestSolver"
+#'
+#' @examples
+#' solver <- RandomForestSolver()
+#' getSolverName(solver)
 
 setMethod("getSolverName", "RandomForestSolver",
 
@@ -39,6 +50,7 @@ setMethod("getSolverName", "RandomForestSolver",
 #----------------------------------------------------------------------------------------------------
 #' Run the Random Forest Solver
 #'
+#' @rdname RandomForestSolver
 #' @aliases run.RandomForestSolver
 #'
 #' @param obj An object of class RandomForestSolver
@@ -47,7 +59,15 @@ setMethod("getSolverName", "RandomForestSolver",
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
 #' @param extraArgs Modifiers to the Random Forest solver
 #'
-#' @return A list containing various parameters of the Random Forest fit. 
+#' @return A list containing various parameters of the Random Forest fit.
+#'
+#' @examples
+#' # Load included Alzheimer's data, create a TReNA object with Random Forest as solver, and solve
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' trena <- TReNA(mtx.assay = mtx.sub, solver = "randomForest")
+#' target.gene <- "APOE"
+#' tfs <- setdiff(rownames(mtx.sub), target.gene)
+#' tbl <- solve(trena, target.gene, tfs)
 
 
 setMethod("run", "RandomForestSolver",

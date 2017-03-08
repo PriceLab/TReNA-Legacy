@@ -9,11 +9,13 @@
 #' Create a Solver class object using the LASSO solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
-#'
+#' @param quiet A logical denoting whether or not the solver should print output
 #' @return A Solver class object with LASSO as the solver
 #'
 #' @examples
 #' solver <- LassoSolver()
+#'
+#' @family solver methods
 
 LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
@@ -41,6 +43,8 @@ setMethod("getSolverName", "LassoSolver",
 
 #----------------------------------------------------------------------------------------------------
 #' Run the LASSO Solver
+#'
+#' @rdname LassoSolver
 #' @aliases run.LassoSolver
 #' @description Given a TReNA object with LASSO as the solver, use the \code{\link{glmnet}} function to estimate coefficients
 #' for each transcription factor as a predictor of the target gene's expression level. 
@@ -56,7 +60,12 @@ setMethod("getSolverName", "LassoSolver",
 #' @seealso \code{\link{glmnet}}
 #'
 #' @examples
-#' 
+#' # Load included Alzheimer's data, create a TReNA object with LASSO as solver, and solve
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' trena <- TReNA(mtx.assay = mtx.sub, solver = "lasso")
+#' target.gene <- "APOE"
+#' tfs <- setdiff(rownames(mtx.sub), target.gene)
+#' tbl <- solve(trena, target.gene, tfs)
 
 setMethod("run", "LassoSolver",
 

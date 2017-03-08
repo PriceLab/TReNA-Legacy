@@ -25,7 +25,9 @@ FootprintFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @param genome.db.uri A connection to a genome database containing footprint information
 #' @param project.db.uri A connection to a project database containing footprint information
 #' @param size.upstream An integer denoting the distance upstream of the target gene to look for footprints
+#' (default = 1000)
 #' @param size.downstream An integer denoting the distance downstream of the target gene to look for footprints
+#' (default = 1000)
 #'
 #' @return A vector containing all genes with variances less than the target gene
 

@@ -24,6 +24,8 @@ samples for a group of genes, and a string representing the name of a chosen sol
 \item{\code{mtx.assay}}{An assay matrix of gene expression data}
 
 \item{\code{solver}}{A string matching the designated solver for relating a target gene to transcription factors. (default = "lasso")}
+
+\item{\code{quiet}}{A logical denoting whether or not the TReNA object should print output}
 }}
 
 \seealso{

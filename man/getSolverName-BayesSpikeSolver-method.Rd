@@ -16,3 +16,7 @@
 \description{
 Get Bayes Spike Solver name
 }
+\examples{
+solver <- BayesSpikeSolver()
+getSolverName(solver)
+}

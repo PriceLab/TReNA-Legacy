@@ -21,11 +21,19 @@
 \item{extraArgs}{Modifiers to the Bayes Spike solver}
 }
 \value{
-A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
+A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters
 }
 \description{
 Given a TReNA object with Bayes Spike as the solver, use the \code{\link{vbsr}} function to estimate coefficients
 for each transcription factor as a predictor of the target gene's expression level.
+}
+\examples{
+# Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+trena <- TReNA(mtx.assay = mtx.sub, solver = "bayesSpike")
+target.gene <- "APOE"
+tfs <- setdiff(rownames(mtx.sub), target.gene)
+tbl <- solve(trena, target.gene, tfs)
 }
 \seealso{
 \code{\link{vbsr}}

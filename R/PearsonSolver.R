@@ -10,7 +10,8 @@
 #' Create a Solver class object using  Pearson correlation coefficients as the solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
-#'
+#' @param quiet A logical denoting whether or not the solver should print output
+#' 
 #' @return A Solver class object with Pearson correlation coefficients as the solver
 #'
 #' @examples
@@ -46,7 +47,8 @@ setMethod("getSolverName", "PearsonSolver",
           })
 #----------------------------------------------------------------------------------------------------
 #' Run the Pearson Solver
-#' 
+#'
+#' @rdname PearsonSolver
 #' @aliases run.PearsonSolver
 #' @description Given a TReNA object with Pearson as the solver, use the \code{\link{cor}} function to
 #' estimate coefficients for each transcription factor as a perdictor of the target gene's expression level
@@ -58,6 +60,14 @@ setMethod("getSolverName", "PearsonSolver",
 #' @return fit The set of Pearson Correlation Coefficients between each transcription factor and the target gene.
 #'
 #' @seealso \code{\link{cor}}
+#'
+#' @examples
+#' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' trena <- TReNA(mtx.assay = mtx.sub, solver = "pearson")
+#' target.gene <- "APOE"
+#' tfs <- setdiff(rownames(mtx.sub), target.gene)
+#' tbl <- solve(trena, target.gene, tfs)
 
 setMethod("run", "PearsonSolver",
 

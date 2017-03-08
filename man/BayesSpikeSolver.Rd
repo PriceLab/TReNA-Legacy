@@ -8,10 +8,15 @@ BayesSpikeSolver(mtx.assay = matrix(), quiet = TRUE)
 }
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
+
+\item{quiet}{A logical denoting whether or not the solver should print output}
 }
 \value{
 A Solver class object with Bayes Spike as the solver
 }
 \description{
 Designate Bayes Spike as the TReNA Solver and Solve
+}
+\examples{
+solver <- BayesSpikeSolver()
 }

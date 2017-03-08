@@ -10,7 +10,8 @@
 #' 
 #' @slot mtx.assay An assay matrix of gene expression data
 #' @slot solver A string matching the designated solver for relating a target gene to transcription factors. (default = "lasso")
-#'
+#' @slot quiet A logical denoting whether or not the TReNA object should print output
+#' 
 #' @return An object of the TReNA class
 #'
 #' @seealso \code{\link{solve}}
@@ -79,6 +80,14 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 #' @return A data frame containing coefficients relating the target gene to each transcription factor
 #'
 #' @seealso \code{\link{TReNA}}
+#'
+#' @examples
+#' # Load included Alzheimer's data, create a TReNA object, and solve
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' trena <- TReNA(mtx.assay = mtx.sub)
+#' target.gene <- "APOE"
+#' tfs <- setdiff(rownames(mtx.sub), target.gene)
+#' tbl <- solve(trena, target.gene, tfs)
 
 setMethod("solve", "TReNA",
 

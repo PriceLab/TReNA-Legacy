@@ -9,8 +9,12 @@
 #' Designate Bayes Spike as the TReNA Solver and Solve
 #'
 #' @param mtx.assay An assay matrix of gene expression data
-#'
+#' @param quiet A logical denoting whether or not the solver should print output
+#' 
 #' @return A Solver class object with Bayes Spike as the solver
+#'
+#' @examples
+#' solver <- BayesSpikeSolver()
 
 BayesSpikeSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
@@ -29,7 +33,10 @@ BayesSpikeSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @param obj An object of the class BayesSpikeSolver
 #' 
 #' @return "BayesSpikeSolver"
-#' 
+#'
+#' @examples
+#' solver <- BayesSpikeSolver()
+#' getSolverName(solver)
 
 setMethod("getSolverName", "BayesSpikeSolver",
 
@@ -50,9 +57,17 @@ setMethod("getSolverName", "BayesSpikeSolver",
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
 #' @param extraArgs Modifiers to the Bayes Spike solver
 #'
-#' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
+#' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters
 #'
 #' @seealso \code{\link{vbsr}}
+#'
+#' @examples
+#' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' trena <- TReNA(mtx.assay = mtx.sub, solver = "bayesSpike")
+#' target.gene <- "APOE"
+#' tfs <- setdiff(rownames(mtx.sub), target.gene)
+#' tbl <- solve(trena, target.gene, tfs)
 
 setMethod("run", "BayesSpikeSolver",
 

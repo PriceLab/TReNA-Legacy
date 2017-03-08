@@ -10,7 +10,8 @@
 #' Create a Solver class object using the Ridge Regression solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
-#'
+#' @param quiet A logical denoting whether or not the solver should print output
+#' 
 #' @return A Solver class object with Ridge Regression as the solver
 #'
 #' @examples
@@ -42,6 +43,8 @@ setMethod("getSolverName", "RidgeSolver",
 
 #----------------------------------------------------------------------------------------------------
 #' Run the Ridge Regression Solver
+#'
+#' @rdname RidgeSolver
 #' @aliases run.RidgeSolver
 #' @description Given a TReNA object with Ridge Regression as the solver, use the \code{\link{glmnet}} function to estimate coefficients
 #' for each transcription factor as a predictor of the target gene's expression level. 
@@ -57,7 +60,12 @@ setMethod("getSolverName", "RidgeSolver",
 #' @seealso \code{\link{glmnet}}
 #'
 #' @examples
-#' 
+#' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' trena <- TReNA(mtx.assay = mtx.sub, solver = "ridge")
+#' target.gene <- "APOE"
+#' tfs <- setdiff(rownames(mtx.sub), target.gene)
+#' tbl <- solve(trena, target.gene, tfs)
 
 setMethod("run", "RidgeSolver",
 

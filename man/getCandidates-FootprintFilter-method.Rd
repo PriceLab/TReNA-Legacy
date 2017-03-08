@@ -18,9 +18,11 @@
 
 \item{project.db.uri}{A connection to a project database containing footprint information}
 
-\item{size.upstream}{An integer denoting the distance upstream of the target gene to look for footprints}
+\item{size.upstream}{An integer denoting the distance upstream of the target gene to look for footprints
+(default = 1000)}
 
-\item{size.downstream}{An integer denoting the distance downstream of the target gene to look for footprints}
+\item{size.downstream}{An integer denoting the distance downstream of the target gene to look for footprints
+(default = 1000)}
 }
 \value{
 A vector containing all genes with variances less than the target gene

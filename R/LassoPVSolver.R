@@ -9,7 +9,8 @@
 #' Create a Solver class object using the LASSO P-Value solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
-#'
+#' @param quiet A logical denoting whether or not the solver should print output
+#' 
 #' @return A Solver class object with LASSO P-Value as the solver
 #'
 #' @examples
@@ -46,6 +47,7 @@ setMethod("getSolverName", "LassoPVSolver",
 #----------------------------------------------------------------------------------------------------
 #' Run the LASSO P-Value Solver
 #'
+#' @rdname LassoPVSolver
 #' @aliases run.LassoPVSolver
 #' @description Given a TReNA object with LASSO P-Value as the solver, use the \code{\link{lassopv}} function to estimate coefficients
 #' for each transcription factor as a predictor of the target gene's expression level. 
@@ -61,7 +63,12 @@ setMethod("getSolverName", "LassoPVSolver",
 #' @seealso \code{\link{lassopv}}
 #'
 #' @examples
-#' 
+#' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' trena <- TReNA(mtx.assay = mtx.sub, solver = "lassopv")
+#' target.gene <- "APOE"
+#' tfs <- setdiff(rownames(mtx.sub), target.gene)
+#' tbl <- solve(trena, target.gene, tfs)
 
 setMethod("run", "LassoPVSolver",
 
@@ -71,10 +78,9 @@ setMethod("run", "LassoPVSolver",
                   return(data.frame())              
 
         # we don't try to handle tf self-regulation
-                  deleters <- grep(target.gene, tfs)              
+              deleters <- grep(target.gene, tfs)
               if(length(deleters) > 0){                  
                   tfs <- tfs[-deleters]                  
-                  tf.weights <- tf.weights[-deleters]                  
                   if(!obj@quiet)                   
                       message(sprintf("LassoPVSolver removing target.gene from candidate regulators: %s", target.gene))                  
               }

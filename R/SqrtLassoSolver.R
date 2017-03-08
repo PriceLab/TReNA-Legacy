@@ -9,7 +9,8 @@
 #' Create a Solver class object using the Square Root LASSO solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
-#'
+#' @param quiet A logical denoting whether or not the solver should print output
+#' 
 #' @return A Solver class object with Square Root LASSO as the solver
 #'
 #' @examples
@@ -46,6 +47,7 @@ setMethod("getSolverName", "SqrtLassoSolver",
 #----------------------------------------------------------------------------------------------------
 #' Run the Square Root LASSO Solver
 #'
+#' @rdname SqrtLassoSolver
 #' @aliases run.SqrtLassoSolver
 #' @description Given a TReNA object with Square Root LASSO as the solver, use the \code{\link{slim}} function to estimate coefficients
 #' for each transcription factor as a predictor of the target gene's expression level. 
@@ -60,10 +62,13 @@ setMethod("getSolverName", "SqrtLassoSolver",
 #' @seealso \code{\link{slim}}
 #'
 #' @examples
-#' 
+#' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' trena <- TReNA(mtx.assay = mtx.sub, solver = "sqrtlasso")
+#' target.gene <- "APOE"
+#' tfs <- setdiff(rownames(mtx.sub), target.gene)
+#' tbl <- solve(trena, target.gene, tfs)
 
-### Note: I've removed all references to alpha as I don't believe slim uses it
-### Similar note for tf.weights and keep.metrics
 setMethod("run", "SqrtLassoSolver",
 
           function (obj, target.gene, tfs, extraArgs=list()){
@@ -81,7 +86,6 @@ setMethod("run", "SqrtLassoSolver",
                   deleters <- grep(target.gene, tfs)              
               if(length(deleters) > 0){                  
                   tfs <- tfs[-deleters]                  
-                  tf.weights <- tf.weights[-deleters]                  
                   if(!obj@quiet)                   
                       message(sprintf("SqrtLassoSolver removing target.gene from candidate regulators: %s", target.gene))                  
               }

@@ -3,13 +3,16 @@
 #' @description 
 #'
 #' @name FootprintFinder-class
-#' @rdname FootprintFinder
+#' @rdname FootprintFinder-class
+#' @aliases FootprintFinder
 #' @slot genome.db The address of a genome database for use in filtering
 #' @slot project.db The address of a project database for use in filtering
 #' @slot quiet A logical argument denoting whether the FootprintFinder object should behave quietly
 #' 
 #' @return An object of the FootprintFinder class that can reduce a list of genes to a subset prior
 #' to forming a TReNA object
+#'
+#' @seealso \code{\link{FootprintFilter}}
 
 
 #----------------------------------------------------------------------------------------------------
@@ -70,8 +73,15 @@ setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
 #----------------------------------------------------------------------------------------------------
 #'
 #' @name FootprintFinder-class
-#' @rdname FootprintFinder
-#' 
+#' @rdname FootprintFinder-class
+#'
+#' @param genome.database.uri The address of a genome database for use in filtering. This database
+#' must contain the tables "gtf" and "motifsgenes" at a minimum. The URI format is as follows:
+#' "dbtype://host/database" (e.g. "postgres://localhost/genomedb")
+#' @param project.database.uri The address of a project database for use in filtering. This database
+#' must contain the tables "regions" and "hits" at a minimum. The URI format is as follows:
+#' "dbtype://host/database" (e.g. "postgres://localhost/projectdb")
+#' @param quiet A logical denoting whether or not the FootprintFinder object should print output
 
 FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRUE)
 {
@@ -155,8 +165,12 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
 } # FootprintFinder, the constructor
 #----------------------------------------------------------------------------------------------------
 #' Close a Footprint Database Connection
+#'
+#' This method takes a FootprintFinder object and closes connections to the footprint databases
+#' if they are currently open.
 #' 
-#' 
+#' @name closeDatabaseConnections-methods
+#' @rdname FootprintFinder-class
 #' 
 #' @param obj An object of class FootprintFinder
 #'
@@ -171,6 +185,20 @@ setMethod("closeDatabaseConnections", "FootprintFinder",
           })
 
 #----------------------------------------------------------------------------------------------------
+#' Get the List of Biotypes
+#'
+#' Using the gtf table in the genome database contained in a FootprintFinder object, get the list of
+#' different types of biological units (biotypes) contained in the table.
+#'
+#' @name getGtfGeneBioTypes-methods
+#' @rdname getGtfGeneBioTypes
+#' @aliases getGtfGeneBioTypes
+#' 
+#' @param obj An object of class FootprintFinder
+#'
+#' @return A sorted list of the types of biological units contained in the gtf table of the genome
+#' database.
+
 setMethod("getGtfGeneBioTypes", "FootprintFinder",
 
      function(obj){
@@ -178,6 +206,20 @@ setMethod("getGtfGeneBioTypes", "FootprintFinder",
         })
 
 #----------------------------------------------------------------------------------------------------
+#' Get the List of Molecule Types
+#'
+#' Using the gtf table in the genome database contained in a FootprintFinder object, get the list of
+#' different types of molecules contained in the table.
+#'
+#' @name getGtfMoleculeTypes-methods
+#' @rdname getGtfMoleculeTypes
+#' @aliases getGtfMoleculeTypes
+#' 
+#' @param obj An object of class FootprintFinder
+#'
+#' @return A sorted list of the types of molecules contained in the gtf table of the genome
+#' database.
+
 setMethod("getGtfMoleculeTypes", "FootprintFinder",
 
      function(obj){
@@ -185,6 +227,24 @@ setMethod("getGtfMoleculeTypes", "FootprintFinder",
         })
 
 #----------------------------------------------------------------------------------------------------
+#' Get Chromasome Location
+#'
+#' Using the gtf table in the genome database contained in a FootprintFinder object, get the locations
+#' of chromasomes with the specified gene name, biological unit type, and molecule type
+#'
+#' @name getChromLoc-methods
+#' @rdname getChromLoc
+#' @aliases getChromLoc
+#' 
+#' @param obj An object of class FootprintFinder
+#' @param name A gene name or ID
+#' @param biotype A type of biological unit (default="protein_coding")
+#' @param moleculetype A type of molecule (default="gene")
+#'
+#' @return A dataframe containing the results of a database query pertaining to the specified name,
+#' biotype, and molecule type. This dataframe contains the following columns: gene_id, gene_name,
+#' chr, start, endpos, strand
+
 setMethod("getChromLoc", "FootprintFinder",
 
    function(obj, name, biotype="protein_coding", moleculetype="gene"){
@@ -196,6 +256,30 @@ setMethod("getChromLoc", "FootprintFinder",
      })
 
 #----------------------------------------------------------------------------------------------------
+#' Get Gene Promoter Region
+#'
+#' Using the \code{\link{getChromLoc}} function in conjunction with the gtf table inside the genome
+#' database specified by the FootprintFinder object, get the chromasome, starting location,
+#' and ending location for gene promoter region.
+#'
+#' @name getGenePromoterRegion-methods
+#' @rdname getGenePromoterRegion
+#' @aliases getGenePromoterRegion
+#' 
+#' @param obj An object of class FootprintFinder
+#' @param gene A gene name of ID
+#' @param size.upstream An integer denoting the distance upstream of the target gene to look for footprints
+#' (default = 1000)
+#' @param size.downstream An integer denoting the distance downstream of the target gene to look for footprints
+#' (default = 0)
+#' @param biotype A type of biological unit (default="protein_coding")
+#' @param moleculetype A type of molecule (default="gene")
+#'
+#' @return A list containing 3 elements:
+#' 1) chr : The name of the chromasome containing the promoter region for the specified gene
+#' 2) start : The starting location of the promoter region for the specified gene
+#' 3) end : The ending location of the promoter region for the specified gene
+
 setMethod("getGenePromoterRegion", "FootprintFinder",
 
    function(obj, gene, size.upstream=1000, size.downstream=0, biotype="protein_coding", moleculetype="gene"){
@@ -223,6 +307,29 @@ setMethod("getGenePromoterRegion", "FootprintFinder",
      })
 
 #----------------------------------------------------------------------------------------------------
+#' Get Footprints for Gene
+#'
+#' Using the \code{\link{getGenePromoterRegion}} and \code{\link{getFootprintsInRegion}} functions
+#' in conjunction with the gtf table inside the genome database specified by the FootprintFinder object,
+#' retrieve a dataframe containing the footprints for a specified gene
+#'
+#' @name getFootprintsForGene-methods
+#' @rdname getFootprintsForGene
+#' @aliases getFootprintsForGene
+#' 
+#' @param obj An object of class FootprintFinder
+#' @param gene A gene name of ID
+#' @param size.upstream An integer denoting the distance upstream of the target gene to look for footprints
+#' (default = 1000)
+#' @param size.downstream An integer denoting the distance downstream of the target gene to look for footprints
+#' (default = 0)
+#' @param biotype A type of biological unit (default="protein_coding")
+#' @param moleculetype A type of molecule (default="gene")
+#'
+#' @return A dataframe containing all footprints for the specified gene and accompanying parameters
+#'
+#' @seealso \code{\link{getGenePromoterRegion}}, \code{\link{getFootprintsInRegion}}
+
 setMethod("getFootprintsForGene", "FootprintFinder",
 
     function(obj,  gene, size.upstream=1000, size.downstream=0, biotype="protein_coding", moleculetype="gene"){
@@ -234,6 +341,23 @@ setMethod("getFootprintsForGene", "FootprintFinder",
        }) # getFootprintsForGene
 
 #----------------------------------------------------------------------------------------------------
+#' Get Footprints in a Region
+#'
+#' Using the regions and hits tables inside the project database specified by the FootprintFinder
+#' object, return the location, chromasome, starting position, and ending positions of all footprints
+#' for the specified region.
+#' 
+#' @name getFootprintsInRegion-methods
+#' @rdname getFootprintsInRegion
+#' @aliases getFootprintsInRegion
+#' 
+#' @param obj An object of class FootprintFinder
+#' @param chromasome The name of the chromasome of interest
+#' @param start An integer denoting the start of the desired region
+#' @param endpos An integer denoting the end of the desired region
+#'
+#' @return A dataframe containing all footprints for the specified region
+
 setMethod("getFootprintsInRegion", "FootprintFinder",
 
     function(obj, chromosome, start, end){
@@ -261,6 +385,24 @@ setMethod("getFootprintsInRegion", "FootprintFinder",
        }) # getFootprintsInRegion
 
 #----------------------------------------------------------------------------------------------------
+#' Get Promoter Regions for All Genes
+#'
+#' Using the gtf table inside the genome database specified by the FootprintFinder object, return the
+#' promoter regions for every protein-coding gene in the database. 
+#' 
+#' @name getPromoterRegionsAllGenes-methods
+#' @rdname getPromoterRegionsAllGenes
+#' @aliases getPromoterRegionsAllGenes
+#' 
+#' @param obj An object of class FootprintFinder
+#' @param size.upstream An integer denoting the distance upstream of each gene's transcription start
+#' site to include in the promoter region (default = 1000)
+#' @param size.downstream An integer denoting the distance downstream of each gene's transcription start
+#' site to include in the promoter region (default = 1000)
+#' @param use_gene_ids A binary indicating whether to return gene IDs or gene names (default = T)
+#'
+#' @return A GRanges object containing the promoter regions for all genes
+
 setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 
    function( obj , size.upstream=10000 , size.downstream=10000 , use_gene_ids = T ) {
@@ -304,6 +446,25 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 
 }) # getPromoterRegionsAllGenes
 #----------------------------------------------------------------------------------------------------
+#' Map Motifs to Transcription Factors and Merge into a Table
+#'
+#' Using the motifsgenes table inside the genome database specified by the FootprintFinder object,
+#' return a table mapping each motif to transcription factors
+#' 
+#' @name mapMotifsToTFsMergeIntoTable-methods
+#' @rdname mapMotifsToTFsMergeIntoTable
+#' @aliases mapMotifsToTFsMergeIntoTable
+#' 
+#' @param obj An object of class FootprintFinder
+#' @param tbl A dataframe of footprints, generally obtained using \code{\link{getFootprintsInRegion}}
+#' or \code{\link{getFootprintsForGene}} 
+#'
+#' @return A data frame containing the motifs from the supplied footprints table and the transcription
+#' factors they map to
+#'
+#' @seealso \code{\link{getFootprintsInRegion}}, \code{\link{getFootprintsForGene}} 
+
+
 setMethod("mapMotifsToTFsMergeIntoTable", "FootprintFinder",
 
    function(obj, tbl){

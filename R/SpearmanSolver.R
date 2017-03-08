@@ -10,7 +10,8 @@
 #' Create a Solver class object using Spearman correlation coefficients as the solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
-#'
+#' @param quiet A logical denoting whether or not the solver should print output
+#' 
 #' @return A Solver class object with Spearman correlation coefficients as the solver
 #'
 #' @examples
@@ -47,6 +48,7 @@ setMethod("getSolverName", "SpearmanSolver",
 #----------------------------------------------------------------------------------------------------
 #' Run the Spearman Solver
 #'
+#' @rdname SpearmanSolver
 #' @aliases run.SpearmanSolver
 #' @description Given a TReNA object with Spearman as the solver, use the \code{\link{cor}} function with
 #' \code{method = "spearman"} to esimate coefficients for each transcription factor as a predictor of the target
@@ -59,6 +61,14 @@ setMethod("getSolverName", "SpearmanSolver",
 #' @return fit The set of Spearman Correlation Coefficients between each transcription factor and the target gene.
 #'
 #' @seealso \code{\link{cor}}
+#'
+#' @examples
+#' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' trena <- TReNA(mtx.assay = mtx.sub, solver = "pearson")
+#' target.gene <- "APOE"
+#' tfs <- setdiff(rownames(mtx.sub), target.gene)
+#' tbl <- solve(trena, target.gene, tfs)
 
 setMethod("run", "SpearmanSolver",
 

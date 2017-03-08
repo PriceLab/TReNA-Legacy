@@ -16,3 +16,7 @@
 \description{
 Get Random Forest Solver name
 }
+\examples{
+solver <- RandomForestSolver()
+getSolverName(solver)
+}
