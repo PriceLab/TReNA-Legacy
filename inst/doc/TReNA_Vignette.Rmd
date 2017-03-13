@@ -1,0 +1,132 @@
+---
+title: "A Brief Introduction to TReNA"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview of TReNA
+
+TReNA is a package for inferring relationships between target genes and their transcription factors. By using TReNA, we can generate hypotheses for relationships between genes and enable the construction of gene network models. In the most basic sense, TReNA accepts a matrix of gene expression data and provides two functions using the data: 1) It filters genes in the dataset based on user-specified criteria; 2) Given a target gene response and list of transcription factors as predictors, it uses a user-specified solver to perform feature selection. Thus, the standard TReNA workflow is the following:
+
+1. Create a TReNA object using an assay matrix and a desired solver.
+2. (optional) Filter the list of candidate transcription factors using a filter. 
+3. Solve the TReNA object for a supplied target gene and list of transcription factors to obtain the inferred relationships between target gene and transcription factors. 
+
+The filtering step, while optional, can greatly simplify the ensuing solving step by reducing the number of predictors supplied to the solver. Rather than supplying hundreds of transcription factors that can confound meaningful relationships between genes, filters allow the user to effectively screen out less important genes, leaving only the most likely affectors. 
+
+Starting off, we'll load the TReNA library.
+
+```{r}
+suppressMessages(library(TReNA))
+```
+
+## Creating a TReNA Object
+
+Running TReNA requires an assay matrix of gene expression data; there are several data sets of this nature included with the TReNA package that can serve as examples. In this case, we will load data from a study on Alzheimer's disease, in which 278 samples were obtained for 154 transcription factors.
+
+```{r}
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+```
+
+This gives us a matrix, *mtx.sub*, that contains our gene expression data in units of TMM. Before creating a TReNA object, it is wise to inspect the distribution of the matrix and consider using some sort of data transformation to normalize the mean-variance relationship. We can see, for instance, that our dataset is fairly skewed, with most of the expression values falling close to 0 and only a few values on the higher end of the spectrum.
+
+```{r echo=FALSE}
+hist(mtx.sub, main = "Expression Matrix Data")
+```
+
+The mean-variance relationship of such a matrix is _____ and may profoundly affect our results. To overcome this, we will transform our matrix using the *voom* function in the *limma* package.
+
+```{r}
+suppressMessages(library(limma))
+mtx.voom <- voom(mtx.sub)$E
+```
+
+If we now plot our transformed matrix, we can see that it's been scaled down substantially.
+
+```{r echo=FALSE}
+hist(mtx.voom, main = "VOOM-Transformed Expression Matrix Data")
+```
+
+Moving forward, we will use this transformed data set in the rest of our analyses. That gives us one half of our TReNA object; the other half concerns our choice of solver. TReNA currently supports 8 different solvers. Their associated character strings for use in TReNA are (in no particular order):
+
+1. lasso - an application of *glmnet* using *alpha = 0* as the default elastic net parameter; default TReNA solver
+2. ridge - an application of *glmnet* using *alpha = 1* as the default elastic net parameter
+3. randomForest - an application of *randomForest*, the standard Random Forest function
+4. bayesSpike - an application of *vbsr*, the Bayes Spike function
+5. sqrtlasso - an application of the *slim* function from the *flare* package, with *q = 2*
+6. lassopv - an application of *lassopv*, the P-Value LASSO function
+7. pearson - an application of the *cor* function using the default parameters
+8. spearman - an application of the *cor* function using *method = "spearman"*
+
+Although TReNA defaults to using LASSO as the solver, we recommend doing some critical thinking about which solver most suits your purposes before choosing. Once a solver has been chosen, the TReNA object is simply specified (using Random Forest in this case):
+
+```{r}
+trena <- TReNA(mtx.assay = mtx.voom, solver = "randomForest")
+```
+
+We have now created an object of the TReNA class, which contains our solver and our assay matrix. 
+
+## Using Filtering to Reduce Predictor Number
+
+TReNA currently supports 3 different filters:
+
+1. FootprintFilter: using a PostgreSQL or SQLite database of footprint data, returns transcription factors with footprints for a given target gene
+2. VarianceFilter: returns transcription factors with expression variance within a certain range of the target gene's expression variance
+3. NullFilter: returns all transcription factors supplied in the matrix
+
+In order to get a list of gene candidates using a filter, you must construct the appropriate filter object by supplying an assay matrix, then call the *getCandidates* function on the filter. Depending on the filter, this method may require other parameters. The simplest filter is the NullFilter, which can return candidates with no additional input; however, as the name suggests, this just returns all transcription factors, not including the target gene.
+
+```{r}
+
+null.filter <- NullFilter(mtx.assay = mtx.voom)
+tfs <- getCandidates(null.filter)
+str(tfs)
+
+````
+
+The VarianceFilter is slightly more complex; it requires the specification of a target gene and also allows you to specify a variance size range. The filter finds the variance of all genes in the assay matrix, then returns all transcription factors with variance within the variance size range of the target gene. For instance, we can create a VarianceFilter and use it to find all transcription factors with variance within 50% of the target gene's variance.
+
+```{r}
+
+variance.filter <- VarianceFilter(mtx.assay = mtx.voom)
+tfs <- getCandidates(variance.filter, target.gene = "MEF2C", var.size = 0.5)
+str(tfs)
+
+```
+
+The most complex filter is the FootprintFilter, which leverages information from footprint databases in either SQLite or PostgreSQL. The filter requires connection to 2 databases: 1) A genome database, which contains information on the location and function of genes; 2) A project database, which contains footprint regions from a specific project. As an illustration of the format and utility of these databases, we have included in *extdata* two SQLite databases demonstrating the required tables and information needed to use the FootprintFilter. Our databases are subsets of larger databases, corresponding to the *MEF2C* gene and a footprinting project in the brain using the Wellington method for determining footprints. The FootprintFilter method for getting candidates also allows for specification of the distance upstream and downstream of a transcription start site to look for footprints; in this case, we'll use 1000 bases for each, the default distance.
+
+```{r}
+footprint.filter <- FootprintFilter(mtx.assay = mtx.voom)
+db.address <- system.file(package = "TReNA", "extdata")
+genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+target.gene <- "MEF2C"
+tfs <- getCandidates(footprint.filter, target.gene,
+                     genome.db.uri, project.db.uri,
+                     size.upstream = 1000,
+                     size.downstream = 1000)
+str(tfs)
+```
+
+
+## Solving a TReNA Object
+
+Each of solvers has its own strengths and weaknesses that we will not delve into here, but that are generally detailed within their own packages. To begin with, we will look at the LASSO solver, which is the default solver for a TReNA object. 
+
+Once a user reaches the point of actually solving the TReNA object, a solver has already been specified, but the user must still specify the target gene response and transcription factor predictors of interest. For our purposes, we will obtain our list of transcription factors using a filter on variance, with *"MEF2C"* as our target gene. 
+
+```{r}
+
+trena <- TReNA(mtx.assay = mtx.voom, solver = "lasso")
+target.gene <- "MEF2C"
+gene.filter <- VarianceFilter(mtx.assay = mtx.voom)
+tfs <- getCandidates(gene.filter, target.gene)
+
+tbl.out <- solve(trena, target.gene, tfs)
+head(tbl.out)
+
+```

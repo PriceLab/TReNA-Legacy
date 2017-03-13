@@ -111,29 +111,43 @@ setMethod("run", "SqrtLassoSolver",
 
               # If no lambda, run a binary search for the best lasso using permutation of the data set
               if(is.null(lambda)){
-                  set.seed(101010)
+                  #set.seed(101010)
                   target.mixed <- sample(target)
                   threshold <- 1E-15
-                  lambda.change <- 10^(-7)
+                  lambda.change <- 10^(-4)
                   lambda <- 1
-                  
-                  # Do a binary search
-                  step.size <- lambda/2 # Start at 0.5
-                  while(step.size > lambda.change){
-                      # Get the fit
-                      fit <- slim(features, target.mixed, method = "lq", verbose = FALSE, lambda = lambda)
-                      # Case 1: nonsense, need to lower lambda
-                      if(max(fit$beta) < threshold){
-                          lambda <- lambda - step.size
+
+                  lambda.list <- numeric(length=50)
+                  # Do this in parallel if possible
+                  num.cores <- detectCores()/2
+                  cl <- makeForkCluster(cores = num.cores)
+                  registerDoParallel(cl)
+                  foreach(i = 1:length(lambda.list)) %dopar% {
+
+                      # Do a binary search
+                      step.size <- lambda/2 # Start at 0.5
+                      while(step.size > lambda.change){
+                          # Get the fit
+                          fit <- slim(features, target.mixed, method = "lq", verbose = FALSE, lambda = lambda)
+                          # Case 1: nonsense, need to lower lambda
+                          if(max(fit$beta) < threshold){
+                              lambda <- lambda - step.size
+                          }
+                          # Case 2: sense, need to raise lambda
+                          else{
+                              lambda <- lambda + step.size
+                          }
+                          # Halve the step size and re-scramble the target
+                          step.size <- step.size/2
+                          target.mixed <- sample(target)
                       }
-                      # Case 2: sense, need to raise lambda
-                      else{
-                          lambda <- lambda + step.size
-                      }
-                      # Halve the step size
-                      step.size <- step.size/2
+                      lambda.list[[i]] <- lambda
                   }
+                  
               }
+
+#              browser()
+              lambda <- mean(lambda.list)
 
               # Run square root lasso and return an object of class "slim"              
               fit <- slim(features, target, method = "lq", lambda = lambda, verbose=FALSE)

@@ -25,7 +25,7 @@ LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
     obj
 
 } # LassoSolver, the constructor
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #' Get Lasso Solver name
 #'
 #' @param obj An object of class LassoSolver

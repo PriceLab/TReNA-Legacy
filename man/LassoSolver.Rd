@@ -51,5 +51,6 @@ tbl <- solve(trena, target.gene, tfs)
 \seealso{
 \code{\link{glmnet}}
 
-Other solver methods: \code{\link{RandomForestSolver}}
+Other solver methods: \code{\link{EnsembleSolver}},
+  \code{\link{RandomForestSolver}}
 }

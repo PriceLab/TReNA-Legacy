@@ -1,8 +1,8 @@
 Package: TReNA
 Type: Package
 Title: Fit transcriptional regulatory networks using gene expression, priors, machine learning
-Version: 0.99.79
-Date: 2017-03-08
+Version: 0.99.80
+Date: 2017-03-13
 Author: Seth Ament <seth.ament@systemsbiology.org>, Paul Shannon <pshannon@systemsbioloyg.org>, Matthew Richards <mrichard@systemsbiology.org>
 Maintainer: Seth Ament <seth.ament@systemsbiology.org>, Paul Shannon <pshannon@systemsbioloyg.org>, Matthew Richards <mrichard@systemsbiology.org>
 Depends:
@@ -20,7 +20,10 @@ Depends:
 Suggests:
     RUnit,
     limma,
-    plyr
+    plyr,
+    knitr
+VignetteBuilder:
+    knitr
 Description: Methods for reconstructing transcriptional regulatory networks, especially in species
   for which genome-wide TF binding site information is available.
 License: GPL-3
@@ -28,6 +31,7 @@ Collate:
     'Solver.R'
     'BayesSpikeSolver.R'
     'CandidateFilter.R'
+    'EnsembleSolver.R'
     'FootprintFilter.R'
     'FootprintFinder.R'
     'LassoPVSolver.R'

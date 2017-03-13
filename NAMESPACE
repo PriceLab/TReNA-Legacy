@@ -27,7 +27,8 @@ export(
     RidgeSolver,
     RandomForestSolver,
     BayesSpikeSolver,
-    FootprintFilter
+    FootprintFilter,
+    EnsembleSolver
     )
 
 exportMethods(

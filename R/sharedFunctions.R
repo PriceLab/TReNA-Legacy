@@ -51,36 +51,64 @@
      }
 
      if( is.null(lambda) ) {
-     if(!obj@quiet)
-         printf("begining cross-validation for glmnet, using %d tfs, target %s", length(tfs), target.gene)
-	 fit <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE , alpha = alpha )
-         lambda.min <- fit$lambda.min
-         lambda <-fit$lambda.1se
-     } else
 
-     if( is.numeric(lambda) ) {
-         fit = glmnet(features, target, penalty.factor=tf.weights, alpha = alpha )
+#         if(!obj@quiet)
+ #            printf("begining cross-validation for glmnet, using %d tfs, target %s", length(tfs), target.gene)
+#         fit <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE , alpha = alpha )         
+#         lambda.min <- fit$lambda.min         
+#         lambda <-fit$lambda.1se         
+#    } else
+#
+#         if( is.numeric(lambda) ) {             
+#             fit = glmnet(features, target, penalty.factor=tf.weights, alpha = alpha )             
+#}
+         # Run Permutation testing
+         target.mixed <- sample(target)
+         threshold <- 1E-15
+         lambda.change <- 10^(-4)
+         lambda <- 1
+         lambda.list <- numeric(length=50)
+         
+         for(i in 1:length(lambda.list)){             
+             # Do a binary search             
+             step.size <- lambda/2 # Start at 0.5             
+             while(step.size > lambda.change){
+                 
+                 # Get the fit
+                 fit <- glmnet(features, target.mixed, penalty.factor = tf.weights, alpha=alpha, lambda=lambda)
+                 
+                 # Case 1: nonsense, need to lower lambda
+                 if(max(fit$beta) < threshold){
+                     lambda <- lambda - step.size
+                 }
+                 
+                 # Case 2: sense, need to raise lambda
+                 else{
+                     lambda <- lambda + step.size
+                 }
+                 # Halve the step size and re-scramble the target
+                 step.size <- step.size/2
+                 target.mixed <- sample(target)
+             }
+             lambda.list[[i]] <- lambda
+         }
      }
-
-       # extract the exponents of the fit
-     #tbl.out <- as.matrix(fit$beta)
-     #deleters <- as.integer(which(tbl.out[,1] == 0))
-     #if(length(deleters) > 0)
-     #   tbl.out <- tbl.out[-deleters, , drop=FALSE]
-     #colnames(tbl.out) <- "beta"
-     #browser()
-     mtx.beta <- as.matrix( predict( fit , newx = features , type = "coef" , s = lambda ) )
-     colnames(mtx.beta) <- "beta"
-     deleters <- as.integer(which(mtx.beta[,1] == 0))
-     if( all( mtx.beta[,1] == 0 ) ) return( data.frame() )
-     if(length(deleters) > 0)
+    fit <- glmnet(features, target, penalty.factor=tf.weights, alpha=alpha, lambda=mean(lambda.list))
+    
+    # extract the exponents of the fit
+    mtx.beta <- as.matrix( predict( fit , newx = features , type = "coef" , s = fit$lambda ) )
+    colnames(mtx.beta) <- "beta"
+    deleters <- as.integer(which(mtx.beta[,1] == 0))
+    if( all( mtx.beta[,1] == 0 ) ) return( data.frame() )
+    if(length(deleters) > 0)
         mtx.beta <- mtx.beta[-deleters, , drop=FALSE]
 
-        # put the intercept, admittedly with much redundancy, into its own column
-     intercept <- mtx.beta[1,1]
-     mtx.beta <- mtx.beta[-1, , drop=FALSE]
-     mtx.beta <- cbind(mtx.beta, intercept=rep(intercept, nrow(mtx.beta)))
-     correlations.of.betas.to.targetGene <- unlist(lapply(rownames(mtx.beta), function(x) cor(mtx[x,], mtx[target.gene,])))
+    # put the intercept, admittedly with much redundancy, into its own column    
+    intercept <- mtx.beta[1,1]    
+    mtx.beta <- mtx.beta[-1, , drop=FALSE]    
+    mtx.beta <- cbind(mtx.beta, intercept=rep(intercept, nrow(mtx.beta)))    
+    correlations.of.betas.to.targetGene <- unlist(lapply(rownames(mtx.beta), function(x) cor(mtx[x,], mtx[target.gene,])))
+    
 
      mtx.beta <- as.matrix(cbind( mtx.beta, gene.cor=correlations.of.betas.to.targetGene))
      if(!obj@quiet)

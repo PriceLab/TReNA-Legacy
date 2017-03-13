@@ -37,7 +37,7 @@ setGeneric("solve",                    signature="obj", function(obj, target.gen
 TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 {
     stopifnot(solver %in% c("lasso", "randomForest", "bayesSpike", "pearson",
-                            "spearman","sqrtlasso","lassopv","ridge"))
+                            "spearman","sqrtlasso","lassopv","ridge", "ensemble"))
 
     if(solver == "lasso")     
         solver <- LassoSolver(mtx.assay) 
@@ -54,7 +54,9 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
     else if(solver == "lassopv")        
         solver <- LassoPVSolver(mtx.assay)    
     else if(solver == "ridge")        
-        solver <- RidgeSolver(mtx.assay)    
+        solver <- RidgeSolver(mtx.assay)
+    else if(solver == "ensemble")
+        solver <- EnsembleSolver(mtx.assay)
 
     .TReNA(solver=solver, quiet=quiet)    
 

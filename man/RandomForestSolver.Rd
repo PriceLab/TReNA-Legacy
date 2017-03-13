@@ -48,5 +48,6 @@ tfs <- setdiff(rownames(mtx.sub), target.gene)
 tbl <- solve(trena, target.gene, tfs)
 }
 \seealso{
-Other solver methods: \code{\link{LassoSolver}}
+Other solver methods: \code{\link{EnsembleSolver}},
+  \code{\link{LassoSolver}}
 }
