@@ -72,8 +72,8 @@ setMethod("run", "LassoSolver",
 
   function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
 
-      # Run the ElasticNetSolver function with alpha = 1 as default
-      alpha = 1.0
+      # Run the ElasticNetSolver function with alpha = 0.9 as default
+      alpha = 0.9
       lambda <- NULL
       keep.metrics = FALSE
 

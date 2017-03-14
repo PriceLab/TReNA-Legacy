@@ -200,13 +200,33 @@ tfs &lt;- getCandidates(gene.filter, target.gene)
 
 tbl.out &lt;- solve(trena, target.gene, tfs)
 head(tbl.out)</code></pre>
-<pre><code>##             beta intercept   gene.cor
-## STAT4  0.2409906  6.956941  0.9399046
-## SATB2  0.1917388  6.956941  0.9053878
-## FOXP2  0.1696538  6.956941  0.8478133
-## FOXO4 -0.1417711  6.956941 -0.7026636
-## LHX6   0.1275387  6.956941  0.7905433
-## CUX2   0.1025892  6.956941  0.7819094</code></pre>
+<pre><code>##              beta intercept   gene.cor
+## STAT4  0.28052241  5.650111  0.9399046
+## SATB2  0.23964654  5.650111  0.9053878
+## HLF    0.15458012  5.650111  0.9024599
+## FOXO4 -0.11483421  5.650111 -0.7026636
+## LHX6   0.09689321  5.650111  0.7905433
+## TSHZ2  0.09208171  5.650111  0.8140928</code></pre>
+<p>Each solver will necessarily give a different result, neccessitating some amount of thoughtfulness on the part of the user. For instance, if the goal is to return a sparse list of only the most influential genes, then LASSO may be the best choice. By contrast, the Random Forest solver will return scores for all genes, and will thus result in inferring more relationships.</p>
+</div>
+<div id="using-an-ensemble-solver-approach" class="section level2">
+<h2>Using an Ensemble Solver Approach</h2>
+<p>In addition to the individual solvers, TReNA includes an ensemble approach as a solver option. The ensemble solver allows the user to specify a vector of multiple TReNA solvers as part of the <em>extraArgs</em> list argument (e.g. <em>extraArgs = list(solver.list = c(“lasso”,“ridge”)))</em>. Alternatively, the user can specify <em>solver.list = “all.solvers”</em> to run all solvers (excepting the slow square root LASSO solver); this is the default option. In addition to computing and returning the individual scores of each solver, the ensemble solver generates a composite score based on all solvers and returns this in the <em>extr</em> column. As an example, we can run the ensemble solver on the same problem we just solved using LASSO.</p>
+<pre class="r"><code>trena &lt;- TReNA(mtx.assay = mtx.voom, solver = &quot;ensemble&quot;)
+target.gene &lt;- &quot;MEF2C&quot;
+gene.filter &lt;- VarianceFilter(mtx.assay = mtx.voom)
+tfs &lt;- getCandidates(gene.filter, target.gene)
+tbl.out &lt;- solve(trena, target.gene, tfs)
+head(tbl.out)</code></pre>
+<pre><code>##    gene beta.lasso rf.score    bayes.z pearson.coeff spearman.coeff
+## 1 FOXP2 0.07030724 10.75301 18.8273331     0.8478133      0.8365842
+## 3 STAT4 0.27781795 60.10107 29.6919221     0.9399046      0.9225219
+## 2   HLF 0.14504482 53.76602  0.7921789     0.9024599      0.9416976
+##   lasso.p.value beta.ridge     extr
+## 1  1.490099e-30 0.13021427 2.638372
+## 3  2.375128e-55 0.08335518 2.223394
+## 2  1.062597e-49 0.10144097 1.447590</code></pre>
+<p>one of the options for TReNA solver, Solver choice can be a non-trivial task for a TReNA user, as it requires some working knowledge of the pros and cons of the different methods.</p>
 </div>
 
 

@@ -52,17 +52,10 @@
 
      if( is.null(lambda) ) {
 
-#         if(!obj@quiet)
- #            printf("begining cross-validation for glmnet, using %d tfs, target %s", length(tfs), target.gene)
-#         fit <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE , alpha = alpha )         
-#         lambda.min <- fit$lambda.min         
-#         lambda <-fit$lambda.1se         
-#    } else
-#
-#         if( is.numeric(lambda) ) {             
-#             fit = glmnet(features, target, penalty.factor=tf.weights, alpha = alpha )             
-#}
-         # Run Permutation testing
+         # Run Permutation testing to find lambda
+         if( alpha != 0 )
+             alpha.perm = alpha
+         else(alpha.perm = 0.1)
          target.mixed <- sample(target)
          threshold <- 1E-15
          lambda.change <- 10^(-4)
@@ -75,7 +68,7 @@
              while(step.size > lambda.change){
                  
                  # Get the fit
-                 fit <- glmnet(features, target.mixed, penalty.factor = tf.weights, alpha=alpha, lambda=lambda)
+                 fit <- glmnet(features, target.mixed, penalty.factor = tf.weights, alpha=alpha.perm, lambda=lambda)
                  
                  # Case 1: nonsense, need to lower lambda
                  if(max(fit$beta) < threshold){
@@ -92,11 +85,26 @@
              }
              lambda.list[[i]] <- lambda
          }
-     }
-    fit <- glmnet(features, target, penalty.factor=tf.weights, alpha=alpha, lambda=mean(lambda.list))
-    
+         # Give lambda as 1 + 1se
+         lambda <- mean(lambda.list) + (sd(lambda.list)/sqrt(length(lambda.list)))
+         
+         fit <- glmnet(features, target, penalty.factor=tf.weights, alpha=alpha, lambda=lambda)
+         
+         }
+
+         # For non-LASSO
+ #        else{
+ #            fit <- cv.glmnet(features, target, penalty.factor=tf.weights, grouped=FALSE , alpha = alpha )         
+ #            lambda.min <- fit$lambda.min         
+ #            lambda <-fit$lambda.1se          
+ #        }
+
+     else if(is.numeric(lambda)){
+         fit = glmnet(features, target, penalty.factor=tf.weights, alpha=alpha, lambda=lambda)
+         }
+
     # extract the exponents of the fit
-    mtx.beta <- as.matrix( predict( fit , newx = features , type = "coef" , s = fit$lambda ) )
+    mtx.beta <- as.matrix( predict( fit , newx = features , type = "coef" , s = lambda ) )
     colnames(mtx.beta) <- "beta"
     deleters <- as.integer(which(mtx.beta[,1] == 0))
     if( all( mtx.beta[,1] == 0 ) ) return( data.frame() )

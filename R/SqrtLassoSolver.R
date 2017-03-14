@@ -117,12 +117,12 @@ setMethod("run", "SqrtLassoSolver",
                   lambda.change <- 10^(-4)
                   lambda <- 1
 
-                  lambda.list <- numeric(length=50)
+                  lambda.list <- numeric(length=20)
                   # Do this in parallel if possible
-                  num.cores <- detectCores()/2
-                  cl <- makeForkCluster(cores = num.cores)
-                  registerDoParallel(cl)
-                  foreach(i = 1:length(lambda.list)) %dopar% {
+                  #num.cores <- detectCores()/2
+#                  cl <- makeForkCluster(cores = num.cores)
+#                  registerDoParallel(cl)
+                  for(i in 1:length(lambda.list)) {
 
                       # Do a binary search
                       step.size <- lambda/2 # Start at 0.5
@@ -146,8 +146,8 @@ setMethod("run", "SqrtLassoSolver",
                   
               }
 
-#              browser()
-              lambda <- mean(lambda.list)
+              browser()
+              lambda <- mean(lambda.list) + (sd(lambda.list)/sqrt(length(lambda.list)))
 
               # Run square root lasso and return an object of class "slim"              
               fit <- slim(features, target, method = "lq", lambda = lambda, verbose=FALSE)

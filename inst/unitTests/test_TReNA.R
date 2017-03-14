@@ -15,9 +15,10 @@ runTests <- function()
    test_LassoPVSolverConstructor()
    test_PearsonSolverConstructor()
    test_SpearmanSolverConstructor()
+   test_EnsembleSolverConstructor()
    
    test_developAndFitDummyTestData()
-   test_fitDummyData()
+#   test_fitDummyData()
 
    test_ampAD.mef2c.154tfs.278samples.lasso()
    test_ampAD.mef2c.154tfs.278samples.bayesSpike()
@@ -27,7 +28,8 @@ runTests <- function()
    test_ampAD.mef2c.154tfs.278samples.sqrtlasso()
    test_ampAD.mef2c.154tfs.278samples.lassopv()
    test_ampAD.mef2c.154tfs.278samples.pearson()
-   test_ampAD.mef2c.154tfs.278samples.spearman()   
+   test_ampAD.mef2c.154tfs.278samples.spearman()
+   test_ampAD.mef2c.154tfs.278samples.ensemble()
 
    test_scalePredictorPenalties.lasso()
    test_eliminateSelfTFs()
@@ -149,10 +151,8 @@ test_fitDummyData <- function()
    x <- test_developAndFitDummyTestData(quiet=TRUE)
    mtx <- x$assay
 
-     # log transform the data
-
-   mtx <- mtx - min(mtx) + 0.001
-   mtx <- log2(mtx)
+   #asinh-transform the data   
+   mtx <- asinh(mtx)   
    target.gene <- x$correlated.target
    tfs <- x$tf.genes
 
@@ -170,7 +170,7 @@ test_fitDummyData <- function()
      # which predict the value of the target.gene
 
    tbl.betas <- solve(trena, target.gene, tfs, extraArgs =list(alpha=1.0, lambda=NULL))
-   checkTrue(all(c(tf1, tf2) %in% rownames(tbl.betas)))
+   checkTrue(all(c(tf1,tf2) %in% rownames(tbl.betas)))
    checkEquals(colnames(tbl.betas), c("beta", "intercept", "gene.cor"))
    intercept <- tbl.betas[1, "intercept"]
    coef.tf1  <- tbl.betas[tf1, "beta"]
@@ -401,17 +401,16 @@ test_eliminateSelfTFs <- function()
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    target.gene <- "MEF2C"
 
-   mtx.tmp <- mtx.sub - min(mtx.sub) + 0.001
-   mtx.log2 <- log2(mtx.tmp)
+   mtx.asinh <- asinh(mtx.sub)
 
-   trena <- TReNA(mtx.assay=mtx.log2, solver="lasso", quiet=FALSE)
-   tfs <- rownames(mtx.log2)
+   trena <- TReNA(mtx.assay=mtx.asinh, solver="lasso", quiet=FALSE)
+   tfs <- rownames(mtx.asinh)
    checkTrue(target.gene %in% tfs)         # our test case
    tbl.betas <- solve(trena, target.gene, tfs)
    checkTrue(!target.gene %in% rownames(tbl.betas))
-   checkTrue(cor(tbl.betas$beta[1:10], tbl.betas$gene.cor[1:10]) > 0.6)
+   checkTrue(cor(tbl.betas$beta, tbl.betas$gene.cor) > 0.6)
 
-   trena2 <- TReNA(mtx.assay=mtx.log2, solver="bayesSpike", quiet=FALSE)
+   trena2 <- TReNA(mtx.assay=mtx.asinh, solver="bayesSpike", quiet=FALSE)
    tbl.betas2 <- solve(trena2, target.gene, tfs)
    checkTrue(!target.gene %in% rownames(tbl.betas2))
    checkTrue(cor(tbl.betas2$beta[1:10], tbl.betas2$gene.cor[1:10]) > 0.7)
@@ -621,4 +620,40 @@ test_FootprintFilter <- function()
 
 } # test_FootprintFilter
 #----------------------------------------------------------------------------------------------------
+test_EnsembleSolverConstructor <- function()
+{
+    printf("--- test_EnsembleSolverConstructor")
+
+    # Construct the EnsembleSolver and check that it's correct
+
+    solver <- EnsembleSolver()
+    checkEquals(getSolverName(solver), "EnsembleSolver")
+    checkTrue(all(c("EnsembleSolver", "Solver") %in% is(solver)))
+}
+
+# test_EnsembleSolverConstructor
+#----------------------------------------------------------------------------------------------------
+test_ampAD.mef2c.154tfs.278samples.ensemble <- function()
+{
+   printf("--- test_ampAD.mef2c.154tfs.278samples.ensemble")
+
+   set.seed(122113)
+   # Load matrix and transform via arcsinh
+   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+   target.gene <- "MEF2C"
+   mtx.asinh <- asinh(mtx.sub)
+   #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
+   
+   trena <- TReNA(mtx.assay=mtx.asinh, solver="ensemble", quiet=FALSE)
+   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
+   tbl <- solve(trena, target.gene, tfs)
+
+   # Check for empirical values
+   checkTrue(min(tbl$extr) > 1.2)
+   checkTrue(max(tbl$extr) < 4.0)
+   checkTrue(c("HLF") %in% tbl$gene)
+
+} # test_ampAD.mef2c.154tfs.278samples.ensemble
+#----------------------------------------------------------------------------------------------------
+
 if(!interactive()) runTests()
