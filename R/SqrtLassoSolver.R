@@ -146,7 +146,6 @@ setMethod("run", "SqrtLassoSolver",
                   
               }
 
-              browser()
               lambda <- mean(lambda.list) + (sd(lambda.list)/sqrt(length(lambda.list)))
 
               # Run square root lasso and return an object of class "slim"              
