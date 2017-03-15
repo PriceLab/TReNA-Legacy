@@ -52,8 +52,8 @@ hist(mtx.voom, main = "VOOM-Transformed Expression Matrix Data")
 
 Moving forward, we will use this transformed data set in the rest of our analyses. That gives us one half of our TReNA object; the other half concerns our choice of solver. TReNA currently supports 8 different solvers. Their associated character strings for use in TReNA are (in no particular order):
 
-1. lasso - an application of *glmnet* using *alpha = 0* as the default elastic net parameter; default TReNA solver
-2. ridge - an application of *glmnet* using *alpha = 1* as the default elastic net parameter
+1. lasso - an application of *glmnet* using *alpha = 0.9* as the default elastic net parameter; default TReNA solver
+2. ridge - an application of *glmnet* using *alpha = 0* as the default elastic net parameter
 3. randomForest - an application of *randomForest*, the standard Random Forest function
 4. bayesSpike - an application of *vbsr*, the Bayes Spike function
 5. sqrtlasso - an application of the *slim* function from the *flare* package, with *q = 2*

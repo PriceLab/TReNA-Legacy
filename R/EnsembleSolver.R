@@ -81,7 +81,7 @@ setMethods("run", "EnsembleSolver",
                if(solver.list[1] == "all.solvers"){
                    solver.list <- c("lasso",                                    
                                     "randomForest",                                    
-                                    "bayesSpike",                                    
+#                                    "bayesSpike",                                    
                                     "pearson",                                    
                                     "spearman",                                    
 #                                    "sqrtlasso",                                    
@@ -103,6 +103,8 @@ setMethods("run", "EnsembleSolver",
                    out.list$out.lasso <- out.list$out.lasso[, c("beta","gene")]                   
                    rownames(out.list$out.lasso) <- NULL
                    names(out.list$out.lasso) <- c("beta.lasso", "gene")
+                   lasso.med <- median(out.list$out.lasso$beta.lasso)
+                   lasso.scale <- mad(out.list$out.lasso$beta.lasso)
                }               
 
                # Output randomForest IncNodePurity
@@ -112,6 +114,9 @@ setMethods("run", "EnsembleSolver",
                    out.list$out.randomForest <- out.list$out.randomForest[, c("IncNodePurity","gene")]
                    rownames(out.list$out.randomForest) <- NULL
                    names(out.list$out.randomForest) <- c("rf.score", "gene")
+                   randomForest.med <- median(out.list$out.randomForest$rf.score)
+                   randomForest.scale <- sqrt(mean(
+                       out.list$out.randomForest$rf.score*out.list$out.randomForest$rf.score))
                }
 
                # Output the z-score from bayesSpike
@@ -119,7 +124,9 @@ setMethods("run", "EnsembleSolver",
                    out.list$out.bayesSpike$gene <- rownames(out.list$out.bayesSpike)
                    rownames(out.list$out.bayesSpike) <- NULL
                    out.list$out.bayesSpike <- out.list$out.bayesSpike[, c("z", "gene")]
-                   names(out.list$out.bayesSpike) <- c("bayes.z", "gene")                   
+                   names(out.list$out.bayesSpike) <- c("bayes.z", "gene")
+                   bayesSpike.med <- median(out.list$out.bayesSpike$bayes.z)
+                   bayesSpike.scale <- mad(out.list$out.bayesSpike$bayes.z)
                }
 
                # Pearson
@@ -127,6 +134,8 @@ setMethods("run", "EnsembleSolver",
                    out.list$out.pearson$gene <- rownames(out.list$out.pearson)                   
                    rownames(out.list$out.pearson) <- NULL
                    names(out.list$out.pearson) <- c("pearson.coeff","gene")
+                   pearson.med <- median(out.list$out.pearson$pearson.coeff)
+                   pearson.scale <- mad(out.list$out.pearson$pearson.coeff)
                }
                
                #Spearman
@@ -134,6 +143,8 @@ setMethods("run", "EnsembleSolver",
                    out.list$out.spearman$gene <- rownames(out.list$out.spearman)
                    rownames(out.list$out.spearman) <- NULL
                    names(out.list$out.spearman) <- c("spearman.coeff", "gene")
+                   spearman.med <- median(out.list$out.spearman$spearman.coeff)
+                   spearman.scale <- mad(out.list$out.spearman$spearman.coeff)
                }
                
                #LassoPV
@@ -142,6 +153,9 @@ setMethods("run", "EnsembleSolver",
                    rownames(out.list$out.lassopv) <- NULL
                    out.list$out.lassopv <- out.list$out.lassopv[, c("p.values","gene")]
                    names(out.list$out.lassopv) <- c("lasso.p.value", "gene")
+                   p.log10 <- -log10(out.list$out.lassopv$lasso.p.value)
+                   lassopv.med <- median(p.log10)
+                   lassopv.scale <- sqrt(mean(p.log10*p.log10))
                }
 
                #SqrtLasso
@@ -150,6 +164,8 @@ setMethods("run", "EnsembleSolver",
                    rownames(out.list$out.sqrtlasso) <- NULL
                    out.list$out.sqrtlasso <- out.list$out.sqrtlasso[, c("beta", "gene")]
                    names(out.list$out.sqrtlasso) <- c("beta.sqrtlasso", "gene")
+                   sqrtlasso.med <- median(out.list$out.sqrtlasso$beta.sqrtlasso)
+                   sqrtlasso.scale <- mad(out.list$out.sqrtlasso$beta.sqrtlasso)
                }
                
                #Ridge
@@ -158,6 +174,8 @@ setMethods("run", "EnsembleSolver",
                    out.list$out.ridge <- out.list$out.ridge[, c("beta","gene")]
                    rownames(out.list$out.ridge) <- NULL
                    names(out.list$out.ridge) <- c("beta.ridge", "gene")
+                   ridge.med <- median(out.list$out.ridge$beta.ridge)
+                   ridge.scale <- mad(out.list$out.ridge$beta.ridge)
                }               
 
                # Grab the top "how.many" genes for each solver
@@ -193,38 +211,66 @@ setMethods("run", "EnsembleSolver",
                }
                
                # Replace missing values and scale the data
+               # Use the *.med and *.scale values to center/scale everything
                tbl.all[is.na(tbl.all)] <- 0
                tbl.scale <- tbl.all[,-1]
 
-               # Log P-values; take abs() of 2-tailed things
-               if("lasso.p.value" %in% names(tbl.scale))                  
-                  tbl.scale$lasso.p.value <- -log10(tbl.scale$lasso.p.value)
+               if("lasso.p.value" %in% names(tbl.scale)){                  
+                   tbl.scale$lasso.p.value <- -log10(tbl.scale$lasso.p.value)
+                   tbl.scale$lasso.p.value <- scale(tbl.scale$lasso.p.value,
+                                                    center = lassopv.med,
+                                                    scale = lassopv.scale)
+               }
 
-               if("beta.lasso" %in% names(tbl.scale))
-                   tbl.scale$beta.lasso <- abs(tbl.scale$beta.lasso)
+               if("beta.lasso" %in% names(tbl.scale)){
+                   tbl.scale$beta.lasso <- scale(tbl.scale$beta.lasso,
+                                                 center = lasso.med,
+                                                 scale = lasso.scale)
+               }
+               
+               if("beta.ridge" %in% names(tbl.scale)){
+                   tbl.scale$beta.ridge <- scale(tbl.scale$beta.ridge,
+                                                 center = ridge.med,
+                                                 scale = ridge.scale)
+               }
+               
+               if("pearson.coeff" %in% names(tbl.scale)){
+                   tbl.scale$pearson.coeff <- scale(tbl.scale$pearson.coeff,
+                                                    center = pearson.med,
+                                                    scale = pearson.scale)
+                   }
 
-               if("beta.ridge" %in% names(tbl.scale))
-                   tbl.scale$beta.ridge <- abs(tbl.scale$beta.ridge)
+               if("spearman.coeff" %in% names(tbl.scale)){
+                   tbl.scale$spearman.coeff <- scale(tbl.scale$spearman.coeff,
+                                                     center = spearman.med,
+                                                     scale = spearman.scale)
+                   }
 
-               if("pearson.coeff" %in% names(tbl.scale))
-                   tbl.scale$pearson.coeff <- abs(tbl.scale$pearson.coeff)
+               if("beta.sqrtlasso" %in% names(tbl.scale)){
+                   tbl.scale$beta.sqrtlasso <- scale(tbl.scale$beta.sqrtlasso,
+                                                     center = sqrtlasso.med,
+                                                     scale = sqrtlasso.scale)
+                   }
 
-               if("spearman.coeff" %in% names(tbl.scale))
-                   tbl.scale$spearman.coeff <- abs(tbl.scale$spearman.coeff)
+               if("bayes.z" %in% names(tbl.scale)){
+                   tbl.scale$bayes.z <- scale(tbl.scale$bayes.z,
+                                              center = bayesSpike.med,
+                                              scale = bayesSpike.scale)
+                   }
 
-               if("beta.sqrtlasso" %in% names(tbl.scale))
-                   tbl.scale$beta.sqrtlasso <- abs(tbl.scale$beta.sqrtlasso)
-
-               if("bayes.z" %in% names(tbl.scale))
-                   tbl.scale$bayes.z <- abs(tbl.scale$bayes.z)
-
+               if("rf.score" %in% names(tbl.scale)){
+                   tbl.scale$rf.score <- scale(tbl.scale$rf.score,
+                                               center = randomForest.med,
+                                               scale = randomForest.scale)
+               }
+               
 #               browser()
-               tbl.scale <- scale(tbl.scale)
+#               tbl.scale <- scale(tbl.scale)
                rownames(tbl.scale) <- tbl.all$gene
 
                # Transform via PCA and compute the ensemble score
                pca <- prcomp(tbl.scale, center=FALSE, scale.=FALSE)
-               extr <- apply(pca$x[,pca$sdev > 0.1],1, function(x) {sqrt(sum(x*x))})
+               extr <- apply(pca$x[,pca$sdev > 0.1],1, function(x) {sqrt(mean(x*x))})
                extr <- as.data.frame(extr)
                extr$gene <- rownames(extr)
                rownames(extr) <- NULL

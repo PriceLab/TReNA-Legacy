@@ -1,6 +1,5 @@
 library(TReNA)
 library(RUnit)
-library(glmnet)
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
@@ -18,7 +17,7 @@ runTests <- function()
    test_EnsembleSolverConstructor()
    
    test_developAndFitDummyTestData()
-#   test_fitDummyData()
+#  test_fitDummyData()
 
    test_ampAD.mef2c.154tfs.278samples.lasso()
    test_ampAD.mef2c.154tfs.278samples.bayesSpike()
@@ -108,10 +107,10 @@ test_developAndFitDummyTestData <- function(quiet=FALSE)
    mtx[, target.gene] <- jitter(mtx[, TF.1], amount=10)
    mtx[, TF.2] <- mtx[, TF.1] - mtx[, target.gene]
 
-      # make sure that the target is the sum of the two TFs
+   # make sure that the target is the sum of the two TFs
    checkTrue(all( mtx[, target.gene] == mtx[, TF.1] - mtx[, TF.2]))
 
-      # make sure other correlations are low
+   # make sure other correlations are low
    exclude.these.columns <- unlist(lapply(c(TF.1, TF.2, target.gene), function(g) grep(g, colnames(mtx))))
    mtx.sub <- mtx[, -exclude.these.columns]
    other.correlations <- apply(mtx.sub, 2, function(col) cor(col, mtx[, TF.1]))
@@ -152,7 +151,7 @@ test_fitDummyData <- function()
    mtx <- x$assay
 
    #asinh-transform the data   
-   mtx <- asinh(mtx)   
+   mtx <- asinh(mtx)  
    target.gene <- x$correlated.target
    tfs <- x$tf.genes
 
@@ -616,7 +615,7 @@ test_FootprintFilter <- function()
                          size.downstream = 1000)
 
     # Make sure it grabs the right number of genes
-    checkEquals(length(tfs),580)
+    checkEquals(length(tfs), 64)
 
 } # test_FootprintFilter
 #----------------------------------------------------------------------------------------------------
@@ -650,7 +649,7 @@ test_ampAD.mef2c.154tfs.278samples.ensemble <- function()
 
    # Check for empirical values
    checkTrue(min(tbl$extr) > 1.2)
-   checkTrue(max(tbl$extr) < 4.0)
+   checkTrue(max(tbl$extr) < 5.0)
    checkTrue(c("HLF") %in% tbl$gene)
 
 } # test_ampAD.mef2c.154tfs.278samples.ensemble
