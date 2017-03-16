@@ -77,6 +77,12 @@ setMethod("run", "SqrtLassoSolver",
               if(length(tfs) == 0)                  
                   return(data.frame())              
 
+              # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
+              if(rowMeans(obj@mtx.assay)[target.gene] < quantile(rowMeans(obj@mtx.assay), probs = 0.1)){
+
+                  warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
+                  }
+       
               # Set default lambda and number of lambdas
               lambda <- NULL              
                     

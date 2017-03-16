@@ -72,6 +72,11 @@ setMethod("run", "LassoSolver",
 
   function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
 
+      # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning      
+      if(rowMeans(obj@mtx.assay)[target.gene] < quantile(rowMeans(obj@mtx.assay), probs = 0.1)){          
+          warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")          
+      }      
+
       # Run the ElasticNetSolver function with alpha = 0.9 as default
       alpha = 0.9
       lambda <- NULL

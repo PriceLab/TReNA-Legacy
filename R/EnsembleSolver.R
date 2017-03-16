@@ -66,6 +66,11 @@ setMethods("run", "EnsembleSolver",
 
            function(obj, target.gene, tfs, extraArgs = list()){
 
+               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning               
+               if(rowMeans(obj@mtx.assay)[target.gene] < quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                   
+                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")                   
+               }               
+               
                # Specify defaults for gene cutoff and solver list
                gene.cutoff <- 0.1
                solver.list <- "all.solvers"
@@ -275,7 +280,15 @@ setMethods("run", "EnsembleSolver",
                extr$gene <- rownames(extr)
                rownames(extr) <- NULL
                tbl.all <- merge(tbl.all, extr, by = "gene", all = TRUE)
-               tbl.all <- tbl.all[order(tbl.all$extr, decreasing = TRUE),]
+
+               # Compute the scaled "composite score"
+               comp <- apply(pca$x[, pca$sdev > 0.1], 1,
+                             function(x) {sqrt(mean((2*atan(x)/pi)^2))})
+               comp <- as.data.frame(comp)
+               comp$gene <- rownames(comp)
+               rownames(comp) <- NULL
+               tbl.all <- merge(tbl.all, comp, by = "gene", all = TRUE)               
+               tbl.all <- tbl.all[order(tbl.all$comp, decreasing = TRUE),]
 
                return(tbl.all)
            })

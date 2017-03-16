@@ -74,7 +74,12 @@ setMethod("run", "BayesSpikeSolver",
 
   function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
 
-      n_orderings <- 100
+      # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning      
+      if(rowMeans(obj@mtx.assay)[target.gene] < quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                   
+          warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")         
+      }
+            
+      n_orderings <- 10
       
       # Check for n_orderings parameter and adopt a supplied one
       if("n_orderings" %in% names(extraArgs))

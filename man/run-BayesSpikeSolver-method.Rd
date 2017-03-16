@@ -7,7 +7,7 @@
 \title{Run the Bayes Spike Solver}
 \usage{
 \S4method{run}{BayesSpikeSolver}(obj, target.gene, tfs, tf.weights = rep(1,
-  length(tfs), extraArgs = list()))
+  length(tfs)), extraArgs = list())
 }
 \arguments{
 \item{obj}{An object of the class BayesSpikeSolver}
