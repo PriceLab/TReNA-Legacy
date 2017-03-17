@@ -83,18 +83,23 @@ setMethod("run", "SqrtLassoSolver",
                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
                   }
        
-              # Set default lambda and number of lambdas
-              lambda <- NULL              
+              # Set default lambda and number of cores
+              lambda <- NULL
+              num.cores <- NULL
                     
               if("lambda" %in% names(extraArgs))                  
                   lambda <- extraArgs[["lambda"]]
 
-        # we don't try to handle tf self-regulation
-                  deleters <- grep(target.gene, tfs)              
+              # Set default number of cores
+              if("num.cores" %in% names(extraArgs))
+                  num.cores <- extraArgs[["num.cores"]]
+              
+              # we don't try to handle tf self-regulation              
+              deleters <- grep(target.gene, tfs)              
               if(length(deleters) > 0){                  
                   tfs <- tfs[-deleters]                  
-                  if(!obj@quiet)                   
-                      message(sprintf("SqrtLassoSolver removing target.gene from candidate regulators: %s", target.gene))                  
+                  if(!obj@quiet)
+                      message(sprintf("SqrtLassoSolver removing target.gene from candidate regulators: %s", target.gene))
               }
               
               if( length(tfs) == 0 ) return( data.frame() )
@@ -123,12 +128,14 @@ setMethod("run", "SqrtLassoSolver",
                   lambda.change <- 10^(-4)
                   lambda <- 1
 
-                  lambda.list <- numeric(length=20)
                   # Do this in parallel if possible
-                  #num.cores <- detectCores()/2
-#                  cl <- makeForkCluster(cores = num.cores)
-#                  registerDoParallel(cl)
-                  for(i in 1:length(lambda.list)) {
+                  if(is.null(num.cores))                      
+                      num.cores <- detectCores()/2
+                  
+                  cl <- makeForkCluster(nnodes = num.cores)
+                  registerDoParallel(cl)
+                  
+                  lambda.list <- foreach(i = 1:30) %dopar% {
 
                       # Do a binary search
                       step.size <- lambda/2 # Start at 0.5
@@ -147,11 +154,13 @@ setMethod("run", "SqrtLassoSolver",
                           step.size <- step.size/2
                           target.mixed <- sample(target)
                       }
-                      lambda.list[[i]] <- lambda
+                      lambda
                   }
                   
               }
 
+              lambda.list <- unlist(lambda.list)
+              stopCluster(cl)
               lambda <- mean(lambda.list) + (sd(lambda.list)/sqrt(length(lambda.list)))
 
               # Run square root lasso and return an object of class "slim"              

@@ -24,7 +24,7 @@ runTests <- function()
 #   test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes()
    test_ampAD.mef2c.154tfs.278samples.randomForest()
    test_ampAD.mef2c.154tfs.278samples.ridge()
-#   test_ampAD.mef2c.154tfs.278samples.sqrtlasso()
+   test_ampAD.mef2c.154tfs.278samples.sqrtlasso()
    test_ampAD.mef2c.154tfs.278samples.lassopv()
    test_ampAD.mef2c.154tfs.278samples.pearson()
    test_ampAD.mef2c.154tfs.278samples.spearman()
@@ -477,7 +477,7 @@ test_ampAD.mef2c.154tfs.278samples.sqrtlasso <- function()
    
    trena <- TReNA(mtx.assay=mtx.asinh, solver="sqrtlasso", quiet=FALSE)
    tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
-   tbl <- solve(trena, target.gene, tfs)
+   tbl <- solve(trena, target.gene, tfs, extraArgs = list("num.cores" = detectCores()))
 
    # Check for empirical values
    tbl <- tbl[order(abs(tbl$beta), decreasing=TRUE),, drop = FALSE]
