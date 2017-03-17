@@ -10,9 +10,10 @@ createGenomeScaleModel <- function(mtx.assay, gene.list, genome.db.uri, project.
     # Setup the parallel structure with a default of half the cores
     if(is.null(num.cores)){
         num.cores <- detectCores()/2}  
-    cl <- makeForkCluster(cores = num.cores)
+    cl <- makeForkCluster(nnodes = num.cores)
     registerDoParallel(cl)
-    #    browser()
+
+    
 
 #    dumb.test <- foreach(i = 1:10) %dopar% {
 #        i+1}
@@ -34,6 +35,9 @@ createGenomeScaleModel <- function(mtx.assay, gene.list, genome.db.uri, project.
                                                "gene.cutoff" = gene.cutoff))
     }
 
+    # Stop the cluster
+    stopCluster(cl)
+    
     # Name the list after the genes supplied
     names(full.result.list) <- gene.list
     return(full.result.list)
