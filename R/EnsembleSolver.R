@@ -98,7 +98,14 @@ setMethods("run", "EnsembleSolver",
                for(i in 1:length(solver.list)){
                    # Create and solve the TReNA object for each solver
                    trena <- TReNA(obj@mtx.assay, solver = solver.list[[i]] )
-                   out.list[[i]] <- solve(trena, target.gene, tfs)
+
+                   # if there's extraArgs, pass them
+                   if(solver.list[[i]] %in% names(extraArgs)){                       
+                       extraParams <- extraArgs[[solver.list[[i]]]]}                   
+                   else{ extraParams <- list()}
+                   
+                      
+                   out.list[[i]] <- solve(trena, target.gene, tfs, extraArgs = extraParams)
                    names(out.list)[i] <- paste("out",solver.list[[i]],sep=".")
                }
 

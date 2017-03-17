@@ -187,7 +187,7 @@ tfs &lt;- getCandidates(footprint.filter, target.gene,
                      size.upstream = 1000,
                      size.downstream = 1000)
 str(tfs)</code></pre>
-<pre><code>##  chr [1:580] &quot;HNF1A&quot; &quot;HNF1A&quot; &quot;LHX4&quot; &quot;LHX6&quot; &quot;LHX3&quot; &quot;LHX8&quot; ...</code></pre>
+<pre><code>##  chr [1:64] &quot;LHX4&quot; &quot;LHX6&quot; &quot;LHX9&quot; &quot;LHX2&quot; &quot;FOXK2&quot; &quot;FOXJ1&quot; ...</code></pre>
 </div>
 <div id="solving-a-trena-object" class="section level2">
 <h2>Solving a TReNA Object</h2>
@@ -201,12 +201,12 @@ tfs &lt;- getCandidates(gene.filter, target.gene)
 tbl.out &lt;- solve(trena, target.gene, tfs)
 head(tbl.out)</code></pre>
 <pre><code>##              beta intercept   gene.cor
-## STAT4  0.28059359  5.645057  0.9399046
-## SATB2  0.23945357  5.645057  0.9053878
-## HLF    0.15493371  5.645057  0.9024599
-## FOXO4 -0.11439711  5.645057 -0.7026636
-## LHX6   0.09635250  5.645057  0.7905433
-## TSHZ2  0.09191546  5.645057  0.8140928</code></pre>
+## STAT4  0.27991125  5.674987  0.9399046
+## SATB2  0.24003904  5.674987  0.9053878
+## HLF    0.15271119  5.674987  0.9024599
+## FOXO4 -0.11678992  5.674987 -0.7026636
+## LHX6   0.09920086  5.674987  0.7905433
+## TSHZ2  0.09272808  5.674987  0.8140928</code></pre>
 <p>Each solver will necessarily give a different result, neccessitating some amount of thoughtfulness on the part of the user. For instance, if the goal is to return a sparse list of only the most influential genes, then LASSO may be the best choice. By contrast, the Random Forest solver will return scores for all genes, and will thus result in inferring more relationships.</p>
 </div>
 <div id="using-an-ensemble-solver-approach" class="section level2">
@@ -217,20 +217,37 @@ target.gene &lt;- &quot;MEF2C&quot;
 gene.filter &lt;- VarianceFilter(mtx.assay = mtx.voom)
 tfs &lt;- getCandidates(gene.filter, target.gene)
 tbl.out &lt;- solve(trena, target.gene, tfs)
-head(tbl.out)</code></pre>
-<pre><code>##    gene beta.lasso rf.score    bayes.z pearson.coeff spearman.coeff
-## 1 FOXP2 0.06417207 11.40863 19.1396731     0.8478133      0.8365842
-## 3 STAT4 0.27981656 58.27451 29.4292337     0.9399046      0.9225219
-## 2   HLF 0.15231902 58.20695  0.7076032     0.9024599      0.9416976
-##   lasso.p.value beta.ridge     extr
-## 1  1.490099e-30 0.12756991 2.654810
-## 3  2.375128e-55 0.08167892 2.176425
-## 2  1.062597e-49 0.09983745 1.488341</code></pre>
+tbl.out</code></pre>
+<pre><code>##    gene beta.lasso  rf.score pearson.coeff spearman.coeff lasso.p.value
+## 1 FOXP2 0.06679525  8.649332     0.8478133      0.8365842  1.490099e-30
+## 3 STAT4 0.27897570 61.297934     0.9399046      0.9225219  2.375128e-55
+## 2   HLF 0.14892499 58.379351     0.9024599      0.9416976  1.062597e-49
+##   beta.ridge     extr      comp
+## 1 0.12605165 3.164571 0.6620623
+## 3 0.08070317 3.939189 0.6313944
+## 2 0.09892997 3.823061 0.5716726</code></pre>
 <p>The ensemble approach is an attractive option for a couple of reasons:</p>
 <ol style="list-style-type: decimal">
 <li><p>Solver choice can be a non-trivial task for a TReNA user, as it requires some working knowledge of the pros and cons of the different methods. The ensemble method alleviates the need to choose one solver.</p></li>
 <li><p>Different solvers will give different predictions for important transcription factors; the ensemble method provides a way to create a composite score that accounts for all included solvers and can thus be seen as something of an overall metric.</p></li>
 </ol>
+<p>We can optionally pass solver-specific parameters as well using named arguments in the <em>extraArgs</em> list argument. For instance, we may want to specify the number of cores to use for the square root LASSO solver and include it in our solver list. The following <em>solve</em> command will accomplish that, setting the number of cores to dedicate to square root LASSO as 4:</p>
+<pre class="r"><code>tbl.out.2 &lt;- solve(trena, target.gene, tfs, 
+                   extraArgs = list(
+                     &quot;solver.list&quot; = c(&quot;lasso&quot;, &quot;ridge&quot;, &quot;sqrtlasso&quot;, &quot;randomForest&quot;,
+                                       &quot;lassopv&quot;, &quot;spearman&quot;, &quot;pearson&quot;),
+                     &quot;sqrtlasso&quot; = list(&quot;num.cores&quot; = 4)
+                   ))
+
+tbl.out.2</code></pre>
+<pre><code>##    gene beta.lasso beta.ridge beta.sqrtlasso rf.score lasso.p.value
+## 1 FOXP2 0.06429462 0.12804659     0.16348828 11.33819  1.490099e-30
+## 3 STAT4 0.27977753 0.08211648     0.24114253 57.30959  2.375128e-55
+## 2   HLF 0.15215731 0.10007546     0.07840086 55.63404  1.062597e-49
+##   spearman.coeff pearson.coeff     extr      comp
+## 1      0.8365842     0.8478133 3.253994 0.6607636
+## 3      0.9225219     0.9399046 4.051809 0.6511280
+## 2      0.9416976     0.9024599 3.818678 0.6081903</code></pre>
 </div>
 
 

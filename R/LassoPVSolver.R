@@ -56,7 +56,6 @@ setMethod("getSolverName", "LassoPVSolver",
 #' @param obj An object of class LassoPVSolver
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
-#' @param extraArgs Modifiers to the LASSO P-Value solver
 #'
 #' @return A data frame containing the p-values for each transcription factor pertaining to the target gene
 #' plus the Pearson correlations between each transcription factor and the target gene.
@@ -73,7 +72,7 @@ setMethod("getSolverName", "LassoPVSolver",
 
 setMethod("run", "LassoPVSolver",
 
-          function (obj, target.gene, tfs, extraArgs=list()){
+          function (obj, target.gene, tfs){
               
               if(length(tfs) == 0)                  
                   return(data.frame())              

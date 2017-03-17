@@ -143,7 +143,7 @@ target.gene <- "MEF2C"
 gene.filter <- VarianceFilter(mtx.assay = mtx.voom)
 tfs <- getCandidates(gene.filter, target.gene)
 tbl.out <- solve(trena, target.gene, tfs)
-head(tbl.out)
+tbl.out
 ```
 
 The ensemble approach is an attractive option for a couple of reasons:
@@ -152,4 +152,17 @@ The ensemble approach is an attractive option for a couple of reasons:
 
 2. Different solvers will give different predictions for important transcription factors; the ensemble method provides a way to create a composite score that accounts for all included solvers and can thus be seen as something of an overall metric. 
 
+We can optionally pass solver-specific parameters as well using named arguments in the *extraArgs* list argument. For instance, we may want to specify the number of cores to use for the square root LASSO solver and include it in our solver list. The following *solve* command will accomplish that, setting the number of cores to dedicate to square root LASSO as 4:
+
+```{r}
+
+tbl.out.2 <- solve(trena, target.gene, tfs, 
+                   extraArgs = list(
+                     "solver.list" = c("lasso", "ridge", "sqrtlasso", "randomForest",
+                                       "lassopv", "spearman", "pearson"),
+                     "sqrtlasso" = list("num.cores" = 4)
+                   ))
+
+tbl.out.2
+```
 

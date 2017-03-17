@@ -72,7 +72,7 @@ setMethod("getSolverName", "SpearmanSolver",
 
 setMethod("run", "SpearmanSolver",
 
-          function (obj, target.gene, tfs, tf.weights = rep(1,length(tfs), extraArgs=list())){
+          function (obj, target.gene, tfs){
 
               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning              
               if(rowMeans(obj@mtx.assay)[target.gene] < quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                  
@@ -90,7 +90,6 @@ setMethod("run", "SpearmanSolver",
               deleters <- grep(target.gene, tfs)
               if(length(deleters) > 0){
                   tfs <- tfs[-deleters]
-                  tf.weights = tf.weights[-deleters]
               }
               # If target gene was the only tf, then return nothing
               if(length(tfs)==0) return(NULL)
