@@ -1,7 +1,7 @@
 # Grab ensemble score table for all genes in a gene list
 #----------------------------------------------------------------------------------------------------
 createGenomeScaleModel <- function(mtx.assay, gene.list, genome.db.uri, project.db.uri,
-                                   size.upstream=1000, size.downstream=1000, num.cores = NULL
+                                   size.upstream=1000, size.downstream=1000, num.cores = NULL,
                                    extraArgs = list("solver.list" = "all.solvers",
                                                     "gene.cutoff" = 0.1,
                                                     "lasso" = list(),
