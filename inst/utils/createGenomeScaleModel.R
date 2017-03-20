@@ -30,9 +30,11 @@ createGenomeScaleModel <- function(mtx.assay, gene.list, genome.db.uri, project.
                              size.downstream = size.downstream)
 
         # Solve the trena problem using the supplied values and the ensemble solver
+        if(length(tfs) > 0){
         solve(trena, target.gene, tfs,
                               extraArgs = list("solver.list" = solver.list,
-                                               "gene.cutoff" = gene.cutoff))
+                                               "gene.cutoff" = gene.cutoff))}
+        else{NULL}
     }
 
     # Stop the cluster
