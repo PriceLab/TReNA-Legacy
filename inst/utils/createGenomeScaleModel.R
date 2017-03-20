@@ -1,8 +1,13 @@
 # Grab ensemble score table for all genes in a gene list
 #----------------------------------------------------------------------------------------------------
 createGenomeScaleModel <- function(mtx.assay, gene.list, genome.db.uri, project.db.uri,
-                                   size.upstream=1000, size.downstream=1000,
-                                   solver.list = "all.solvers", gene.cutoff = 0.1, num.cores = NULL){
+                                   size.upstream=1000, size.downstream=1000, num.cores = NULL
+                                   extraArgs = list("solver.list" = "all.solvers",
+                                                    "gene.cutoff" = 0.1,
+                                                    "lasso" = list(),
+                                                    "ridge" = list(),
+                                                    "sqrtlasso" = list(),
+                                                    "bayesSpike" = list())){
 
     footprint.filter <- FootprintFilter(mtx.assay = mtx.assay)
     trena <- TReNA(mtx.assay, solver = "ensemble")
@@ -31,9 +36,7 @@ createGenomeScaleModel <- function(mtx.assay, gene.list, genome.db.uri, project.
 
         # Solve the trena problem using the supplied values and the ensemble solver
         if(length(tfs) > 0){
-        solve(trena, target.gene, tfs,
-                              extraArgs = list("solver.list" = solver.list,
-                                               "gene.cutoff" = gene.cutoff))}
+        solve(trena, target.gene, tfs, extraArgs = extraArgs)}
         else{NULL}
     }
 

@@ -21,7 +21,6 @@ runTests <- function()
 
    test_ampAD.mef2c.154tfs.278samples.lasso()
    test_ampAD.mef2c.154tfs.278samples.bayesSpike()
-#   test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes()
    test_ampAD.mef2c.154tfs.278samples.randomForest()
    test_ampAD.mef2c.154tfs.278samples.ridge()
    test_ampAD.mef2c.154tfs.278samples.sqrtlasso()
@@ -263,46 +262,6 @@ test_ampAD.mef2c.154tfs.278samples.randomForest <- function()
 
    
 } # test_ampAD.mef2c.154tfs.278samples.randomForest
-#----------------------------------------------------------------------------------------------------
-test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes <- function()
-{
-    printf("--- test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes")
-    
-    print(load(system.file(package="TReNA", "extdata/mtx.AD.noncodingNearPiez02.RData")))    
-    target.genes <- genes.noncoding.near.piez02.active    
-    mtx <- log2(mtx.nonCoding + 0.0001)    
-    tfs <- setdiff(rownames(mtx), target.genes)    
-    trena <- TReNA(mtx.assay=mtx, solver="bayesSpike", quiet=FALSE)
-    
-    findings <- list()
-    
-    for(target.gene in target.genes){        
-        tbl <- solve(trena, target.gene, tfs)        
-        tbl <- subset(tbl, pval < 0.01)       
-        findings[[target.gene]] <- tbl
-    }
-    
-    tbl.trimmed <- subset(tbl, abs(beta) > 0.1 & pval < 0.01)
-    betas <- tbl.trimmed$beta
-    big.abs.betas <- betas[abs(betas) > 1]
-    checkTrue(length(big.abs.betas) > 20)
-    checkTrue(nrow(tbl) > 10)
-    checkTrue(cor(tbl.trimmed$beta, tbl.trimmed$gene.cor) < 0.2)
-    
-    mtx.tmp <- mtx.sub - min(mtx.sub) + 0.001
-    mtx.log2 <- log2(mtx.tmp)
-    fivenum(mtx.log2)  # [1] -9.9657843  0.8107618  3.6262014  5.4345771 10.0052973
-    
-    trena <- TReNA(mtx.assay=mtx.log2, solver="bayesSpike", quiet=FALSE)
-    tfs <- setdiff(rownames(mtx.log2), "MEF2C")
-    tbl2 <- solve(trena, target.gene, tfs)
-    tbl2.trimmed <- subset(tbl2, abs(beta) > 0.1 & pval < 0.01)
-    betas2 <- tbl2.trimmed$beta
-    big.abs.betas2 <- betas2[abs(betas2) > 1]
-    checkEquals(length(big.abs.betas2), 0)
-    checkTrue(cor(tbl2.trimmed$beta, tbl2.trimmed$gene.cor) > 0.6)
-
-} # test_ampAD.mef2c.154tfs.278samples.bayesSpike.nonCodingGenes
 #----------------------------------------------------------------------------------------------------
 # one possible source of down-weighting data from TFs is the frequency of their putative
 # binding sites across the genome.  the SP1-n family has a motif-in-footprint about every
