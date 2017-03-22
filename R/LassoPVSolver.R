@@ -48,11 +48,16 @@ setMethod("getSolverName", "LassoPVSolver",
 #----------------------------------------------------------------------------------------------------
 #' Run the LASSO P-Value Solver
 #'
-#' @rdname LassoPVSolver
-#' @aliases run.LassoPVSolver
+#' @rdname solve.LassoPV
+#' @aliases run.LassoPVSolver solve.LassoPV
+#' 
 #' @description Given a TReNA object with LASSO P-Value as the solver, use the \code{\link{lassopv}} function to estimate coefficients
 #' for each transcription factor as a predictor of the target gene's expression level. 
 #'
+#' @usage
+#' trena <- TReNA(mtx.assay, solver = "lassopv")
+#' tbl.out <- solve(trena, target.gene, tfs)
+#' 
 #' @param obj An object of class LassoPVSolver
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
@@ -62,6 +67,8 @@ setMethod("getSolverName", "LassoPVSolver",
 #'
 #' @seealso \code{\link{lassopv}}
 #'
+#' @family solver methods
+#' 
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))

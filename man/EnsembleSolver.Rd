@@ -19,9 +19,4 @@ Create a Solver class object using an ensemble approach
 }
 \examples{
 solver <- EnsembleSolver()
-
-}
-\seealso{
-Other solver methods: \code{\link{LassoSolver}},
-  \code{\link{RandomForestSolver}}
 }

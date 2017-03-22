@@ -8,7 +8,9 @@
 \alias{FootprintFinder-class}
 \alias{FootprintFinder}
 \alias{closeDatabaseConnections-methods}
-\title{Filter genes based on footprints}
+\title{Class FootprintFinder
+
+Filter genes based on footprints}
 \usage{
 FootprintFinder(genome.database.uri, project.database.uri, quiet = TRUE)
 

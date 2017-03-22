@@ -1,18 +1,17 @@
 #----------------------------------------------------------------------------------------------------
-#' An S4 class to represent a Ridge Regression solver
+#' @title Class RidgeSolver
 #'
-#' @import glmnet
 #' @include Solver.R
 #' @name RidgeSolver-class
+#' @rdname RidgeSolver-class
 
 .RidgeSolver <- setClass ("RidgeSolver", contains="Solver")
 #----------------------------------------------------------------------------------------------------
-#' Create a Solver class object using the Ridge Regression solver
-#'
+#' Create a Solver class object using the Ridge solver
+#' 
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the solver should print output
-#' 
-#' @return A Solver class object with Ridge Regression as the solver
+#' @return A Solver class object with Ridge as the solver
 #'
 #' @examples
 #' solver <- RidgeSolver()
@@ -44,11 +43,16 @@ setMethod("getSolverName", "RidgeSolver",
 #----------------------------------------------------------------------------------------------------
 #' Run the Ridge Regression Solver
 #'
-#' @rdname RidgeSolver
-#' @aliases run.RidgeSolver
+#' @rdname solve.Ridge
+#' @aliases run.RidgeSolver solve.Ridge
+#' 
 #' @description Given a TReNA object with Ridge Regression as the solver, use the \code{\link{glmnet}} function to estimate coefficients
 #' for each transcription factor as a predictor of the target gene's expression level. 
 #'
+#' @usage
+#' trena <- TReNA(mtx.assay, solver = "ridge")
+#' tbl.out <- solve(trena, target.gene, tfs, tf.weights, extraArgs)
+#' 
 #' @param obj An object of class RidgeSolver
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
@@ -59,6 +63,8 @@ setMethod("getSolverName", "RidgeSolver",
 #'
 #' @seealso \code{\link{glmnet}}
 #'
+#' @family solver methods
+#' 
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))

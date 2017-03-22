@@ -23,7 +23,19 @@ samples for a group of genes, and a string representing the name of a chosen sol
 \describe{
 \item{\code{mtx.assay}}{An assay matrix of gene expression data}
 
-\item{\code{solver}}{A string matching the designated solver for relating a target gene to transcription factors. (default = "lasso")}
+\item{\code{solver}}{A string matching the designated solver for relating a target gene to transcription factors. 
+TReNA currently supports 9 solver strings (default = "lasso"):
+\itemize{
+\item{\link[=solve.Lasso]{"lasso"}}
+\item{\link[=solve.Ridge]{"ridge"}}
+\item{\link[=solve.RandomForest]{"randomForest"}}
+\item{\link[=solve.BayesSpike]{"bayesSpike"}}
+\item{\link[=solve.SqrtLasso]{"sqrtlasso"}}
+\item{\link[=solve.LassoPV]{"lassopv"}}
+\item{\link[=solve.Pearson]{"pearson"}}
+\item{\link[=solve.Spearman]{"spearman"}}
+\item{\link[=solve.Ensemble]{"ensemble"}}
+}}
 
 \item{\code{quiet}}{A logical denoting whether or not the TReNA object should print output}
 }}

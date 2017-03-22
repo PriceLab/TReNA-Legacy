@@ -1,4 +1,4 @@
-#' Class TReNA
+#' @title Class TReNA
 #'
 #' @description
 #' Class \code{TReNA} defines a TReNA object and contains an assay matrix, which contains expression data over a set of
@@ -9,7 +9,20 @@
 #' @aliases TReNA
 #' 
 #' @slot mtx.assay An assay matrix of gene expression data
-#' @slot solver A string matching the designated solver for relating a target gene to transcription factors. (default = "lasso")
+#' @slot solver A string matching the designated solver for relating a target gene to transcription factors. 
+#' TReNA currently supports 9 solver strings (default = "lasso"):
+#' \itemize{
+#' \item{\link[=solve.Lasso]{"lasso"}}
+#' \item{\link[=solve.Ridge]{"ridge"}}
+#' \item{\link[=solve.RandomForest]{"randomForest"}}
+#' \item{\link[=solve.BayesSpike]{"bayesSpike"}}
+#' \item{\link[=solve.SqrtLasso]{"sqrtlasso"}}
+#' \item{\link[=solve.LassoPV]{"lassopv"}}
+#' \item{\link[=solve.Pearson]{"pearson"}}
+#' \item{\link[=solve.Spearman]{"spearman"}}
+#' \item{\link[=solve.Ensemble]{"ensemble"}}
+#' }
+#' 
 #' @slot quiet A logical denoting whether or not the TReNA object should print output
 #' 
 #' @return An object of the TReNA class
@@ -84,9 +97,9 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 #' @seealso \code{\link{TReNA}}
 #'
 #' @examples
-#' # Load included Alzheimer's data, create a TReNA object, and solve
+#' # Load included Alzheimer's data, create a TReNA object with LASSO as the solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-#' trena <- TReNA(mtx.assay = mtx.sub)
+#' trena <- TReNA(mtx.assay = mtx.sub, solver = "lasso")
 #' target.gene <- "APOE"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
 #' tbl <- solve(trena, target.gene, tfs)

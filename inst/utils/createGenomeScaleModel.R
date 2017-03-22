@@ -2,12 +2,7 @@
 #----------------------------------------------------------------------------------------------------
 createGenomeScaleModel <- function(mtx.assay, gene.list, genome.db.uri, project.db.uri,
                                    size.upstream=1000, size.downstream=1000, num.cores = NULL,
-                                   extraArgs = list("solver.list" = "all.solvers",
-                                                    "gene.cutoff" = 0.1,
-                                                    "lasso" = list(),
-                                                    "ridge" = list(),
-                                                    "sqrtlasso" = list(),
-                                                    "bayesSpike" = list())){
+                                   extraArgs = list()){
 
     footprint.filter <- FootprintFilter(mtx.assay = mtx.assay)
     trena <- TReNA(mtx.assay, solver = "ensemble")

@@ -1,7 +1,6 @@
 #----------------------------------------------------------------------------------------------------
 #' An S4 class to represent a LASSO solver
 #'
-#' @import glmnet
 #' @include Solver.R
 #' @name LassoSolver-class
 
@@ -15,8 +14,6 @@
 #'
 #' @examples
 #' solver <- LassoSolver()
-#'
-#' @family solver methods
 
 LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
@@ -45,11 +42,16 @@ setMethod("getSolverName", "LassoSolver",
 #----------------------------------------------------------------------------------------------------
 #' Run the LASSO Solver
 #'
-#' @rdname LassoSolver
-#' @aliases run.LassoSolver
+#' @rdname solve.Lasso
+#' @aliases run.LassoSolver solve.Lasso
+#' 
 #' @description Given a TReNA object with LASSO as the solver, use the \code{\link{glmnet}} function to estimate coefficients
 #' for each transcription factor as a predictor of the target gene's expression level. 
 #'
+#' @usage
+#' trena <- TReNA(mtx.assay, solver = "lasso")
+#' tbl.out <- solve(trena, target.gene, tf.weights, extraArgs)
+#' 
 #' @param obj An object of class LassoSolver
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
@@ -59,6 +61,8 @@ setMethod("getSolverName", "LassoSolver",
 #' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
 #'
 #' @seealso \code{\link{glmnet}}
+#'
+#' @family solver methods
 #'
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with LASSO as solver, and solve
@@ -72,7 +76,7 @@ setMethod("run", "LassoSolver",
 
   function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
 
-      # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning      
+      # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
       if(rowMeans(obj@mtx.assay)[target.gene] < quantile(rowMeans(obj@mtx.assay), probs = 0.1)){          
           warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")          
       }      

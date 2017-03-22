@@ -14,8 +14,7 @@
 #'
 #' @examples
 #' solver <- EnsembleSolver()
-#'
-#' @family solver methods
+
 
 EnsembleSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
@@ -44,9 +43,15 @@ setMethod("getSolverName", "EnsembleSolver",
 #----------------------------------------------------------------------------------------------------
 #' Run the Ensemble Solver
 #'
-#' @rdname EnsembleSolver
-#' @aliases run.EnsembleSolver
+#' @rdname solve.Ensemble
+#' @aliases run.EnsembleSolver solve.Ensemble
+#' 
 #' @description Given a TReNA object with Ensemble as the solver and a list of solvers (default = all solvers), estimate coefficients for each transcription factor as a predictor of the target gene's expression level. The final scores for the ensemble method combine all specified solvers to create a composite score for each transcription factor. 
+#'
+#' @usage
+#' trena <- TReNA(mtx.assay, solver = "ensemble")
+#' tbl.out <- solve(trena, target.gene, tfs, extraArgs)
+#' 
 #' @param obj An object of class EnsembleSolver
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene
@@ -54,6 +59,8 @@ setMethod("getSolverName", "EnsembleSolver",
 #'
 #' @return A data frame containing the scores for all solvers and a composite score relating the target gene to each transcription factor
 #'
+#' @family solver methods
+#' 
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with LASSO as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))

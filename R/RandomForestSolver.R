@@ -1,23 +1,21 @@
 #------------------------------------------------------------------------------------------------------------------------
-#' An S4 class to represent a Random Forest solver
+#' @title Class RandomForestSolver
 #'
-#' @import randomForest
+#'
 #' @include Solver.R
 #' @name RandomForestSolver-class
+#' @rdname RandomForestSolver-class
 
 .RandomForestSolver <- setClass ("RandomForestSolver", contains="Solver")
 #------------------------------------------------------------------------------------------------------------------------
-#' Create a Solver class object using the Random Forest Solver
-#'
+#' Create a Solver class object using the Random Forest solver
+#' 
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the solver should print output
-#' 
 #' @return A Solver class object with Random Forest as the solver
-#'
+#' 
 #' @examples
 #' solver <- RandomForestSolver()
-#'
-#' @family solver methods
 
 
 RandomForestSolver <- function(mtx.assay=matrix(), quiet=TRUE)
@@ -32,8 +30,8 @@ RandomForestSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 
 } # RandomForestSolver, the constructor
 #------------------------------------------------------------------------------------------------------------------------
-#' Get Random Forest Solver name
-#'
+#' @rdname RandomForestSolver-class
+#' 
 #' @param obj An object of class RandomForestSolver
 #' 
 #' @return "RandomForestSolver"
@@ -51,8 +49,12 @@ setMethod("getSolverName", "RandomForestSolver",
 #----------------------------------------------------------------------------------------------------
 #' Run the Random Forest Solver
 #'
-#' @rdname RandomForestSolver
-#' @aliases run.RandomForestSolver
+#' @rdname solve.RandomForest
+#' @aliases run.RandomForestSolver solve.RandomForest
+#'
+#' @usage
+#' trena <- TReNA(mtx.assay, solver = "randomForest")
+#' tbl.out <- solve(trena, target.gene, tfs, tf.weights, extraArgs)
 #'
 #' @param obj An object of class RandomForestSolver
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
@@ -62,6 +64,10 @@ setMethod("getSolverName", "RandomForestSolver",
 #'
 #' @return A list containing various parameters of the Random Forest fit.
 #'
+#' @seealso \code{\link{randomForest}}
+#' 
+#' @family solver methods
+#' 
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with Random Forest as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))

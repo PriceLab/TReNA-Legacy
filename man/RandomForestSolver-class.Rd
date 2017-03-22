@@ -4,7 +4,18 @@
 \name{RandomForestSolver-class}
 \alias{RandomForestSolver-class}
 \alias{.RandomForestSolver}
-\title{An S4 class to represent a Random Forest solver}
-\description{
-An S4 class to represent a Random Forest solver
+\alias{getSolverName,RandomForestSolver-method}
+\title{Class RandomForestSolver}
+\usage{
+\S4method{getSolverName}{RandomForestSolver}(obj)
+}
+\arguments{
+\item{obj}{An object of class RandomForestSolver}
+}
+\value{
+"RandomForestSolver"
+}
+\examples{
+solver <- RandomForestSolver()
+getSolverName(solver)
 }

@@ -5,31 +5,25 @@
 \alias{Solver-class}
 \alias{.Solver}
 \alias{Solver}
-\alias{getAssayData-methods}
-\title{An S4 class to represent a solver}
+\title{Solver Class}
 \usage{
 Solver(mtx.assay = matrix(), quiet = TRUE)
-
-\S4method{getAssayData}{Solver}(obj)
 }
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
 
 \item{quiet}{A logical indicating whether or not the Solver object should print output}
-
-\item{obj}{An object of class Solver}
 }
 \value{
 An object of the Solver class
-
-The assay matrix of gene expression data associated with a Solver object
 }
 \description{
-An S4 class to represent a solver
+The Solver class is a generic class that governs the different solvers available in TReNA. A
+Solver class object is constructed during creation of a TReNA object and resides within the
+TReNA object. It is rarely called by itself; rather, interaction with a particular solver object
+is achieved using the \code{\link{solve}} method on a TReNA object.
 
 Define an object of class Solver
-
-Get Assay Data from Solver
 }
 \section{Slots}{
 
@@ -37,16 +31,13 @@ Get Assay Data from Solver
 \item{\code{mtx.assay}}{An assay matrix of gene expression data}
 
 \item{\code{quiet}}{A logical element indicating whether the Solver object should print output}
-
-\item{\code{state}}{Environment variable}
 }}
 
 \examples{
 mtx <- matrix(rnorm(10000), nrow = 100)
 solver <- Solver(mtx)
 
-# Create a Solver object using the included Alzheimer's data and retrieve the matrix
-load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-solver <- Solver(mtx.sub)
-mtx <- getAssayData(solver)
+}
+\seealso{
+\code{\link{TReNA}}, \code{\link{solve}}
 }

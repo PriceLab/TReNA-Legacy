@@ -4,7 +4,4 @@
 \name{RidgeSolver-class}
 \alias{RidgeSolver-class}
 \alias{.RidgeSolver}
-\title{An S4 class to represent a Ridge Regression solver}
-\description{
-An S4 class to represent a Ridge Regression solver
-}
+\title{Class RidgeSolver}

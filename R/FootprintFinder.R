@@ -1,3 +1,5 @@
+#' @title Class FootprintFinder
+#'
 #' Filter genes based on footprints
 #'
 #' @description 

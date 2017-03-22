@@ -4,10 +4,11 @@
 \name{run,BayesSpikeSolver-method}
 \alias{run,BayesSpikeSolver-method}
 \alias{run.BayesSpikeSolver}
+\alias{solve.BayesSpike}
 \title{Run the Bayes Spike Solver}
 \usage{
-\S4method{run}{BayesSpikeSolver}(obj, target.gene, tfs, tf.weights = rep(1,
-  length(tfs)), extraArgs = list())
+trena <- TReNA(mtx.assay, solver = "bayesSpike")
+tbl.out <- solve(trena, target.gene, tfs, tf.weights, extraArgs)
 }
 \arguments{
 \item{obj}{An object of the class BayesSpikeSolver}
@@ -18,7 +19,8 @@
 
 \item{tf.weights}{A set of weights on the transcription factors (default = rep(1, length(tfs)))}
 
-\item{extraArgs}{Modifiers to the Bayes Spike solver}
+\item{extraArgs}{Modifiers to the Bayes Spike solver; this includes \code{n_orderings}, the
+number of random starts used by the solver}
 }
 \value{
 A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters
@@ -34,7 +36,18 @@ trena <- TReNA(mtx.assay = mtx.sub, solver = "bayesSpike")
 target.gene <- "APOE"
 tfs <- setdiff(rownames(mtx.sub), target.gene)
 tbl <- solve(trena, target.gene, tfs)
+
+# Solve the same Alzheimer's problem, but this time set the number of random starts to 100
+tbl <- solve(trena, target.gene, tfs, extraArgs = list("n_orderings" = 100))
 }
 \seealso{
 \code{\link{vbsr}}
+
+Other solver methods: \code{\link{run,LassoPVSolver-method}},
+  \code{\link{run,LassoSolver-method}},
+  \code{\link{run,PearsonSolver-method}},
+  \code{\link{run,RandomForestSolver-method}},
+  \code{\link{run,RidgeSolver-method}},
+  \code{\link{run,SpearmanSolver-method}},
+  \code{\link{run,SqrtLassoSolver-method}}
 }

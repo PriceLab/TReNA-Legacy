@@ -2,7 +2,7 @@
 % Please edit documentation in R/BayesSpikeSolver.R
 \name{BayesSpikeSolver}
 \alias{BayesSpikeSolver}
-\title{Designate Bayes Spike as the TReNA Solver and Solve}
+\title{Create a Solver class object using the Bayes Spike Solver}
 \usage{
 BayesSpikeSolver(mtx.assay = matrix(), quiet = TRUE)
 }
@@ -15,7 +15,7 @@ BayesSpikeSolver(mtx.assay = matrix(), quiet = TRUE)
 A Solver class object with Bayes Spike as the solver
 }
 \description{
-Designate Bayes Spike as the TReNA Solver and Solve
+Create a Solver class object using the Bayes Spike Solver
 }
 \examples{
 solver <- BayesSpikeSolver()

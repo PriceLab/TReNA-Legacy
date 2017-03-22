@@ -7,7 +7,7 @@
 
 .BayesSpikeSolver <- setClass ("BayesSpikeSolver", contains="Solver")
 #------------------------------------------------------------------------------------------------------------------------
-#' Designate Bayes Spike as the TReNA Solver and Solve
+#' Create a Solver class object using the Bayes Spike Solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the solver should print output
@@ -48,20 +48,29 @@ setMethod("getSolverName", "BayesSpikeSolver",
 #----------------------------------------------------------------------------------------------------
 #' Run the Bayes Spike Solver
 #'
-#' @aliases run.BayesSpikeSolver
+#' @rdname run.BayesSpikeSolver-methods
+#' @aliases run.BayesSpikeSolver solve.BayesSpike
+#' 
 #' @description Given a TReNA object with Bayes Spike as the solver, use the \code{\link{vbsr}} function to estimate coefficients
 #' for each transcription factor as a predictor of the target gene's expression level.
 #'
+#' @usage
+#' trena <- TReNA(mtx.assay, solver = "bayesSpike")
+#' tbl.out <- solve(trena, target.gene, tfs, tf.weights, extraArgs)
+#'  
 #' @param obj An object of the class BayesSpikeSolver
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
-#' @param extraArgs Modifiers to the Bayes Spike solver
-#'
+#' @param extraArgs Modifiers to the Bayes Spike solver; this includes \code{n_orderings}, the
+#' number of random starts used by the solver
+#' 
 #' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters
 #'
 #' @seealso \code{\link{vbsr}}
 #'
+#' @family solver methods
+#' 
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
@@ -69,6 +78,9 @@ setMethod("getSolverName", "BayesSpikeSolver",
 #' target.gene <- "APOE"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
 #' tbl <- solve(trena, target.gene, tfs)
+#'
+#' # Solve the same Alzheimer's problem, but this time set the number of random starts to 100
+#' tbl <- solve(trena, target.gene, tfs, extraArgs = list("n_orderings" = 100))
 
 setMethod("run", "BayesSpikeSolver",
 
@@ -103,7 +115,7 @@ setMethod("run", "BayesSpikeSolver",
     rownames(tbl.out) <- tfs
     tbl.out$score <- -log10(tbl.out$pval)
     tbl.out <- tbl.out[order(tbl.out$score, decreasing=TRUE),]
-    #browser()
+
     gene.cor <- sapply(rownames(tbl.out), function(tf) cor(mtx[tf,], mtx[target.gene,]))
     tbl.out$gene.cor <- as.numeric(gene.cor)
     tbl.out

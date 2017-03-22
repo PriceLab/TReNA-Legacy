@@ -48,11 +48,16 @@ setMethod("getSolverName", "SqrtLassoSolver",
 #----------------------------------------------------------------------------------------------------
 #' Run the Square Root LASSO Solver
 #'
-#' @rdname SqrtLassoSolver
-#' @aliases run.SqrtLassoSolver
+#' @rdname solve.SqrtLasso
+#' @aliases run.SqrtLassoSolver solve.SqrtLasso
+#' 
 #' @description Given a TReNA object with Square Root LASSO as the solver, use the \code{\link{slim}} function to estimate coefficients
 #' for each transcription factor as a predictor of the target gene's expression level. 
 #'
+#' @usage
+#' trena <- TReNA(mtx.assay, solver = "sqrtlasso")
+#' tbl.out <- solve(trena, target.gene, tfs, extraArgs)
+#' 
 #' @param obj An object of class SqrtLassoSolver
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
@@ -61,6 +66,8 @@ setMethod("getSolverName", "SqrtLassoSolver",
 #' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
 #'
 #' @seealso \code{\link{slim}}
+#'
+#' @family solver methods
 #'
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
