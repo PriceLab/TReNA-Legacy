@@ -1,7 +1,7 @@
 Package: TReNA
 Type: Package
 Title: Fit transcriptional regulatory networks using gene expression, priors, machine learning
-Version: 0.99.88
+Version: 0.99.89
 Date: 2017-03-22
 Author: Seth Ament <seth.ament@systemsbiology.org>, Paul Shannon <pshannon@systemsbioloyg.org>, Matthew Richards <mrichard@systemsbiology.org>
 Maintainer: Seth Ament <seth.ament@systemsbiology.org>, Paul Shannon <pshannon@systemsbioloyg.org>, Matthew Richards <mrichard@systemsbiology.org>
@@ -12,12 +12,12 @@ Imports:
     flare,
     vbsr,
     foreach,
-    doParallel
+    doParallel,
+    RPostgreSQL
 Depends:
-    GenomicRanges,
     R (>= 3.2.3),
     glmnet (>= 2.0.3),
-    RPostgreSQL
+    GenomicRanges    
 Suggests:
     RUnit,
     limma,

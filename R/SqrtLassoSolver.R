@@ -2,6 +2,8 @@
 #' An S4 class to represent a Square Root LASSO solver
 #'
 #' @import flare
+#' @import doParallel
+#' @import foreach
 #' @include Solver.R
 #' @export
 #' @name SqrtLassoSolver-class

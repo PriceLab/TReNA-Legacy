@@ -6,6 +6,9 @@
 #' FootprintFinder class is mainly used by the FootprintFilter class, but the FootprintFinder class
 #' offers more flexibility in constructing queries. 
 #'
+#' @import RPostgreSQL
+#' @import RSQLite
+#' @import GenomicRanges
 #' @export
 #' @name FootprintFinder-class
 #' @rdname FootprintFinder-class
