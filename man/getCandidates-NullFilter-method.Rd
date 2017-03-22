@@ -6,7 +6,8 @@
 \alias{getCandidates-NullFilter}
 \title{Get candidate genes using the null filter}
 \usage{
-\S4method{getCandidates}{NullFilter}(obj)
+null.filter <- NullFilter(mtx.assay, quiet)
+tfs <- getCandidates(null.filter)
 }
 \arguments{
 \item{obj}{An object of class NullFilter}
@@ -16,4 +17,17 @@ A vector containing all genes in the assay matrix
 }
 \description{
 Get candidate genes using the null filter
+}
+\examples{
+
+# Using the included Alzheimer's data, return all transcription factors as candidates
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+candidate.filter <- NullFilter(mtx.assay=mtx.sub)
+tfs <- getCandidates(candidate.filter)
+}
+\seealso{
+\code{\link{NullFilter}}
+
+Other getCandidate Methods: \code{\link{getCandidates,FootprintFilter-method}},
+  \code{\link{getCandidates,VarianceFilter-method}}
 }

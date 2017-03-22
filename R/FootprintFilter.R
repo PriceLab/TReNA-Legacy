@@ -1,8 +1,15 @@
-#' Filter based on gene footprints
+#' @title Create a FootprintFilter object 
 #'
+#' @description
+#' A FootprintFilter object allows for filtering based on gene footprinting databases. Using its
+#' associated \code{getCandidates} method and URIs for both a genome database and project database,
+#' a FootprintFilter object can be used to filter a list of possible transcription factors to those
+#' that match footprint motifs for a supplied target gene.
+#' 
 #' @include CandidateFilter.R
 #' @name FootprintFilter-class
-#' @param mtx.assay An assay matrix of gene expression data
+#' @rdname FootprintFilter-class
+#' @aliases FootprintFilter
 
 #----------------------------------------------------------------------------------------------------
 .FootprintFilter <- setClass("FootprintFilter", contains = "CandidateFilter")
@@ -10,6 +17,18 @@
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
+#' @rdname FootprintFilter-class
+#'
+#' @param mtx.assay An assay matrix of gene expression data
+#' @param quiet A logical denoting whether or not the filter should print output
+#'
+#' @seealso \code{\link{getCandidates-FootprintFilter}}
+#'
+#' @family Filtering Objects
+#' 
+#' @examples
+#' footprint.filter <- FootprintFilter(mtx.assay)
+
 FootprintFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 {
     .FootprintFilter(CandidateFilter(mtx.assay = mtx.assay, quiet = quiet))
@@ -20,6 +39,10 @@ FootprintFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #'
 #' @aliases getCandidates-FootprintFilter
 #'
+#' @usage
+#' footprint.filter <- FootprintFilter(mtx.assay, quiet)
+#' tfs <- getCandidates(footprint.filter, target.gene, genome.db.uri, projct.db.uri)
+#' 
 #' @param obj An object of class FootprintFilter
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param genome.db.uri A connection to a genome database containing footprint information
@@ -29,7 +52,24 @@ FootprintFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @param size.downstream An integer denoting the distance downstream of the target gene to look for footprints
 #' (default = 1000)
 #'
+#' @seealso \code{\link{FootprintFilter}}
+#' 
+#' @family getCandidate Methods
+#' 
 #' @return A vector containing all genes with variances less than the target gene
+#'
+#' @examples
+#'
+#' # Use footprint filter with the included SQLite database for MEF2C to filter candidates
+#' # in the included Alzheimer's dataset
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' target.gene <- "MEF2C"
+#' db.address <- system.file(package="TReNA", "extdata")
+#' genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+#' project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+#' 
+#' tfs <- getCandidates(footprint.filter, target.gene, genome.db.uri, project.db.uri)
+    
 
 setMethod("getCandidates", "FootprintFilter",
 

@@ -4,13 +4,30 @@
 \name{NullFilter-class}
 \alias{NullFilter-class}
 \alias{.NullFilter}
-\title{Apply a null filter}
+\alias{NullFilter}
+\alias{NullFilter}
+\title{Create a NullFilter object}
+\usage{
+NullFilter(mtx.assay = matrix(), quiet = TRUE)
+}
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
+
+\item{quiet}{A logical denoting whether or not the filter should print output}
 }
 \value{
-An object of class NullFilter
+A CandidateFilter class object with null as the filtering method
 }
 \description{
-Apply a null filter
+A NullFilter object allows for "filtering" of the genes in an assay matrix. Its associated
+\code{getCandidates} method returns the list of transcription factors included in the assay matrix.
+}
+\examples{
+null.filter <- NullFilter(mtx.assay)
+}
+\seealso{
+\code{\link{getCandidates-NullFilter}}
+
+Other Filtering Objects: \code{\link{FootprintFilter-class}},
+  \code{\link{VarianceFilter-class}}
 }

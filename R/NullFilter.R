@@ -1,10 +1,13 @@
-#' Apply a null filter
+#' @title Create a NullFilter object
 #'
+#' @description
+#' A NullFilter object allows for "filtering" of the genes in an assay matrix. Its associated
+#' \code{getCandidates} method returns the list of transcription factors included in the assay matrix.
+#' 
 #' @include CandidateFilter.R
 #' @name NullFilter-class
-#'
-#' @param mtx.assay An assay matrix of gene expression data
-#' @return An object of class NullFilter
+#' @rdname NullFilter-class
+#' @aliases NullFilter
 
 #----------------------------------------------------------------------------------------------------
 .NullFilter <- setClass ("NullFilter", contains = "CandidateFilter")
@@ -13,11 +16,18 @@
 printf <- function(...) print(noquote(sprintf(...)))
 
 #----------------------------------------------------------------------------------------------------
-#' Define an object of class Null Filter
-#'
+#' @rdname NullFilter-class
+#' 
 #' @param mtx.assay An assay matrix of gene expression data
+#' @param quiet A logical denoting whether or not the filter should print output
+#' @return A CandidateFilter class object with null as the filtering method
 #'
-#' @return An object of the Null Filter class
+#' @seealso \code{\link{getCandidates-NullFilter}}
+#'
+#' @family Filtering Objects
+#'
+#' @examples
+#' null.filter <- NullFilter(mtx.assay)
 
 NullFilter <- function(mtx.assay=matrix(), quiet = TRUE)
 {
@@ -29,8 +39,23 @@ NullFilter <- function(mtx.assay=matrix(), quiet = TRUE)
 #'
 #' @aliases getCandidates-NullFilter
 #'
+#' @usage
+#' null.filter <- NullFilter(mtx.assay, quiet)
+#' tfs <- getCandidates(null.filter)
+#' 
 #' @param obj An object of class NullFilter
 #' @return A vector containing all genes in the assay matrix
+#'
+#' @seealso \code{\link{NullFilter}}
+#' 
+#' @family getCandidate Methods
+#'
+#' @examples
+#'
+#' # Using the included Alzheimer's data, return all transcription factors as candidates
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' candidate.filter <- NullFilter(mtx.assay=mtx.sub)
+#' tfs <- getCandidates(candidate.filter)
 
 setMethod("getCandidates", "NullFilter",
 

@@ -4,10 +4,32 @@
 \name{VarianceFilter-class}
 \alias{VarianceFilter-class}
 \alias{.VarianceFilter}
-\title{Filter based on gene expression variance}
+\alias{VarianceFilter}
+\alias{VarianceFilter}
+\title{Create a VarianceFilter object}
+\usage{
+VarianceFilter(mtx.assay = matrix(), quiet = TRUE)
+}
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
+
+\item{quiet}{A logical denoting whether or not the solver should print output}
+}
+\value{
+A CandidateFilter class object with variance as the filtering method
 }
 \description{
-Filter based on gene expression variance
+A VarianceFilter object allows for filtering based on the variance of a target gene in relation to
+other genes in the assay matrix. Using its associated \code{getCandidates} method, a VarianceFilter
+object can be used to filter a list of possible transcription factors to those within a given
+range of the variance of a supplied target gene.
+}
+\examples{
+variance.filter <- VarianceFilter(mtx.assay)
+}
+\seealso{
+\code{\link{getCandidates-VarianceFilter}}
+
+Other Filtering Objects: \code{\link{FootprintFilter-class}},
+  \code{\link{NullFilter-class}}
 }

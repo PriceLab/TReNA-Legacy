@@ -6,7 +6,8 @@
 \alias{getCandidates-VarianceFilter}
 \title{Get candidate genes using the variance filter}
 \usage{
-\S4method{getCandidates}{VarianceFilter}(obj, target.gene, var.size = 0.5)
+variance.filter <- VarianceFilter(mtx.assay, quiet)
+tfs <- getCandidates(variance.filter, target.gene, var.size)
 }
 \arguments{
 \item{obj}{An object of class VarianceFilter}
@@ -21,4 +22,18 @@ A vector containing all genes with variances less than the target gene
 }
 \description{
 Get candidate genes using the variance filter
+}
+\examples{
+# Using the included Alzheimer's dataset, filter out only those transcription factors with variance
+# within 50\% of the variance of MEF2C
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+candidate.filter <- VarianceFilter(mtx.assay = mtx.sub)
+target.gene <- "MEF2C"
+tfs <- getCandidates(candidate.filter, target.gene, var.size = 0.5)
+}
+\seealso{
+\code{\link{VarianceFilter}}
+
+Other getCandidate Methods: \code{\link{getCandidates,FootprintFilter-method}},
+  \code{\link{getCandidates,NullFilter-method}}
 }

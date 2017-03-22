@@ -17,7 +17,9 @@ setGeneric("getCandidates", signature="obj", function(obj,...) standardGeneric("
 #----------------------------------------------------------------------------------------------------
 #' Get candidate genes using the selected filter
 #'
-#' @name getCandidates
+#' @name getCandidates-method
+#' @rdname getCandidates
+#'
 #' @param mtx.assay An assay matrix of gene expression data
 #'
 #' @return A vector containing all genes selected as candidates by the filter

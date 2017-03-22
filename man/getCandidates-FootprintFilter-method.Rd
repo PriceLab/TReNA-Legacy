@@ -6,8 +6,8 @@
 \alias{getCandidates-FootprintFilter}
 \title{Get candidate genes using the variance filter}
 \usage{
-\S4method{getCandidates}{FootprintFilter}(obj, target.gene, genome.db.uri,
-  project.db.uri, size.upstream = 1000, size.downstream = 1000)
+footprint.filter <- FootprintFilter(mtx.assay, quiet)
+tfs <- getCandidates(footprint.filter, target.gene, genome.db.uri, projct.db.uri)
 }
 \arguments{
 \item{obj}{An object of class FootprintFilter}
@@ -29,4 +29,22 @@ A vector containing all genes with variances less than the target gene
 }
 \description{
 Get candidate genes using the variance filter
+}
+\examples{
+
+# Use footprint filter with the included SQLite database for MEF2C to filter candidates
+# in the included Alzheimer's dataset
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+target.gene <- "MEF2C"
+db.address <- system.file(package="TReNA", "extdata")
+genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+
+tfs <- getCandidates(footprint.filter, target.gene, genome.db.uri, project.db.uri)
+}
+\seealso{
+\code{\link{FootprintFilter}}
+
+Other getCandidate Methods: \code{\link{getCandidates,NullFilter-method}},
+  \code{\link{getCandidates,VarianceFilter-method}}
 }
