@@ -31,7 +31,7 @@ Run the Random Forest Solver
 # Load included Alzheimer's data, create a TReNA object with Random Forest as solver, and solve
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 trena <- TReNA(mtx.assay = mtx.sub, solver = "randomForest")
-target.gene <- "APOE"
+target.gene <- "MEF2C"
 tfs <- setdiff(rownames(mtx.sub), target.gene)
 tbl <- solve(trena, target.gene, tfs)
 }

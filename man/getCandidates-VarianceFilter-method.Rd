@@ -24,12 +24,14 @@ A vector containing all genes with variances less than the target gene
 Get candidate genes using the variance filter
 }
 \examples{
+
 # Using the included Alzheimer's dataset, filter out only those transcription factors with variance
 # within 50\% of the variance of MEF2C
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-candidate.filter <- VarianceFilter(mtx.assay = mtx.sub)
+variance.filter <- VarianceFilter(mtx.assay = mtx.sub)
+
 target.gene <- "MEF2C"
-tfs <- getCandidates(candidate.filter, target.gene, var.size = 0.5)
+tfs <- getCandidates(variance.filter, target.gene, var.size = 0.5)
 }
 \seealso{
 \code{\link{VarianceFilter}}

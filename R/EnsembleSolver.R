@@ -2,6 +2,7 @@
 #' An S4 class to represent an Ensemble Solver
 #'
 #' @include Solver.R
+#' @export
 #' @name EnsembleSolver-class
 #'
 .EnsembleSolver <- setClass("EnsembleSolver", contains="Solver")
@@ -65,7 +66,7 @@ setMethod("getSolverName", "EnsembleSolver",
 #' # Load included Alzheimer's data, create a TReNA object with LASSO as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 #' trena <- TReNA(mtx.assay = mtx.sub, solver = "ensemble")
-#' target.gene <- "APOE"
+#' target.gene <- "MEF2C"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
 #' tbl <- solve(trena, target.gene, tfs)
 

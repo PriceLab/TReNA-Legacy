@@ -22,7 +22,8 @@ a FootprintFilter object can be used to filter a list of possible transcription 
 that match footprint motifs for a supplied target gene.
 }
 \examples{
-footprint.filter <- FootprintFilter(mtx.assay)
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+footprint.filter <- FootprintFilter(mtx.assay = mtx.sub)
 }
 \seealso{
 \code{\link{getCandidates-FootprintFilter}}

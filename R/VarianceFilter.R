@@ -7,6 +7,7 @@
 #' range of the variance of a supplied target gene. 
 #' 
 #' @include CandidateFilter.R
+#' @export
 #' @name VarianceFilter-class
 #' @rdname VarianceFilter-class
 #' @aliases VarianceFilter
@@ -29,7 +30,8 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' @family Filtering Objects
 #'
 #' @examples
-#' variance.filter <- VarianceFilter(mtx.assay)
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' variance.filter <- VarianceFilter(mtx.assay = mtx.sub)
 
 VarianceFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 {
@@ -57,12 +59,14 @@ VarianceFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @return A vector containing all genes with variances less than the target gene
 #'
 #' @examples
+#' 
 #' # Using the included Alzheimer's dataset, filter out only those transcription factors with variance
 #' # within 50% of the variance of MEF2C
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-#' candidate.filter <- VarianceFilter(mtx.assay = mtx.sub)
+#' variance.filter <- VarianceFilter(mtx.assay = mtx.sub)
+#' 
 #' target.gene <- "MEF2C"
-#' tfs <- getCandidates(candidate.filter, target.gene, var.size = 0.5)
+#' tfs <- getCandidates(variance.filter, target.gene, var.size = 0.5)
 
 setMethod("getCandidates", "VarianceFilter",
 

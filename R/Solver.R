@@ -4,6 +4,8 @@
 #' @name Solver-class
 #' @rdname Solver-class
 #'
+#' @export
+#'
 #' @description
 #' The Solver class is a generic class that governs the different solvers available in TReNA. A
 #' Solver class object is constructed during creation of a TReNA object and resides within the

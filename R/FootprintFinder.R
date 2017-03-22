@@ -1,12 +1,16 @@
 #' @title Class FootprintFinder
 #'
-#' Filter genes based on footprints
+#' @description
+#' The FootprintFinder class is designed to query 2 supplied footprint databases (a genome database
+#' and a project database) for supplied genes or regions. Within the TReNA package, the
+#' FootprintFinder class is mainly used by the FootprintFilter class, but the FootprintFinder class
+#' offers more flexibility in constructing queries. 
 #'
-#' @description 
-#'
+#' @export
 #' @name FootprintFinder-class
 #' @rdname FootprintFinder-class
 #' @aliases FootprintFinder
+#' 
 #' @slot genome.db The address of a genome database for use in filtering
 #' @slot project.db The address of a project database for use in filtering
 #' @slot quiet A logical argument denoting whether the FootprintFinder object should behave quietly

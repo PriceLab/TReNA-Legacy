@@ -35,6 +35,8 @@ Get candidate genes using the variance filter
 # Use footprint filter with the included SQLite database for MEF2C to filter candidates
 # in the included Alzheimer's dataset
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+footprint.filter <- FootprintFilter(mtx.assay = mtx.sub)
+
 target.gene <- "MEF2C"
 db.address <- system.file(package="TReNA", "extdata")
 genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")

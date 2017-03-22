@@ -47,4 +47,16 @@ exportMethods(
     getPromoterRegionsAllGenes,
     closeDatabaseConnections,
     getCandidates
-    )
+)
+
+import(
+    RSQLite,
+    lassopv,
+    randomForest,
+    flare,
+    vbsr,
+    foreach,
+    doParallel,
+    GenomicRanges
+)
+

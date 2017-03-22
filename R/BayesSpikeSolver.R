@@ -2,13 +2,14 @@
 #' An S4 class to represent a Bayes Spike solver
 #'
 #' @import vbsr
+#' @export
 #' @include Solver.R
 #' @name BayesSpikeSolver-class
 
 .BayesSpikeSolver <- setClass ("BayesSpikeSolver", contains="Solver")
 #------------------------------------------------------------------------------------------------------------------------
 #' Create a Solver class object using the Bayes Spike Solver
-#'
+#' 
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the solver should print output
 #' 
@@ -27,7 +28,7 @@ BayesSpikeSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 
     obj
 
-} # TReNA, the constructor
+} # BayesSpikeSolver, the constructor
 #------------------------------------------------------------------------------------------------------------------------
 #' Get Bayes Spike Solver name
 #'
@@ -75,7 +76,7 @@ setMethod("getSolverName", "BayesSpikeSolver",
 #' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 #' trena <- TReNA(mtx.assay = mtx.sub, solver = "bayesSpike")
-#' target.gene <- "APOE"
+#' target.gene <- "MEF2C"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
 #' tbl <- solve(trena, target.gene, tfs)
 #'

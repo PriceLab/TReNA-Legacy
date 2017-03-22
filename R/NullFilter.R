@@ -5,6 +5,7 @@
 #' \code{getCandidates} method returns the list of transcription factors included in the assay matrix.
 #' 
 #' @include CandidateFilter.R
+#' @export
 #' @name NullFilter-class
 #' @rdname NullFilter-class
 #' @aliases NullFilter
@@ -27,7 +28,8 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' @family Filtering Objects
 #'
 #' @examples
-#' null.filter <- NullFilter(mtx.assay)
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' null.filter <- NullFilter(mtx.assay = mtx.sub)
 
 NullFilter <- function(mtx.assay=matrix(), quiet = TRUE)
 {
@@ -54,8 +56,8 @@ NullFilter <- function(mtx.assay=matrix(), quiet = TRUE)
 #'
 #' # Using the included Alzheimer's data, return all transcription factors as candidates
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-#' candidate.filter <- NullFilter(mtx.assay=mtx.sub)
-#' tfs <- getCandidates(candidate.filter)
+#' null.filter <- NullFilter(mtx.assay=mtx.sub)
+#' tfs <- getCandidates(null.filter)
 
 setMethod("getCandidates", "NullFilter",
 

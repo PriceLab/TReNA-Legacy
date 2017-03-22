@@ -3,6 +3,7 @@
 #'
 #' @include Solver.R
 #' @import lassopv
+#' @export
 #' @name LassoPVSolver-class
 
 .LassoPVSolver <- setClass ("LassoPVSolver", contains="Solver")
@@ -73,7 +74,7 @@ setMethod("getSolverName", "LassoPVSolver",
 #' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 #' trena <- TReNA(mtx.assay = mtx.sub, solver = "lassopv")
-#' target.gene <- "APOE"
+#' target.gene <- "MEF2C"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
 #' tbl <- solve(trena, target.gene, tfs)
 

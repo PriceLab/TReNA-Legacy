@@ -22,8 +22,8 @@ Get candidate genes using the null filter
 
 # Using the included Alzheimer's data, return all transcription factors as candidates
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-candidate.filter <- NullFilter(mtx.assay=mtx.sub)
-tfs <- getCandidates(candidate.filter)
+null.filter <- NullFilter(mtx.assay=mtx.sub)
+tfs <- getCandidates(null.filter)
 }
 \seealso{
 \code{\link{NullFilter}}

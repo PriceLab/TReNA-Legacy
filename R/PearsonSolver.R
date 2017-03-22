@@ -2,6 +2,7 @@
 #' An S4 class to represent a Pearson solver
 #'
 #' @include Solver.R
+#' @export
 #' @name PearsonSolver-class
 #' 
 
@@ -72,7 +73,7 @@ setMethod("getSolverName", "PearsonSolver",
 #' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 #' trena <- TReNA(mtx.assay = mtx.sub, solver = "pearson")
-#' target.gene <- "APOE"
+#' target.gene <- "MEF2C"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
 #' tbl <- solve(trena, target.gene, tfs)
 

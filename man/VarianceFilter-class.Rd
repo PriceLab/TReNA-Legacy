@@ -25,7 +25,8 @@ object can be used to filter a list of possible transcription factors to those w
 range of the variance of a supplied target gene.
 }
 \examples{
-variance.filter <- VarianceFilter(mtx.assay)
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+variance.filter <- VarianceFilter(mtx.assay = mtx.sub)
 }
 \seealso{
 \code{\link{getCandidates-VarianceFilter}}

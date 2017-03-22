@@ -5,7 +5,8 @@
 #' associated \code{getCandidates} method and URIs for both a genome database and project database,
 #' a FootprintFilter object can be used to filter a list of possible transcription factors to those
 #' that match footprint motifs for a supplied target gene.
-#' 
+#'
+#' @export
 #' @include CandidateFilter.R
 #' @name FootprintFilter-class
 #' @rdname FootprintFilter-class
@@ -27,7 +28,8 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' @family Filtering Objects
 #' 
 #' @examples
-#' footprint.filter <- FootprintFilter(mtx.assay)
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' footprint.filter <- FootprintFilter(mtx.assay = mtx.sub)
 
 FootprintFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 {
@@ -63,6 +65,8 @@ FootprintFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' # Use footprint filter with the included SQLite database for MEF2C to filter candidates
 #' # in the included Alzheimer's dataset
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' footprint.filter <- FootprintFilter(mtx.assay = mtx.sub)
+#'
 #' target.gene <- "MEF2C"
 #' db.address <- system.file(package="TReNA", "extdata")
 #' genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
