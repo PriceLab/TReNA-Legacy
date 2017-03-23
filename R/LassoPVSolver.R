@@ -3,7 +3,8 @@
 #'
 #' @include Solver.R
 #' @import lassopv
-#' @export
+#' @import methods
+#' 
 #' @name LassoPVSolver-class
 
 .LassoPVSolver <- setClass ("LassoPVSolver", contains="Solver")
@@ -15,6 +16,8 @@
 #' 
 #' @return A Solver class object with LASSO P-Value as the solver
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- LassoPVSolver()
 
@@ -36,6 +39,8 @@ LassoPVSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' 
 #' @return "LassoPVSolver"
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- LassoPVSolver()
 #' getSolverName(solver)
@@ -122,6 +127,8 @@ setMethod("run", "LassoPVSolver",
 #' @param rawValue.min The minimum value of the raw expression values
 #' @param rawValue.max The maximum value of the raw expression values
 #' @param rawValues A matrix of raw expression values
+#'
+#' @export
 #'
 #' @return A matrix of the raw values re-scaled using the minimum and maximum values
 

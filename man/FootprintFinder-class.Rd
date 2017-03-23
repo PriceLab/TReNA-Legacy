@@ -30,6 +30,8 @@ must contain the tables "regions" and "hits" at a minimum. The URI format is as 
 \value{
 An object of the FootprintFinder class that can reduce a list of genes to a subset prior
 to forming a TReNA object
+
+An object of the FootprintFinder class
 }
 \description{
 The FootprintFinder class is designed to query 2 supplied footprint databases (a genome database

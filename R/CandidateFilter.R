@@ -1,7 +1,8 @@
 #----------------------------------------------------------------------------------------------------
 #' An S4 class to represent a gene candidate filter
 #'
-#' @export
+#' @import methods
+#' 
 #' @name CandidateFilter-class
 #' @param mtx.assay An assay matrix of gene expression data
 
@@ -13,6 +14,7 @@
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
+#' @export
 setGeneric("getCandidates", signature="obj", function(obj,...) standardGeneric("getCandidates"))
 
 #----------------------------------------------------------------------------------------------------

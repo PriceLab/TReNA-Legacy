@@ -7,7 +7,8 @@
 #' range of the variance of a supplied target gene. 
 #' 
 #' @include CandidateFilter.R
-#' @export
+#' @import methods
+#' 
 #' @name VarianceFilter-class
 #' @rdname VarianceFilter-class
 #' @aliases VarianceFilter
@@ -24,6 +25,8 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' @param quiet A logical denoting whether or not the solver should print output
 #'
 #' @return A CandidateFilter class object with variance as the filtering method
+#'
+#' @export
 #' 
 #' @seealso \code{\link{getCandidates-VarianceFilter}}
 #'

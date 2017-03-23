@@ -6,8 +6,9 @@
 #' a FootprintFilter object can be used to filter a list of possible transcription factors to those
 #' that match footprint motifs for a supplied target gene.
 #'
-#' @export
 #' @include CandidateFilter.R
+#' @import methods
+#' 
 #' @name FootprintFilter-class
 #' @rdname FootprintFilter-class
 #' @aliases FootprintFilter
@@ -25,6 +26,8 @@ printf <- function(...) print(noquote(sprintf(...)))
 #'
 #' @seealso \code{\link{getCandidates-FootprintFilter}}
 #'
+#' @export
+#' 
 #' @family Filtering Objects
 #' 
 #' @examples

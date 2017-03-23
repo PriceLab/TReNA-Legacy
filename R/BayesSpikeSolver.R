@@ -2,7 +2,8 @@
 #' An S4 class to represent a Bayes Spike solver
 #'
 #' @import vbsr
-#' @export
+#' @import methods
+#' 
 #' @include Solver.R
 #' @name BayesSpikeSolver-class
 
@@ -12,6 +13,8 @@
 #' 
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the solver should print output
+#'
+#' @export
 #' 
 #' @return A Solver class object with Bayes Spike as the solver
 #'
@@ -36,6 +39,8 @@ BayesSpikeSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' 
 #' @return "BayesSpikeSolver"
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- BayesSpikeSolver()
 #' getSolverName(solver)
@@ -132,6 +137,8 @@ setMethod("run", "BayesSpikeSolver",
 #' @param rawValue.min The minimum value of the raw expression values
 #' @param rawValue.max The maximum value of the raw expression values
 #' @param rawValues A matrix of raw expression values
+#'
+#' @export
 #'
 #' @return A matrix of the raw values re-scaled using the minimum and maximum values
 

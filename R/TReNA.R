@@ -7,7 +7,8 @@
 #' @name TReNA-class
 #' @rdname TReNA-class
 #' @aliases TReNA
-#' @export
+#'
+#' @import methods
 #' 
 #' @slot mtx.assay An assay matrix of gene expression data
 #' @slot solver A string matching the designated solver for relating a target gene to transcription factors. 
@@ -47,6 +48,7 @@ setGeneric("solve",                    signature="obj", function(obj, target.gen
 #'
 #' @name TReNA-class
 #' @rdname TReNA-class
+#' @export
 
 TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 {
@@ -86,6 +88,8 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 #' @name solve-methods
 #' @rdname solve
 #' @aliases solve solve.TReNA
+#'
+#' @exportMethod solve
 #' 
 #' @param obj An object of class TReNA
 #' @param target.gene A designated target gene that should be part of the mtx.assay data

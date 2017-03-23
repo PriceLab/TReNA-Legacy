@@ -3,7 +3,8 @@
 #'
 #' @import randomForest
 #' @include Solver.R
-#' @export
+#' @import methods
+#' 
 #' @name RandomForestSolver-class
 #' @rdname RandomForestSolver-class
 
@@ -14,6 +15,8 @@
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the solver should print output
 #' @return A Solver class object with Random Forest as the solver
+#'
+#' @export
 #' 
 #' @examples
 #' solver <- RandomForestSolver()
@@ -37,6 +40,8 @@ RandomForestSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' 
 #' @return "RandomForestSolver"
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- RandomForestSolver()
 #' getSolverName(solver)

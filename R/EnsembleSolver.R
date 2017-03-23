@@ -2,7 +2,8 @@
 #' An S4 class to represent an Ensemble Solver
 #'
 #' @include Solver.R
-#' @export
+#' @import methods
+#' 
 #' @name EnsembleSolver-class
 #'
 .EnsembleSolver <- setClass("EnsembleSolver", contains="Solver")
@@ -13,6 +14,8 @@
 #' @param quiet A logical denoting whether or not the solver should print output
 #' @return A Solver class object with Ensemble as the solver
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- EnsembleSolver()
 
@@ -31,6 +34,8 @@ EnsembleSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #'
 #' @return "EnsembleSolver"
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- EnsembleSolver()
 #' getSolverName(solver)

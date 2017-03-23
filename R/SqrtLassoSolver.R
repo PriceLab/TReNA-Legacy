@@ -4,8 +4,10 @@
 #' @import flare
 #' @import doParallel
 #' @import foreach
+#' @import methods
+#' 
 #' @include Solver.R
-#' @export
+#' 
 #' @name SqrtLassoSolver-class
 
 .SqrtLassoSolver <- setClass ("SqrtLassoSolver", contains="Solver")
@@ -17,6 +19,8 @@
 #' 
 #' @return A Solver class object with Square Root LASSO as the solver
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- SqrtLassoSolver()
 
@@ -38,6 +42,8 @@ SqrtLassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' 
 #' @return "SqrtLassoSolver"
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- SqrtLassoSolver()
 #' getSolverName(solver)
@@ -213,6 +219,8 @@ setMethod("run", "SqrtLassoSolver",
 #' @param rawValue.max The maximum value of the raw expression values
 #' @param rawValues A matrix of raw expression values
 #'
+#' @export
+#' 
 #' @return A matrix of the raw values re-scaled using the minimum and maximum values
 
 # lasso penalizes predictors on a scale of 1 (full weight) to infinity (zero weight)

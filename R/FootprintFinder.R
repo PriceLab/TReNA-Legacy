@@ -9,7 +9,8 @@
 #' @import RPostgreSQL
 #' @import RSQLite
 #' @import GenomicRanges
-#' @export
+#' @import methods
+#' 
 #' @name FootprintFinder-class
 #' @rdname FootprintFinder-class
 #' @aliases FootprintFinder
@@ -91,6 +92,10 @@ setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
 #' must contain the tables "regions" and "hits" at a minimum. The URI format is as follows:
 #' "dbtype://host/database" (e.g. "postgres://localhost/projectdb")
 #' @param quiet A logical denoting whether or not the FootprintFinder object should print output
+#'
+#' @return An object of the FootprintFinder class
+#'
+#' @export
 
 FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRUE)
 {
@@ -205,6 +210,8 @@ setMethod("closeDatabaseConnections", "FootprintFinder",
 #' 
 #' @param obj An object of class FootprintFinder
 #'
+#' @export
+#' 
 #' @return A sorted list of the types of biological units contained in the gtf table of the genome
 #' database.
 
@@ -225,6 +232,8 @@ setMethod("getGtfGeneBioTypes", "FootprintFinder",
 #' @aliases getGtfMoleculeTypes
 #' 
 #' @param obj An object of class FootprintFinder
+#'
+#' @export
 #'
 #' @return A sorted list of the types of molecules contained in the gtf table of the genome
 #' database.
@@ -249,6 +258,8 @@ setMethod("getGtfMoleculeTypes", "FootprintFinder",
 #' @param name A gene name or ID
 #' @param biotype A type of biological unit (default="protein_coding")
 #' @param moleculetype A type of molecule (default="gene")
+#'
+#' @export
 #'
 #' @return A dataframe containing the results of a database query pertaining to the specified name,
 #' biotype, and molecule type. This dataframe contains the following columns: gene_id, gene_name,
@@ -283,6 +294,8 @@ setMethod("getChromLoc", "FootprintFinder",
 #' (default = 0)
 #' @param biotype A type of biological unit (default="protein_coding")
 #' @param moleculetype A type of molecule (default="gene")
+#'
+#' @export
 #'
 #' @return A list containing 3 elements:
 #' 1) chr : The name of the chromasome containing the promoter region for the specified gene
@@ -337,6 +350,8 @@ setMethod("getGenePromoterRegion", "FootprintFinder",
 #'
 #' @return A dataframe containing all footprints for the specified gene and accompanying parameters
 #'
+#' @export
+#' 
 #' @seealso \code{\link{getGenePromoterRegion}}, \code{\link{getFootprintsInRegion}}
 
 setMethod("getFootprintsForGene", "FootprintFinder",
@@ -365,6 +380,8 @@ setMethod("getFootprintsForGene", "FootprintFinder",
 #' @param start An integer denoting the start of the desired region
 #' @param endpos An integer denoting the end of the desired region
 #'
+#' @export
+#' 
 #' @return A dataframe containing all footprints for the specified region
 
 setMethod("getFootprintsInRegion", "FootprintFinder",
@@ -411,6 +428,8 @@ setMethod("getFootprintsInRegion", "FootprintFinder",
 #' @param use_gene_ids A binary indicating whether to return gene IDs or gene names (default = T)
 #'
 #' @return A GRanges object containing the promoter regions for all genes
+#'
+#' @export
 
 setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 
@@ -471,6 +490,8 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 #' @return A data frame containing the motifs from the supplied footprints table and the transcription
 #' factors they map to
 #'
+#' @export
+#' 
 #' @seealso \code{\link{getFootprintsInRegion}}, \code{\link{getFootprintsForGene}} 
 
 

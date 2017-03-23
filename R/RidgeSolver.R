@@ -3,7 +3,8 @@
 #'
 #' @include Solver.R
 #' @import glmnet
-#' @export
+#' @import methods
+#' 
 #' @name RidgeSolver-class
 #' @rdname RidgeSolver-class
 
@@ -15,6 +16,8 @@
 #' @param quiet A logical denoting whether or not the solver should print output
 #' @return A Solver class object with Ridge as the solver
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- RidgeSolver()
 
@@ -32,6 +35,8 @@ RidgeSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' 
 #' @return "RidgeSolver"
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- RidgeSolver()
 #' getSolverName(solver)
@@ -112,6 +117,8 @@ setMethod("run", "RidgeSolver",
 #' @param rawValue.max The maximum value of the raw expression values
 #' @param rawValues A matrix of raw expression values
 #'
+#' @export
+#' 
 #' @return A matrix of the raw values re-scaled using the minimum and maximum values
 
 # lasso penalizes predictors on a scale of 1 (full weight) to infinity (zero weight)

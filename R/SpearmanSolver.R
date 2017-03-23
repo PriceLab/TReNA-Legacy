@@ -2,7 +2,9 @@
 #' An S4 class to represent a Spearman solver
 #'
 #' @include Solver.R
-#' @export
+#'
+#' @import methods
+#' 
 #' @name SpearmanSolver-class
 #' 
 
@@ -15,6 +17,8 @@
 #' 
 #' @return A Solver class object with Spearman correlation coefficients as the solver
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- SpearmanSolver()
 
@@ -36,6 +40,8 @@ SpearmanSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 #' 
 #' @return "SpearmanSolver"
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- SpearmanSolver()
 #' getSolverName(solver)

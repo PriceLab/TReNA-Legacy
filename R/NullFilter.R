@@ -5,7 +5,8 @@
 #' \code{getCandidates} method returns the list of transcription factors included in the assay matrix.
 #' 
 #' @include CandidateFilter.R
-#' @export
+#' @import methods
+#' 
 #' @name NullFilter-class
 #' @rdname NullFilter-class
 #' @aliases NullFilter
@@ -23,6 +24,8 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' @param quiet A logical denoting whether or not the filter should print output
 #' @return A CandidateFilter class object with null as the filtering method
 #'
+#' @export
+#' 
 #' @seealso \code{\link{getCandidates-NullFilter}}
 #'
 #' @family Filtering Objects

@@ -2,7 +2,8 @@
 #' An S4 class to represent a Pearson solver
 #'
 #' @include Solver.R
-#' @export
+#' @import methods
+#' 
 #' @name PearsonSolver-class
 #' 
 
@@ -15,6 +16,8 @@
 #' 
 #' @return A Solver class object with Pearson correlation coefficients as the solver
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- PearsonSolver()
 
@@ -37,6 +40,8 @@ PearsonSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 #'
 #' @return "PearsonSolver
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- PearsonSolver()
 #' getSolverName(solver)

@@ -4,8 +4,8 @@
 #' @name Solver-class
 #' @rdname Solver-class
 #'
-#' @export
-#'
+#' @import methods
+#' 
 #' @description
 #' The Solver class is a generic class that governs the different solvers available in TReNA. A
 #' Solver class object is constructed during creation of a TReNA object and resides within the
@@ -38,6 +38,8 @@ setGeneric("rescalePredictorWeights",
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical indicating whether or not the Solver object should print output
 #'
+#' @export
+#' 
 #' @return An object of the Solver class
 #'
 #' @examples
@@ -60,7 +62,7 @@ Solver <- function(mtx.assay=matrix(), quiet=TRUE)
     env <- new.env(parent=emptyenv())
    .Solver(mtx.assay=mtx.assay, quiet=quiet, state=env)
 
-} # TReNA, the constructor
+} # Solver, the constructor
 #----------------------------------------------------------------------------------------------------
 #' @title Get Assay Data from Solver
 #'
@@ -71,6 +73,8 @@ Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @aliases getAssayData
 #' 
 #' @param obj An object of class Solver
+#'
+#' @export
 #' 
 #' @return The assay matrix of gene expression data associated with a Solver object
 #'

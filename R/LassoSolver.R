@@ -3,7 +3,8 @@
 #'
 #' @import glmnet
 #' @include Solver.R
-#' @export
+#' @import methods
+#' 
 #' @name LassoSolver-class
 
 .LassoSolver <- setClass ("LassoSolver", contains="Solver")
@@ -14,6 +15,8 @@
 #' @param quiet A logical denoting whether or not the solver should print output
 #' @return A Solver class object with LASSO as the solver
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- LassoSolver()
 
@@ -31,6 +34,8 @@ LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' 
 #' @return "LassoSolver"
 #'
+#' @export
+#' 
 #' @examples
 #' solver <- LassoSolver()
 #' getSolverName(solver)
@@ -113,6 +118,8 @@ setMethod("run", "LassoSolver",
 #' @param rawValue.max The maximum value of the raw expression values
 #' @param rawValues A matrix of raw expression values
 #'
+#' @export
+#' 
 #' @return A matrix of the raw values re-scaled using the minimum and maximum values
 
 # lasso penalizes predictors on a scale of 1 (full weight) to infinity (zero weight)
