@@ -7,11 +7,10 @@
 \alias{solve.BayesSpike}
 \title{Run the Bayes Spike Solver}
 \usage{
-trena <- TReNA(mtx.assay, solver = "bayesSpike")
-tbl.out <- solve(trena, target.gene, tfs, tf.weights, extraArgs)
+tbl.out <- solve(obj, target.gene, tfs, tf.weights, extraArgs)
 }
 \arguments{
-\item{obj}{An object of the class BayesSpikeSolver}
+\item{obj}{An object of the class TReNA with "bayesSpike" as the solver string}
 
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 
@@ -49,5 +48,6 @@ Other solver methods: \code{\link{run,LassoPVSolver-method}},
   \code{\link{run,RandomForestSolver-method}},
   \code{\link{run,RidgeSolver-method}},
   \code{\link{run,SpearmanSolver-method}},
-  \code{\link{run,SqrtLassoSolver-method}}
+  \code{\link{run,SqrtLassoSolver-method}},
+  \code{\link{solve.Ensemble}}
 }

@@ -7,11 +7,10 @@
 \alias{solve.Lasso}
 \title{Run the LASSO Solver}
 \usage{
-trena <- TReNA(mtx.assay, solver = "lasso")
-tbl.out <- solve(trena, target.gene, tf.weights, extraArgs)
+tbl.out <- solve(obj, target.gene, tfs, tf.weights, extraArgs)
 }
 \arguments{
-\item{obj}{An object of class LassoSolver}
+\item{obj}{An object of class TReNA with "lasso" as the solver string}
 
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 
@@ -45,5 +44,6 @@ Other solver methods: \code{\link{run,BayesSpikeSolver-method}},
   \code{\link{run,RandomForestSolver-method}},
   \code{\link{run,RidgeSolver-method}},
   \code{\link{run,SpearmanSolver-method}},
-  \code{\link{run,SqrtLassoSolver-method}}
+  \code{\link{run,SqrtLassoSolver-method}},
+  \code{\link{solve.Ensemble}}
 }

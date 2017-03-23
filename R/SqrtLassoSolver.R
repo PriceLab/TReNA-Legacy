@@ -64,10 +64,9 @@ setMethod("getSolverName", "SqrtLassoSolver",
 #' for each transcription factor as a predictor of the target gene's expression level. 
 #'
 #' @usage
-#' trena <- TReNA(mtx.assay, solver = "sqrtlasso")
-#' tbl.out <- solve(trena, target.gene, tfs, extraArgs)
+#' tbl.out <- solve(obj, target.gene, tfs, extraArgs)
 #' 
-#' @param obj An object of class SqrtLassoSolver
+#' @param obj An object of class TReNA with "sqrtlasso" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param extraArgs Modifiers to the Square Root LASSO solver

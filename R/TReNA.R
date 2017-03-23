@@ -1,4 +1,4 @@
-#' @title Class TReNA
+#' Class TReNA
 #'
 #' @description
 #' Class \code{TReNA} defines a TReNA object and contains an assay matrix, which contains expression data over a set of
@@ -45,7 +45,7 @@ setGeneric("solve",                    signature="obj", function(obj, target.gen
                                                                  tf.weights=rep(1, length(tfs)), extraArgs=list())
                                                            standardGeneric ("solve"))
 #----------------------------------------------------------------------------------------------------
-#'
+#' @title Class TReNA
 #' @name TReNA-class
 #' @rdname TReNA-class
 #' @export

@@ -7,11 +7,10 @@
 \alias{solve.LassoPV}
 \title{Run the LASSO P-Value Solver}
 \usage{
-trena <- TReNA(mtx.assay, solver = "lassopv")
-tbl.out <- solve(trena, target.gene, tfs)
+tbl.out <- solve(obj, target.gene, tfs)
 }
 \arguments{
-\item{obj}{An object of class LassoPVSolver}
+\item{obj}{An object of class TReNA with "lassopv" as the solver string}
 
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 
@@ -42,5 +41,6 @@ Other solver methods: \code{\link{run,BayesSpikeSolver-method}},
   \code{\link{run,RandomForestSolver-method}},
   \code{\link{run,RidgeSolver-method}},
   \code{\link{run,SpearmanSolver-method}},
-  \code{\link{run,SqrtLassoSolver-method}}
+  \code{\link{run,SqrtLassoSolver-method}},
+  \code{\link{solve.Ensemble}}
 }

@@ -6,7 +6,6 @@
 \alias{getCandidates-FootprintFilter}
 \title{Get candidate genes using the variance filter}
 \usage{
-footprint.filter <- FootprintFilter(mtx.assay, quiet)
 tfs <- getCandidates(footprint.filter, target.gene, genome.db.uri, projct.db.uri)
 }
 \arguments{

@@ -81,7 +81,7 @@ setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
 
 } # .parseDatabaseUri
 #----------------------------------------------------------------------------------------------------
-#'
+#' @title Class FootprintFinder
 #' @name FootprintFinder-class
 #' @rdname FootprintFinder-class
 #'

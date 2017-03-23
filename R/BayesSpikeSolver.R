@@ -54,17 +54,16 @@ setMethod("getSolverName", "BayesSpikeSolver",
 #----------------------------------------------------------------------------------------------------
 #' Run the Bayes Spike Solver
 #'
-#' @rdname run.BayesSpikeSolver-methods
+#' @rdname solve.BayesSpike
 #' @aliases run.BayesSpikeSolver solve.BayesSpike
 #' 
 #' @description Given a TReNA object with Bayes Spike as the solver, use the \code{\link{vbsr}} function to estimate coefficients
 #' for each transcription factor as a predictor of the target gene's expression level.
 #'
 #' @usage
-#' trena <- TReNA(mtx.assay, solver = "bayesSpike")
-#' tbl.out <- solve(trena, target.gene, tfs, tf.weights, extraArgs)
+#' tbl.out <- solve(obj, target.gene, tfs, tf.weights, extraArgs)
 #'  
-#' @param obj An object of the class BayesSpikeSolver
+#' @param obj An object of the class TReNA with "bayesSpike" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))

@@ -6,7 +6,6 @@
 \alias{getCandidates-NullFilter}
 \title{Get candidate genes using the null filter}
 \usage{
-null.filter <- NullFilter(mtx.assay, quiet)
 tfs <- getCandidates(null.filter)
 }
 \arguments{

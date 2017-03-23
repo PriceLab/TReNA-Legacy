@@ -47,7 +47,6 @@ VarianceFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @aliases getCandidates-VarianceFilter
 #'
 #' @usage
-#' variance.filter <- VarianceFilter(mtx.assay, quiet)
 #' tfs <- getCandidates(variance.filter, target.gene, var.size)
 #' 
 #' @param obj An object of class VarianceFilter

@@ -6,7 +6,6 @@
 \alias{getCandidates-VarianceFilter}
 \title{Get candidate genes using the variance filter}
 \usage{
-variance.filter <- VarianceFilter(mtx.assay, quiet)
 tfs <- getCandidates(variance.filter, target.gene, var.size)
 }
 \arguments{

@@ -8,7 +8,7 @@
 #'
 .EnsembleSolver <- setClass("EnsembleSolver", contains="Solver")
 #----------------------------------------------------------------------------------------------------
-#' Create a Solver class object using an ensemble approach
+#' Create a Solver class object using an ensemble of solvers
 #'
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the solver should print output
@@ -49,19 +49,20 @@ setMethod("getSolverName", "EnsembleSolver",
 #----------------------------------------------------------------------------------------------------
 #' Run the Ensemble Solver
 #'
+#' @name solve.Ensemble
 #' @rdname solve.Ensemble
 #' @aliases run.EnsembleSolver solve.Ensemble
 #' 
-#' @description Given a TReNA object with Ensemble as the solver and a list of solvers (default = all solvers), estimate coefficients for each transcription factor as a predictor of the target gene's expression level. The final scores for the ensemble method combine all specified solvers to create a composite score for each transcription factor. 
+#' @description Given a TReNA object with Ensemble as the solver and a list of solvers (default = "all.solvers"), estimate coefficients for each transcription factor as a predictor of the target gene's expression level. The final scores for the ensemble method combine all specified solvers to create a composite score for each transcription factor. 
 #'
 #' @usage
-#' trena <- TReNA(mtx.assay, solver = "ensemble")
-#' tbl.out <- solve(trena, target.gene, tfs, extraArgs)
+#' tbl.out <- solve(obj, target.gene, tfs, extraArgs)
 #' 
-#' @param obj An object of class EnsembleSolver
+#' @param obj An object of class TReNA with "ensemble" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene
-#' @param extraArgs Modifiers to the Ensemble solver, including "solver.list", and "gene.cutoff"
+#' @param extraArgs Modifiers to the Ensemble solver, including "solver.list", "gene.cutoff", and solver-named
+#' arguments denoting extraArgs that correspond to a given solver (e.g. "lasso")
 #'
 #' @return A data frame containing the scores for all solvers and a composite score relating the target gene to each transcription factor
 #'
@@ -74,6 +75,13 @@ setMethod("getSolverName", "EnsembleSolver",
 #' target.gene <- "MEF2C"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
 #' tbl <- solve(trena, target.gene, tfs)
+#'
+#' # Solve the same problem, but supply extra arguments that change \code{alpha} for LASSO to 0.8 and also
+#' # Change the gene cutoff from 10% to 20%
+#' tbl <- solve(trena, target.gene, tfs, extraArgs = list("gene.cutoff" = 0.2, "lasso" = list("alpha" = 0.8)))
+#'
+#' # Solve the original problem with default cutoff and solver parameters, but use only 4 solvers
+#' tbl <- solve(trena, target.gene, tfs, extraArgs = list("solver.list" = c("lasso", "randomForest", "pearson", "bayesSpike")))
 
 setMethods("run", "EnsembleSolver",
 
@@ -81,7 +89,7 @@ setMethods("run", "EnsembleSolver",
 
                # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning               
                if(rowMeans(obj@mtx.assay)[target.gene] < quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                   
-                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")                   
+                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")                  
                }               
                
                # Specify defaults for gene cutoff and solver list
@@ -289,8 +297,6 @@ setMethods("run", "EnsembleSolver",
                                                scale = randomForest.scale)
                }
                
-#               browser()
-#               tbl.scale <- scale(tbl.scale)
                rownames(tbl.scale) <- tbl.all$gene
 
                # Transform via PCA and compute the ensemble score

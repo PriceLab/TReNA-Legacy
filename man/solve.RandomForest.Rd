@@ -7,11 +7,10 @@
 \alias{solve.RandomForest}
 \title{Run the Random Forest Solver}
 \usage{
-trena <- TReNA(mtx.assay, solver = "randomForest")
-tbl.out <- solve(trena, target.gene, tfs, tf.weights, extraArgs)
+tbl.out <- solve(obj, target.gene, tfs, tf.weights, extraArgs)
 }
 \arguments{
-\item{obj}{An object of class RandomForestSolver}
+\item{obj}{An object of class TReNA with "randomForest" as the solver string}
 
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 
@@ -44,5 +43,6 @@ Other solver methods: \code{\link{run,BayesSpikeSolver-method}},
   \code{\link{run,PearsonSolver-method}},
   \code{\link{run,RidgeSolver-method}},
   \code{\link{run,SpearmanSolver-method}},
-  \code{\link{run,SqrtLassoSolver-method}}
+  \code{\link{run,SqrtLassoSolver-method}},
+  \code{\link{solve.Ensemble}}
 }

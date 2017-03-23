@@ -57,10 +57,9 @@ setMethod("getSolverName", "RidgeSolver",
 #' for each transcription factor as a predictor of the target gene's expression level. 
 #'
 #' @usage
-#' trena <- TReNA(mtx.assay, solver = "ridge")
-#' tbl.out <- solve(trena, target.gene, tfs, tf.weights, extraArgs)
+#' tbl.out <- solve(obj, target.gene, tfs, tf.weights, extraArgs)
 #' 
-#' @param obj An object of class RidgeSolver
+#' @param obj An object of class TReNA with "ridge" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))

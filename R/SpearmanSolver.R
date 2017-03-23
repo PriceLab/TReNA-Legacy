@@ -63,10 +63,9 @@ setMethod("getSolverName", "SpearmanSolver",
 #' gene's expression level
 #'
 #' @usage
-#' trena <- TReNA(mtx.assay, solver = "spearman")
-#' tbl.out <- solve(trena, target.gene, tfs)
+#' tbl.out <- solve(obj, target.gene, tfs)
 #' 
-#' @param obj An object of class SpearmanSolver
+#' @param obj An object of class TReNA with "spearman" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #'

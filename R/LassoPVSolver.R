@@ -61,10 +61,9 @@ setMethod("getSolverName", "LassoPVSolver",
 #' for each transcription factor as a predictor of the target gene's expression level. 
 #'
 #' @usage
-#' trena <- TReNA(mtx.assay, solver = "lassopv")
-#' tbl.out <- solve(trena, target.gene, tfs)
+#' tbl.out <- solve(obj, target.gene, tfs)
 #' 
-#' @param obj An object of class LassoPVSolver
+#' @param obj An object of class TReNA with "lassopv" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #'

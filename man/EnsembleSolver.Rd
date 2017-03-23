@@ -2,7 +2,7 @@
 % Please edit documentation in R/EnsembleSolver.R
 \name{EnsembleSolver}
 \alias{EnsembleSolver}
-\title{Create a Solver class object using an ensemble approach}
+\title{Create a Solver class object using an ensemble of solvers}
 \usage{
 EnsembleSolver(mtx.assay = matrix(), quiet = TRUE)
 }
@@ -15,7 +15,7 @@ EnsembleSolver(mtx.assay = matrix(), quiet = TRUE)
 A Solver class object with Ensemble as the solver
 }
 \description{
-Create a Solver class object using an ensemble approach
+Create a Solver class object using an ensemble of solvers
 }
 \examples{
 solver <- EnsembleSolver()
