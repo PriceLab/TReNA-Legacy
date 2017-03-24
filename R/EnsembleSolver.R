@@ -211,21 +211,17 @@ setMethods("run", "EnsembleSolver",
                    ridge.scale <- mad(out.list$out.ridge$beta.ridge)
                }               
 
-               # Grab the top "how.many" genes for each solver
-               how.many <- round(length(tfs)*gene.cutoff)
-               all.genes <- character(length = 2*how.many)
-               top.list <- list()
-                   
-               while(length(all.genes) > gene.cutoff * length(tfs)){
+               # Grab all genes for each solver to start with
+               how.many <- length(tfs)
+               top.list <- lapply(out.list, function(x) head(x$gene, how.many))
+               all.genes <- unique(as.character(unlist(top.list)))
+               
+               # Run same thing in a while loop until the cutoff or 10 is reached    
+               while(length(all.genes) > gene.cutoff * length(tfs) & length(all.genes) > 10){
 
-                   # Grab the top "how.many" of each result
-                   for(i in 1:length(out.list)){
-                       top.list[[i]] <- head(out.list[[i]]$gene, how.many)
-                   }
-                   
-                   all.genes <- unique(unlist(top.list))
-
-                   how.many <- how.many - 1        
+                   how.many <- round(0.75*how.many)
+                   top.list <- lapply(out.list, function(x) head(x$gene, how.many))
+                   all.genes <- unique(as.character(unlist(top.list)))                                                         
                }
 
                # Pull out the specified genes

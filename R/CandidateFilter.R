@@ -38,6 +38,8 @@ setGeneric("getCandidates", signature="obj", function(obj,...) standardGeneric("
 #'
 #' @return An object of the Candidate filter class
 #'
+#' @export
+#' 
 #' @examples
 #' # Create an empty candidate filter
 #' candidate.filter <- CandidateFilter(mtx.assay = matrix(), quiet=TRUE)
