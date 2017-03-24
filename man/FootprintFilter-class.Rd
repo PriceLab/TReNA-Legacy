@@ -29,5 +29,6 @@ footprint.filter <- FootprintFilter(mtx.assay = mtx.sub)
 \code{\link{getCandidates-FootprintFilter}}
 
 Other Filtering Objects: \code{\link{NullFilter-class}},
+  \code{\link{OpenChromFilter-class}},
   \code{\link{VarianceFilter-class}}
 }

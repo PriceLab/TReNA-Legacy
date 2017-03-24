@@ -4,7 +4,7 @@
 \name{LassoSolver-class}
 \alias{LassoSolver-class}
 \alias{.LassoSolver}
-\title{An S4 class to represent a LASSO solver}
+\title{Class LassoSolver}
 \description{
-An S4 class to represent a LASSO solver
+Class LassoSolver
 }

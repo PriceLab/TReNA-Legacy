@@ -1,5 +1,4 @@
-#------------------------------------------------------------------------------------------------------------------------
-#' @title Class RandomForestSolver
+#' Class RandomForestSolver
 #'
 #' @import randomForest
 #' @include Solver.R

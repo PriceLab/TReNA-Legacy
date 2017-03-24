@@ -15,6 +15,9 @@
 \value{
 "RandomForestSolver"
 }
+\description{
+Class RandomForestSolver
+}
 \examples{
 solver <- RandomForestSolver()
 getSolverName(solver)

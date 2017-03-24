@@ -1,5 +1,5 @@
 #----------------------------------------------------------------------------------------------------
-#' An S4 class to represent a LASSO solver
+#' Class LassoSolver
 #'
 #' @import glmnet
 #' @include Solver.R

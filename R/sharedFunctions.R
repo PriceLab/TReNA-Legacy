@@ -41,9 +41,9 @@
      target <- as.numeric(mtx[target.gene,])
 
      if( length(tfs) == 1 ) {
-       fit = lm( target ~ features )
-       mtx.beta = coef(fit)
-       cor.target.feature = cor( target , features )[1,1]
+       fit = stats::lm( target ~ features )
+       mtx.beta = stats::coef(fit)
+       cor.target.feature = stats::cor( target , features )[1,1]
        mtx.beta = data.frame( beta = mtx.beta[2] , intercept = mtx.beta[1] , gene.cor = cor.target.feature )
        rownames(mtx.beta) = tfs
        if( keep.metrics == F ) return( mtx.beta )
@@ -86,7 +86,7 @@
              lambda.list[[i]] <- lambda
          }
          # Give lambda as 1 + 1se
-         lambda <- mean(lambda.list) + (sd(lambda.list)/sqrt(length(lambda.list)))
+         lambda <- mean(lambda.list) + (stats::sd(lambda.list)/sqrt(length(lambda.list)))
          
          fit <- glmnet(features, target, penalty.factor=tf.weights, alpha=alpha, lambda=lambda)
          
@@ -104,7 +104,7 @@
          }
 
     # extract the exponents of the fit
-    mtx.beta <- as.matrix( predict( fit , newx = features , type = "coef" , s = lambda ) )
+    mtx.beta <- as.matrix( stats::predict( fit , newx = features , type = "coef" , s = lambda ) )
     colnames(mtx.beta) <- "beta"
     deleters <- as.integer(which(mtx.beta[,1] == 0))
     if( all( mtx.beta[,1] == 0 ) ) return( data.frame() )
@@ -115,12 +115,12 @@
     intercept <- mtx.beta[1,1]    
     mtx.beta <- mtx.beta[-1, , drop=FALSE]    
     mtx.beta <- cbind(mtx.beta, intercept=rep(intercept, nrow(mtx.beta)))    
-    correlations.of.betas.to.targetGene <- unlist(lapply(rownames(mtx.beta), function(x) cor(mtx[x,], mtx[target.gene,])))
+    correlations.of.betas.to.targetGene <- unlist(lapply(rownames(mtx.beta), function(x) stats::cor(mtx[x,], mtx[target.gene,])))
     
 
      mtx.beta <- as.matrix(cbind( mtx.beta, gene.cor=correlations.of.betas.to.targetGene))
-     if(!obj@quiet)
-        plot(fit.nolambda, xvar='lambda', label=TRUE)
+     #if(!obj@quiet)
+     #   graphics::plot(fit.nolambda, xvar='lambda', label=TRUE)
 
      if( nrow(mtx.beta) > 1 ) {
         ordered.indices <- order(abs(mtx.beta[, "beta"]), decreasing=TRUE)

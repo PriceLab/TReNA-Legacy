@@ -1,5 +1,5 @@
 #----------------------------------------------------------------------------------------------------
-#' @title Class RidgeSolver
+#' Class RidgeSolver
 #'
 #' @include Solver.R
 #' @import glmnet

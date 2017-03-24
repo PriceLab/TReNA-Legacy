@@ -5,3 +5,6 @@
 \alias{RidgeSolver-class}
 \alias{.RidgeSolver}
 \title{Class RidgeSolver}
+\description{
+Class RidgeSolver
+}

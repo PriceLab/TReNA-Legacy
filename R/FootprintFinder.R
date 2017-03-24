@@ -187,7 +187,6 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
 #' @rdname FootprintFinder-class
 #' 
 #' @param obj An object of class FootprintFinder
-#'
 
 setMethod("closeDatabaseConnections", "FootprintFinder",
 
@@ -376,7 +375,7 @@ setMethod("getFootprintsForGene", "FootprintFinder",
 #' @aliases getFootprintsInRegion
 #' 
 #' @param obj An object of class FootprintFinder
-#' @param chromasome The name of the chromasome of interest
+#' @param chromosome The name of the chromosome of interest
 #' @param start An integer denoting the start of the desired region
 #' @param endpos An integer denoting the end of the desired region
 #'

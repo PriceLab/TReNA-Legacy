@@ -45,7 +45,7 @@ FootprintFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @aliases getCandidates-FootprintFilter
 #'
 #' @usage
-#' tfs <- getCandidates(footprint.filter, target.gene, genome.db.uri, projct.db.uri)
+#' tfs <- getCandidates(obj, target.gene, genome.db.uri, projct.db.uri)
 #' 
 #' @param obj An object of class FootprintFilter
 #' @param target.gene A designated target gene that should be part of the mtx.assay data

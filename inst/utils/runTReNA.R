@@ -112,6 +112,8 @@ function( obj , tflist , promoter_regions , verbose = 1 ) {
 #'
 #' @description Get the transription factor binding site counts for each promoter and cluster
 #'
+#' @import doParallel
+#' 
 #' @param tflist A list of transcription factors
 #' @param promoter_regions A list of promoter regions
 #' @param verbose A logical indicating whether the function should produce verbose output (default = 1)
@@ -220,7 +222,7 @@ getGenelistFromGtf <- function( genome.db.uri , project.db.uri ,
 #----------------------------------------------------------------------------------------------------
 #' Get Transcription Factor Binding Site Counts in Enhancers
 #'
-#' 
+#' @import doParallel
 
 getTfbsCountsInEnhancers <-
 function( tflist = NULL , genelist = NULL , enhancertype = "Hi-C" , verbose = 2 , 
@@ -423,6 +425,10 @@ runAllSolversForGene <- function(gene, mtx, candidate.tfs)
 
 } # runAllSolversForGene
 #----------------------------------------------------------------------------------------------------
+#' Make a TRN from promoter counts and expression
+#'
+#' @import doParallel
+
 makeTrnFromPromoterCountsAndExpression <- 
 function( counts , expr , method = "lasso" , alpha = 0.5 ,
    cores = NULL , center_and_scale = T , candidate_regulator_method = "quantile" ,
@@ -434,7 +440,7 @@ function( counts , expr , method = "lasso" , alpha = 0.5 ,
    expr = as.matrix(expr)
    if( center_and_scale == T ) {
       gene.mean = rowMeans(expr)
-      gene.sd = apply( expr , 1 , sd )
+      gene.sd = apply( expr , 1 , stats::sd )
       expr = ( expr - gene.mean ) / gene.sd
    }
 

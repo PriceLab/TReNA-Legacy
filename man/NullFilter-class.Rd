@@ -30,5 +30,6 @@ null.filter <- NullFilter(mtx.assay = mtx.sub)
 \code{\link{getCandidates-NullFilter}}
 
 Other Filtering Objects: \code{\link{FootprintFilter-class}},
+  \code{\link{OpenChromFilter-class}},
   \code{\link{VarianceFilter-class}}
 }

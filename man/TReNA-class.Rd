@@ -11,19 +11,10 @@
 \usage{
 TReNA(mtx.assay = matrix(), solver = "lasso", quiet = TRUE)
 }
-\value{
-An object of the TReNA class
-}
-\description{
-Class \code{TReNA} defines a TReNA object and contains an assay matrix, which contains expression data over a set of
-samples for a group of genes, and a string representing the name of a chosen solver.
-}
-\section{Slots}{
+\arguments{
+\item{mtx.assay}{An assay matrix of gene expression data}
 
-\describe{
-\item{\code{mtx.assay}}{An assay matrix of gene expression data}
-
-\item{\code{solver}}{A string matching the designated solver for relating a target gene to transcription factors. 
+\item{solver}{A string matching the designated solver for relating a target gene to transcription factors.
 TReNA currently supports 9 solver strings (default = "lasso"):
 \itemize{
 \item{\link[=solve.Lasso]{"lasso"}}
@@ -37,9 +28,17 @@ TReNA currently supports 9 solver strings (default = "lasso"):
 \item{\link[=solve.Ensemble]{"ensemble"}}
 }}
 
-\item{\code{quiet}}{A logical denoting whether or not the TReNA object should print output}
-}}
+\item{quiet}{A logical denoting whether or not the TReNA object should print output}
+}
+\value{
+An object of the TReNA class
+}
+\description{
+Class TReNA
 
+Class \code{TReNA} defines a TReNA object and contains an assay matrix, which contains expression data over a set of
+samples for a group of genes, and a string representing the name of a chosen solver.
+}
 \seealso{
 \code{\link{solve}}
 }

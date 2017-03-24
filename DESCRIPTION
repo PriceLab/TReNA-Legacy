@@ -14,7 +14,8 @@ Imports:
     foreach,
     doParallel,
     RPostgreSQL,
-    methods
+    methods,
+    RMySQL
 Depends:
     R (>= 3.2.3),
     utils,
@@ -40,6 +41,7 @@ Collate:
     'LassoPVSolver.R'
     'LassoSolver.R'
     'NullFilter.R'
+    'OpenChromFilter.R'
     'PearsonSolver.R'
     'RandomForestSolver.R'
     'RidgeSolver.R'
@@ -47,6 +49,5 @@ Collate:
     'SqrtLassoSolver.R'
     'TReNA.R'
     'VarianceFilter.R'
-    'runTReNA.R'
     'sharedFunctions.R'
 RoxygenNote: 6.0.1

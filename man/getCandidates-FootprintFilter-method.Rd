@@ -6,7 +6,7 @@
 \alias{getCandidates-FootprintFilter}
 \title{Get candidate genes using the variance filter}
 \usage{
-tfs <- getCandidates(footprint.filter, target.gene, genome.db.uri, projct.db.uri)
+tfs <- getCandidates(obj, target.gene, genome.db.uri, projct.db.uri)
 }
 \arguments{
 \item{obj}{An object of class FootprintFilter}
@@ -47,5 +47,6 @@ tfs <- getCandidates(footprint.filter, target.gene, genome.db.uri, project.db.ur
 \code{\link{FootprintFilter}}
 
 Other getCandidate Methods: \code{\link{getCandidates,NullFilter-method}},
+  \code{\link{getCandidates,OpenChromFilter-method}},
   \code{\link{getCandidates,VarianceFilter-method}}
 }

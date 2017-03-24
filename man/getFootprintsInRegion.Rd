@@ -11,9 +11,9 @@
 \arguments{
 \item{obj}{An object of class FootprintFinder}
 
-\item{start}{An integer denoting the start of the desired region}
+\item{chromosome}{The name of the chromosome of interest}
 
-\item{chromasome}{The name of the chromasome of interest}
+\item{start}{An integer denoting the start of the desired region}
 
 \item{endpos}{An integer denoting the end of the desired region}
 }

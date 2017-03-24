@@ -3,6 +3,8 @@
 #'
 #' @include Solver.R
 #' @import methods
+#' @import stats
+#' @import utils
 #' 
 #' @name EnsembleSolver-class
 #'

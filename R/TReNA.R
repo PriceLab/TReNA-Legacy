@@ -1,37 +1,11 @@
 #' Class TReNA
 #'
-#' @description
-#' Class \code{TReNA} defines a TReNA object and contains an assay matrix, which contains expression data over a set of
-#' samples for a group of genes, and a string representing the name of a chosen solver. 
-#'
 #' @name TReNA-class
 #' @rdname TReNA-class
 #' @aliases TReNA
 #'
 #' @import methods
-#' 
-#' @slot mtx.assay An assay matrix of gene expression data
-#' @slot solver A string matching the designated solver for relating a target gene to transcription factors. 
-#' TReNA currently supports 9 solver strings (default = "lasso"):
-#' \itemize{
-#' \item{\link[=solve.Lasso]{"lasso"}}
-#' \item{\link[=solve.Ridge]{"ridge"}}
-#' \item{\link[=solve.RandomForest]{"randomForest"}}
-#' \item{\link[=solve.BayesSpike]{"bayesSpike"}}
-#' \item{\link[=solve.SqrtLasso]{"sqrtlasso"}}
-#' \item{\link[=solve.LassoPV]{"lassopv"}}
-#' \item{\link[=solve.Pearson]{"pearson"}}
-#' \item{\link[=solve.Spearman]{"spearman"}}
-#' \item{\link[=solve.Ensemble]{"ensemble"}}
-#' }
-#' 
-#' @slot quiet A logical denoting whether or not the TReNA object should print output
-#' 
-#' @return An object of the TReNA class
-#'
-#' @seealso \code{\link{solve}}
 
-#----------------------------------------------------------------------------------------------------
 .TReNA <- setClass ("TReNA",
                     representation = representation(solver="Solver",
                                                     quiet="logical")
@@ -46,9 +20,34 @@ setGeneric("solve",                    signature="obj", function(obj, target.gen
                                                            standardGeneric ("solve"))
 #----------------------------------------------------------------------------------------------------
 #' @title Class TReNA
+#'
+#' @description
+#' Class \code{TReNA} defines a TReNA object and contains an assay matrix, which contains expression data over a set of
+#' samples for a group of genes, and a string representing the name of a chosen solver.
+#' 
 #' @name TReNA-class
 #' @rdname TReNA-class
 #' @export
+#'
+#' @param mtx.assay An assay matrix of gene expression data
+#' @param solver A string matching the designated solver for relating a target gene to transcription factors.
+#' TReNA currently supports 9 solver strings (default = "lasso"):
+#' \itemize{
+#' \item{\link[=solve.Lasso]{"lasso"}}
+#' \item{\link[=solve.Ridge]{"ridge"}}
+#' \item{\link[=solve.RandomForest]{"randomForest"}}
+#' \item{\link[=solve.BayesSpike]{"bayesSpike"}}
+#' \item{\link[=solve.SqrtLasso]{"sqrtlasso"}}
+#' \item{\link[=solve.LassoPV]{"lassopv"}}
+#' \item{\link[=solve.Pearson]{"pearson"}}
+#' \item{\link[=solve.Spearman]{"spearman"}}
+#' \item{\link[=solve.Ensemble]{"ensemble"}}
+#' }
+#' @param quiet A logical denoting whether or not the TReNA object should print output
+#'
+#' @return An object of the TReNA class
+#'
+#' @seealso \code{\link{solve}}
 
 TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 {

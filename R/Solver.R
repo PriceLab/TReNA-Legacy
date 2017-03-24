@@ -53,7 +53,7 @@ Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 
     # If a matrix is supplied, check the distribution to see if it's too big
     if(!is.na(max(mtx.assay))){        
-        mtx.ratio <- (max(mtx.assay) - quantile(mtx.assay,0.75))/(quantile(mtx.assay,0.75) - median(mtx.assay))        
+        mtx.ratio <- (max(mtx.assay) - stats::quantile(mtx.assay,0.75))/(stats::quantile(mtx.assay,0.75) - stats::median(mtx.assay))        
         if(mtx.ratio > 1000){                    
             warning("Assay matrix may contain highly skewed data; consider transforming your matrix.")
             }

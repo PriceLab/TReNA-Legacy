@@ -45,9 +45,10 @@ NullFilter <- function(mtx.assay=matrix(), quiet = TRUE)
 #' @aliases getCandidates-NullFilter
 #'
 #' @usage
-#' tfs <- getCandidates(null.filter)
+#' tfs <- getCandidates(obj)
 #' 
 #' @param obj An object of class NullFilter
+#' 
 #' @return A vector containing all genes in the assay matrix
 #'
 #' @seealso \code{\link{NullFilter}}

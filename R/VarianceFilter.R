@@ -47,7 +47,7 @@ VarianceFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @aliases getCandidates-VarianceFilter
 #'
 #' @usage
-#' tfs <- getCandidates(variance.filter, target.gene, var.size)
+#' tfs <- getCandidates(obj, target.gene, var.size)
 #' 
 #' @param obj An object of class VarianceFilter
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
@@ -79,8 +79,8 @@ setMethod("getCandidates", "VarianceFilter",
 	target.mtx <- obj@mtx.assay[which(rownames(obj@mtx.assay) == target.gene),]
 
 	# Find the variances
-	tf.var <- apply(tf.mtx,1,var)
-	target.var <- var(target.mtx)
+	tf.var <- apply(tf.mtx,1,stats::var)
+	target.var <- stats::var(target.mtx)
 
 	# Return only the genes with variances within 50% of target gene variance
 	return(names(which(tf.var > (1-var.size)*target.var & tf.var < (1+var.size)*target.var)))

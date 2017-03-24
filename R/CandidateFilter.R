@@ -1,8 +1,4 @@
-#' @title Class CandidateFilter
-#'
-#' @description
-#' An S4 class to represent a gene candidate filter. These filters can employ a variety of methods
-#' to reduce the number of transcription factors used as predictors for solving a TReNA object.
+#' Class CandidateFilter
 #'
 #' @import methods
 #' 
@@ -30,8 +26,12 @@ setGeneric("getCandidates", signature="obj", function(obj,...) standardGeneric("
 
 #----------------------------------------------------------------------------------------------------
 #' @title Class CandidateFilter
-#' @name CandidateFilter-Class
-#' @rdname CandidateFilter-Class
+#' @name CandidateFilter-class
+#' @rdname CandidateFilter-class
+#'
+#' @description
+#' A CandidateFilter is an S4 class to represent a gene candidate filter. These filters can employ a variety of methods
+#' to reduce the number of transcription factors used as predictors for solving a TReNA object.
 #'
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the CandidateFilter object should print output
