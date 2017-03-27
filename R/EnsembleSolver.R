@@ -3,8 +3,6 @@
 #'
 #' @include Solver.R
 #' @import methods
-#' @import stats
-#' @import utils
 #' 
 #' @name EnsembleSolver-class
 #'
@@ -90,7 +88,7 @@ setMethods("run", "EnsembleSolver",
            function(obj, target.gene, tfs, extraArgs = list()){
 
                # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning               
-               if(rowMeans(obj@mtx.assay)[target.gene] < quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                   
+               if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                   
                    warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")                  
                }               
                
@@ -138,8 +136,8 @@ setMethods("run", "EnsembleSolver",
                    out.list$out.lasso <- out.list$out.lasso[, c("beta","gene")]                   
                    rownames(out.list$out.lasso) <- NULL
                    names(out.list$out.lasso) <- c("beta.lasso", "gene")
-                   lasso.med <- median(out.list$out.lasso$beta.lasso)
-                   lasso.scale <- mad(out.list$out.lasso$beta.lasso)
+                   lasso.med <- stats::median(out.list$out.lasso$beta.lasso)
+                   lasso.scale <- stats::mad(out.list$out.lasso$beta.lasso)
                }               
 
                # Output randomForest IncNodePurity
@@ -149,7 +147,7 @@ setMethods("run", "EnsembleSolver",
                    out.list$out.randomForest <- out.list$out.randomForest[, c("IncNodePurity","gene")]
                    rownames(out.list$out.randomForest) <- NULL
                    names(out.list$out.randomForest) <- c("rf.score", "gene")
-                   randomForest.med <- median(out.list$out.randomForest$rf.score)
+                   randomForest.med <- stats::median(out.list$out.randomForest$rf.score)
                    randomForest.scale <- sqrt(mean(
                        out.list$out.randomForest$rf.score*out.list$out.randomForest$rf.score))
                }
@@ -160,8 +158,8 @@ setMethods("run", "EnsembleSolver",
                    rownames(out.list$out.bayesSpike) <- NULL
                    out.list$out.bayesSpike <- out.list$out.bayesSpike[, c("z", "gene")]
                    names(out.list$out.bayesSpike) <- c("bayes.z", "gene")
-                   bayesSpike.med <- median(out.list$out.bayesSpike$bayes.z)
-                   bayesSpike.scale <- mad(out.list$out.bayesSpike$bayes.z)
+                   bayesSpike.med <- stats::median(out.list$out.bayesSpike$bayes.z)
+                   bayesSpike.scale <- stats::mad(out.list$out.bayesSpike$bayes.z)
                }
 
                # Pearson
@@ -169,8 +167,8 @@ setMethods("run", "EnsembleSolver",
                    out.list$out.pearson$gene <- rownames(out.list$out.pearson)                   
                    rownames(out.list$out.pearson) <- NULL
                    names(out.list$out.pearson) <- c("pearson.coeff","gene")
-                   pearson.med <- median(out.list$out.pearson$pearson.coeff)
-                   pearson.scale <- mad(out.list$out.pearson$pearson.coeff)
+                   pearson.med <- stats::median(out.list$out.pearson$pearson.coeff)
+                   pearson.scale <- stats::mad(out.list$out.pearson$pearson.coeff)
                }
                
                #Spearman
@@ -178,8 +176,8 @@ setMethods("run", "EnsembleSolver",
                    out.list$out.spearman$gene <- rownames(out.list$out.spearman)
                    rownames(out.list$out.spearman) <- NULL
                    names(out.list$out.spearman) <- c("spearman.coeff", "gene")
-                   spearman.med <- median(out.list$out.spearman$spearman.coeff)
-                   spearman.scale <- mad(out.list$out.spearman$spearman.coeff)
+                   spearman.med <- stats::median(out.list$out.spearman$spearman.coeff)
+                   spearman.scale <- stats::mad(out.list$out.spearman$spearman.coeff)
                }
                
                #LassoPV
@@ -189,7 +187,7 @@ setMethods("run", "EnsembleSolver",
                    out.list$out.lassopv <- out.list$out.lassopv[, c("p.values","gene")]
                    names(out.list$out.lassopv) <- c("lasso.p.value", "gene")
                    p.log10 <- -log10(out.list$out.lassopv$lasso.p.value)
-                   lassopv.med <- median(p.log10)
+                   lassopv.med <- stats::median(p.log10)
                    lassopv.scale <- sqrt(mean(p.log10*p.log10))
                }
 
@@ -199,8 +197,8 @@ setMethods("run", "EnsembleSolver",
                    rownames(out.list$out.sqrtlasso) <- NULL
                    out.list$out.sqrtlasso <- out.list$out.sqrtlasso[, c("beta", "gene")]
                    names(out.list$out.sqrtlasso) <- c("beta.sqrtlasso", "gene")
-                   sqrtlasso.med <- median(out.list$out.sqrtlasso$beta.sqrtlasso)
-                   sqrtlasso.scale <- mad(out.list$out.sqrtlasso$beta.sqrtlasso)
+                   sqrtlasso.med <- stats::median(out.list$out.sqrtlasso$beta.sqrtlasso)
+                   sqrtlasso.scale <- stats::mad(out.list$out.sqrtlasso$beta.sqrtlasso)
                }
                
                #Ridge
@@ -209,8 +207,8 @@ setMethods("run", "EnsembleSolver",
                    out.list$out.ridge <- out.list$out.ridge[, c("beta","gene")]
                    rownames(out.list$out.ridge) <- NULL
                    names(out.list$out.ridge) <- c("beta.ridge", "gene")
-                   ridge.med <- median(out.list$out.ridge$beta.ridge)
-                   ridge.scale <- mad(out.list$out.ridge$beta.ridge)
+                   ridge.med <- stats::median(out.list$out.ridge$beta.ridge)
+                   ridge.scale <- stats::mad(out.list$out.ridge$beta.ridge)
                }               
 
                # Grab all genes for each solver to start with
@@ -222,7 +220,7 @@ setMethods("run", "EnsembleSolver",
                while(length(all.genes) > gene.cutoff * length(tfs) & length(all.genes) > 10){
 
                    how.many <- round(0.75*how.many)
-                   top.list <- lapply(out.list, function(x) head(x$gene, how.many))
+                   top.list <- lapply(out.list, function(x) utils::head(x$gene, how.many))
                    all.genes <- unique(as.character(unlist(top.list)))                                                         
                }
 
@@ -298,7 +296,7 @@ setMethods("run", "EnsembleSolver",
                rownames(tbl.scale) <- tbl.all$gene
 
                # Transform via PCA and compute the ensemble score
-               pca <- prcomp(tbl.scale, center=FALSE, scale.=FALSE)
+               pca <- stats::prcomp(tbl.scale, center=FALSE, scale.=FALSE)
                extr <- apply(pca$x[,pca$sdev > 0.1],1, function(x) {sqrt(mean(x*x))})
                extr <- as.data.frame(extr)
                extr$gene <- rownames(extr)

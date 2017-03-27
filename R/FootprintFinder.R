@@ -6,9 +6,6 @@
 #' FootprintFinder class is mainly used by the FootprintFilter class, but the FootprintFinder class
 #' offers more flexibility in constructing queries. 
 #'
-#' @import RPostgreSQL
-#' @import RSQLite
-#' @import GenomicRanges
 #' @import methods
 #' 
 #' @name FootprintFinder-class
@@ -108,18 +105,18 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
    if(genome.db.info$brand == "postgres"){
       host <- genome.db.info$host
       dbname <- genome.db.info$name
-      driver <- PostgreSQL()
-      genome.db <- dbConnect(driver, user= "trena", password="trena", dbname=dbname, host=host)
-      existing.databases <- dbGetQuery(genome.db, "select datname from pg_database")[,1]
+      driver <- RPostgreSQL::PostgreSQL()
+      genome.db <- DBI::dbConnect(driver, user= "trena", password="trena", dbname=dbname, host=host)
+      existing.databases <- DBI::dbGetQuery(genome.db, "select datname from pg_database")[,1]
       stopifnot(dbname %in% existing.databases)
-      dbDisconnect(genome.db)
-      genome.db <- dbConnect(driver, user="trena", password="trena", dbname=dbname, host=host)
+      DBI::dbDisconnect(genome.db)
+      genome.db <- DBI::dbConnect(driver, user="trena", password="trena", dbname=dbname, host=host)
       expected.tables <- c("gtf", "motifsgenes")
-      stopifnot(all(expected.tables %in% dbListTables(genome.db)))
+      stopifnot(all(expected.tables %in% DBI::dbListTables(genome.db)))
       if(!quiet){
-         row.count <- dbGetQuery(genome.db, "select count(*) from gtf")[1,1]
+         row.count <- DBI::dbGetQuery(genome.db, "select count(*) from gtf")[1,1]
          printf("%s: %d rows", sprintf("%s/gtf", genome.database.uri), row.count)
-         row.count <- dbGetQuery(genome.db, "select count(*) from motifsgenes")[1,1]
+         row.count <- DBI::dbGetQuery(genome.db, "select count(*) from motifsgenes")[1,1]
          printf("%s: %d rows", sprintf("%s/motifsgenes", genome.database.uri), row.count)
 
          }
@@ -129,16 +126,16 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
    if(project.db.info$brand == "postgres"){
       host <- project.db.info$host
       dbname <- project.db.info$name
-      driver <- PostgreSQL()
-      project.db <- dbConnect(driver, user= "trena", password="trena", dbname=dbname, host=host)
-      existing.databases <- dbGetQuery(project.db, "select datname from pg_database")[,1]
+      driver <- RPostgreSQL::PostgreSQL()
+      project.db <- DBI::dbConnect(driver, user= "trena", password="trena", dbname=dbname, host=host)
+      existing.databases <- DBI::dbGetQuery(project.db, "select datname from pg_database")[,1]
       stopifnot(dbname %in% existing.databases)
-      dbDisconnect(project.db)
-      project.db <- dbConnect(driver, user="trena", password="trena", dbname=dbname, host=host)
+      DBI::dbDisconnect(project.db)
+      project.db <- DBI::dbConnect(driver, user="trena", password="trena", dbname=dbname, host=host)
       expected.tables <- c("regions", "hits")
-      stopifnot(all(expected.tables %in% dbListTables(project.db)))
+      stopifnot(all(expected.tables %in% DBI::dbListTables(project.db)))
       if(!quiet){
-         row.count <- dbGetQuery(project.db, "select count(*) from regions")[1,1]
+         row.count <- DBI::dbGetQuery(project.db, "select count(*) from regions")[1,1]
          printf("%s: %d rows", sprintf("%s/regions", project.database.uri), row.count)
          }
    } # if postgres
@@ -146,15 +143,15 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
      # open the genome database
    if(genome.db.info$brand == "sqlite"){
       dbname <- paste(genome.db.info$host, genome.db.info$name, sep = "/")
-      driver <- SQLite()
-      genome.db <- dbConnect(driver, dbname=dbname)
+      driver <- RSQLite::SQLite()
+      genome.db <- DBI::dbConnect(driver, dbname=dbname)
       stopifnot(file.exists(dbname))
       expected.tables <- c("gtf", "motifsgenes")
-      stopifnot(all(expected.tables %in% dbListTables(genome.db)))
+      stopifnot(all(expected.tables %in% DBI::dbListTables(genome.db)))
       if(!quiet){
-         row.count <- dbGetQuery(genome.db, "select count(*) from gtf")[1,1]
+         row.count <- DBI::dbGetQuery(genome.db, "select count(*) from gtf")[1,1]
          printf("%s: %d rows", sprintf("%s/gtf", genome.database.uri), row.count)
-         row.count <- dbGetQuery(genome.db, "select count(*) from motifsgenes")[1,1]
+         row.count <- DBI::dbGetQuery(genome.db, "select count(*) from motifsgenes")[1,1]
          printf("%s: %d rows", sprintf("%s/motifsgenes", genome.database.uri), row.count)
 
          }
@@ -163,13 +160,13 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
       # open the project database
    if(project.db.info$brand == "sqlite"){
       dbname <- paste(project.db.info$host, project.db.info$name, sep = "/")
-      driver <- SQLite()
-      project.db <- dbConnect(driver, dbname = dbname)
+      driver <- RSQLite::SQLite()
+      project.db <- DBI::dbConnect(driver, dbname = dbname)
       stopifnot(file.exists(dbname))
       expected.tables <- c("regions", "hits")
-      stopifnot(all(expected.tables %in% dbListTables(project.db)))
+      stopifnot(all(expected.tables %in% DBI::dbListTables(project.db)))
       if(!quiet){
-         row.count <- dbGetQuery(project.db, "select count(*) from regions")[1,1]
+         row.count <- DBI::dbGetQuery(project.db, "select count(*) from regions")[1,1]
          printf("%s: %d rows", sprintf("%s/regions", project.database.uri), row.count)
          }
    } # if sqlite
@@ -192,9 +189,9 @@ setMethod("closeDatabaseConnections", "FootprintFinder",
 
      function(obj){
         if("DBIConnection" %in% is(obj@genome.db))
-          dbDisconnect(obj@genome.db)
+          DBI::dbDisconnect(obj@genome.db)
         if("DBIConnection" %in% is(obj@project.db))
-          dbDisconnect(obj@project.db)
+          DBI::dbDisconnect(obj@project.db)
           })
 
 #----------------------------------------------------------------------------------------------------
@@ -217,7 +214,7 @@ setMethod("closeDatabaseConnections", "FootprintFinder",
 setMethod("getGtfGeneBioTypes", "FootprintFinder",
 
      function(obj){
-        sort(dbGetQuery(obj@genome.db, "select distinct gene_biotype from gtf")[,1])
+        sort(DBI::dbGetQuery(obj@genome.db, "select distinct gene_biotype from gtf")[,1])
         })
 
 #----------------------------------------------------------------------------------------------------
@@ -240,7 +237,7 @@ setMethod("getGtfGeneBioTypes", "FootprintFinder",
 setMethod("getGtfMoleculeTypes", "FootprintFinder",
 
      function(obj){
-        sort(dbGetQuery(obj@genome.db, "select distinct moleculetype from gtf")[,1])
+        sort(DBI::dbGetQuery(obj@genome.db, "select distinct moleculetype from gtf")[,1])
         })
 
 #----------------------------------------------------------------------------------------------------
@@ -271,7 +268,7 @@ setMethod("getChromLoc", "FootprintFinder",
                      sprintf("(gene_name='%s' or gene_id='%s') ", name, name),
                      sprintf("and gene_biotype='%s' and moleculetype='%s'", biotype, moleculetype),
                      collapse=" ")
-     dbGetQuery(obj@genome.db, query)
+     DBI::dbGetQuery(obj@genome.db, query)
      })
 
 #----------------------------------------------------------------------------------------------------
@@ -377,7 +374,7 @@ setMethod("getFootprintsForGene", "FootprintFinder",
 #' @param obj An object of class FootprintFinder
 #' @param chromosome The name of the chromosome of interest
 #' @param start An integer denoting the start of the desired region
-#' @param endpos An integer denoting the end of the desired region
+#' @param end An integer denoting the end of the desired region
 #'
 #' @export
 #' 
@@ -389,12 +386,12 @@ setMethod("getFootprintsInRegion", "FootprintFinder",
        query.p0 <- "select loc, chrom, start, endpos from regions"
        query.p1 <- sprintf("where chrom='%s' and start >= %d and endpos <= %d", chromosome, start, end)
        query.regions <- paste(query.p0, query.p1)
-       tbl.regions <- dbGetQuery(obj@project.db, query.regions)
+       tbl.regions <- DBI::dbGetQuery(obj@project.db, query.regions)
        if(nrow(tbl.regions) == 0)
           return(data.frame())
        loc.set <- sprintf("('%s')", paste(tbl.regions$loc, collapse="','"))
        query.hits <- sprintf("select * from hits where loc in %s", loc.set)
-       tbl.hits <- dbGetQuery(obj@project.db, query.hits)
+       tbl.hits <- DBI::dbGetQuery(obj@project.db, query.hits)
        tbl.out <- merge(tbl.regions, tbl.hits, on="loc")
        unique(tbl.out)
 
@@ -438,7 +435,7 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
    paste( "select gene_name, gene_id, chr, start, endpos, strand from gtf where" ,
         "gene_biotype='protein_coding' and moleculetype='gene'" , sep=" " )
 
-   genes = dbGetQuery( obj@genome.db , query )
+   genes = DBI::dbGetQuery( obj@genome.db , query )
 
    # function to get each transcript's TSS
    get_tss <-
@@ -466,7 +463,7 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
         gene_name = genes$gene_name ,
         gene_id = genes$gene_id ))
    # GRanges obj
-   gr = makeGRangesFromDataFrame( promoter_regions , keep.extra.columns = T )
+   gr = GenomicRanges::makeGRangesFromDataFrame( promoter_regions , keep.extra.columns = T )
    if( use_gene_ids == F ) names(gr) = promoter_regions$gene_name
    if( use_gene_ids == T ) names(gr) = promoter_regions$gene_id
    return( gr )
@@ -502,7 +499,7 @@ setMethod("mapMotifsToTFsMergeIntoTable", "FootprintFinder",
          return(tbl)
       collected.motifs <- sprintf("('%s')", paste(motifs, collapse="','"))
       query.string <- sprintf("select * from motifsgenes where motif in %s", collected.motifs)
-      tbl.mtf <- dbGetQuery(obj@genome.db, query.string)
+      tbl.mtf <- DBI::dbGetQuery(obj@genome.db, query.string)
       tbl.out <- merge(tbl, tbl.mtf, by.x='name', by.y='motif')
       tbl.out
       })

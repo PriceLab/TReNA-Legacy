@@ -8,7 +8,6 @@
 #'
 #' @include CandidateFilter.R
 #' @import methods
-#' @import RMySQL
 #' 
 #' @name OpenChromFilter-class
 #' @rdname OpenChromFilter-class
@@ -73,11 +72,11 @@ setMethod("getCandidates", "OpenChromFilter",
 
     function(obj,chromosome, start, end){
         # Connect to the UCSC MySQL hg38 database
-        driver <- MySQL()
+        driver <- RMySQL::MySQL()
         host <- "genome-mysql.cse.ucsc.edu"
         user <- "genome"
         dbname <- "hg38"
-        ucsc.db <- dbConnect(driver, user = user, host = host, dbname = dbname)
+        ucsc.db <- DBI::dbConnect(driver, user = user, host = host, dbname = dbname)
 
         # Pull out the regions corresponding to the region in the ENCODE
         query <- paste("select chrom, chromStart, chromEnd from wgEncodeRegDnaseClustered where",
@@ -85,8 +84,8 @@ setMethod("getCandidates", "OpenChromFilter",
                        sprintf("and chromStart >= %d", start),
                        sprintf("and chromEnd <= %d", end),
                        collapse = " ")
-        regions <- dbGetQuery(ucsc.db, query)
-        dbDisconnect(ucsc.db)
+        regions <- DBI::dbGetQuery(ucsc.db, query)
+        DBI::dbDisconnect(ucsc.db)
 
         # Convert the regions to motifs using FIMO
         

@@ -15,7 +15,7 @@
 
 \item{start}{An integer denoting the start of the desired region}
 
-\item{endpos}{An integer denoting the end of the desired region}
+\item{end}{An integer denoting the end of the desired region}
 }
 \value{
 A dataframe containing all footprints for the specified region

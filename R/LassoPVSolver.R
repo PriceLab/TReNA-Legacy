@@ -89,7 +89,12 @@ setMethod("run", "LassoPVSolver",
               if(length(tfs) == 0)                  
                   return(data.frame())              
 
-        # we don't try to handle tf self-regulation
+              # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning         
+              if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                 
+                  warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")            
+              }
+              
+              # we don't try to handle tf self-regulation           
               deleters <- grep(target.gene, tfs)
               if(length(deleters) > 0){                  
                   tfs <- tfs[-deleters]                  
@@ -111,7 +116,7 @@ setMethod("run", "LassoPVSolver",
 
               # Add pearson correlations and make a data frame              
               correlations.of.betas.to.targetGene <- unlist(lapply(names(fit),
-                                                                   function(x) cor(mtx[x,], mtx[target.gene,])))
+                                                                   function(x) stats::cor(mtx[x,], mtx[target.gene,])))
               tbl <- data.frame(row.names = names(fit),
                                 p.values = fit,
                                 gene.cor=correlations.of.betas.to.targetGene)

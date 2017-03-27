@@ -130,8 +130,8 @@
      mtx.beta = as.data.frame(mtx.beta)
 
      if( keep.metrics == TRUE ) {
-        pred.values = predict( fit , newx = features , s = lambda , type = "link" )
-        r2 = (cor( target , pred.values )[1,1])^2
+        pred.values = stats::predict( fit , newx = features , s = lambda , type = "link" )
+        r2 = (stats::cor( target , pred.values )[1,1])^2
         return( list( mtx.beta = mtx.beta , lambda = lambda , r2 = r2 ) )
      }
 

@@ -6,7 +6,7 @@
 \alias{getCandidates-FootprintFilter}
 \title{Get candidate genes using the variance filter}
 \usage{
-tfs <- getCandidates(obj, target.gene, genome.db.uri, projct.db.uri)
+tfs <- getCandidates(obj, target.gene, genome.db.uri, project.db.uri, size.upstream, size.downstream)
 }
 \arguments{
 \item{obj}{An object of class FootprintFilter}

@@ -86,7 +86,7 @@ setMethod("run", "RandomForestSolver",
   function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs), extraArgs=list())){
 
       # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning      
-      if(rowMeans(obj@mtx.assay)[target.gene] < quantile(rowMeans(obj@mtx.assay), probs = 0.1)){          
+      if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){          
           warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")          
       }      
       
@@ -108,9 +108,9 @@ setMethod("run", "RandomForestSolver",
 
      fit <- randomForest( x = x, y = y )
      edges = as.data.frame(fit$importance)
-     pred.values = predict(fit)
-     r2 = cor(pred.values , mtx[target.gene,])^2
-     gene.cor <- sapply(rownames(edges), function(tf) cor(mtx[tf,], mtx[target.gene,]))
+     pred.values = stats::predict(fit)
+     r2 = stats::cor(pred.values , mtx[target.gene,])^2
+     gene.cor <- sapply(rownames(edges), function(tf) stats::cor(mtx[tf,], mtx[target.gene,]))
      edges$gene.cor <- gene.cor
      edges <- edges[order(edges$IncNodePurity, decreasing=TRUE),]
      return(list(edges = edges , r2 = r2))

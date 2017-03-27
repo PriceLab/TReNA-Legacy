@@ -78,7 +78,7 @@ setMethod("getSolverName", "SqrtLassoSolver",
 #' @family solver methods
 #'
 #' @examples
-#' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
+#' # Load included Alzheimer's data, create a TReNA object with Square Root LASSO as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 #' trena <- TReNA(mtx.assay = mtx.sub, solver = "sqrtlasso")
 #' target.gene <- "MEF2C"
@@ -93,7 +93,7 @@ setMethod("run", "SqrtLassoSolver",
                   return(data.frame())              
 
               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
-              if(rowMeans(obj@mtx.assay)[target.gene] < quantile(rowMeans(obj@mtx.assay), probs = 0.1)){
+              if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){
 
                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
                   }
@@ -127,9 +127,9 @@ setMethod("run", "SqrtLassoSolver",
               target <- as.numeric(mtx[target.gene,])
               
               if( length(tfs) == 1 ) {                  
-                  fit = lm( target ~ features )                  
-                  mtx.beta = coef(fit)                  
-                  cor.target.feature = cor( target , features )[1,1]                 
+                  fit = stats::lm( target ~ features )                  
+                  mtx.beta = stats::coef(fit)                  
+                  cor.target.feature = stats::cor( target , features )[1,1]                 
                   mtx.beta = data.frame( beta = mtx.beta[2] , intercept = mtx.beta[1] , gene.cor = cor.target.feature )                  
                   rownames(mtx.beta) = tfs                  
                   return( mtx.beta )                  
@@ -145,12 +145,12 @@ setMethod("run", "SqrtLassoSolver",
 
                   # Do this in parallel if possible
                   if(is.null(num.cores))                      
-                      num.cores <- detectCores()/2
+                      num.cores <- parallel::detectCores()/2
                   
-                  cl <- makeForkCluster(nnodes = num.cores)
-                  registerDoParallel(cl)
+                  cl <- parallel::makeForkCluster(nnodes = num.cores)
+                  doParallel::registerDoParallel(cl)
                   
-                  lambda.list <- foreach(i = 1:30) %dopar% {
+                  lambda.list <- foreach::foreach(i = 1:30) %dopar% {
 
                       # Do a binary search
                       step.size <- lambda/2 # Start at 0.5
@@ -176,7 +176,7 @@ setMethod("run", "SqrtLassoSolver",
 
               lambda.list <- unlist(lambda.list)
               stopCluster(cl)
-              lambda <- mean(lambda.list) + (sd(lambda.list)/sqrt(length(lambda.list)))
+              lambda <- mean(lambda.list) + (stats::sd(lambda.list)/sqrt(length(lambda.list)))
 
               # Run square root lasso and return an object of class "slim"              
               fit <- slim(features, target, method = "lq", lambda = lambda, verbose=FALSE)
@@ -195,7 +195,7 @@ setMethod("run", "SqrtLassoSolver",
               
               #browser()              
               correlations.of.betas.to.targetGene <- unlist(lapply(rownames(mtx.beta),
-                                                                   function(x) cor(mtx[x,], mtx[target.gene,])))
+                                                                   function(x) stats::cor(mtx[x,], mtx[target.gene,])))
 
               mtx.beta <- as.matrix(cbind( mtx.beta, gene.cor=correlations.of.betas.to.targetGene))
 #              if(!obj@quiet)

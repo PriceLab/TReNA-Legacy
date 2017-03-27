@@ -86,7 +86,7 @@ setMethod("run", "PearsonSolver",
           function (obj, target.gene, tfs){
 
               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning              
-              if(rowMeans(obj@mtx.assay)[target.gene] < quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                  
+              if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                  
                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")                  
               }
               
@@ -110,7 +110,7 @@ setMethod("run", "PearsonSolver",
               y = as.vector(t(mtx[target.gene,])) # Make target gene levels into a vector
 
               # Calculate Pearson correlation coefficients
-              fit <- cor( x = x, y = y)
+              fit <- stats::cor( x = x, y = y)
 
               # Return the coefficients as a data frame 
               tbl <- data.frame(row.names = rownames(fit)[order(abs(fit), decreasing = TRUE)],
