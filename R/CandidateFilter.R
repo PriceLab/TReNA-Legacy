@@ -22,7 +22,7 @@
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
 #' @export
-setGeneric("getCandidates", signature="obj", function(obj,...) standardGeneric("getCandidates"))
+setGeneric("getCandidates", signature="obj", function(obj,extraArgs) standardGeneric("getCandidates"))
 
 #----------------------------------------------------------------------------------------------------
 #' @title Class CandidateFilter

@@ -56,11 +56,12 @@ setMethod("getSolverName", "EnsembleSolver",
 #' @description Given a TReNA object with Ensemble as the solver and a list of solvers (default = "all.solvers"), estimate coefficients for each transcription factor as a predictor of the target gene's expression level. The final scores for the ensemble method combine all specified solvers to create a composite score for each transcription factor. 
 #'
 #' @usage
-#' tbl.out <- solve(obj, target.gene, tfs, extraArgs)
+#' solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
 #' 
 #' @param obj An object of class TReNA with "ensemble" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene
+#' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
 #' @param extraArgs Modifiers to the Ensemble solver, including "solver.list", "gene.cutoff", and solver-named
 #' arguments denoting extraArgs that correspond to a given solver (e.g. "lasso")
 #'
@@ -85,7 +86,7 @@ setMethod("getSolverName", "EnsembleSolver",
 
 setMethods("run", "EnsembleSolver",
 
-           function(obj, target.gene, tfs, extraArgs = list()){
+           function(obj, target.gene, tfs, tf.weights = rep(1, length(tfs)), extraArgs = list()){
 
                # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning               
                if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                   
@@ -126,7 +127,7 @@ setMethods("run", "EnsembleSolver",
                    else{ extraParams <- list()}
                    
                       
-                   out.list[[i]] <- solve(trena, target.gene, tfs, extraArgs = extraParams)
+                   out.list[[i]] <- solve(trena, target.gene, tfs, tf.weights, extraArgs = extraParams)
                    names(out.list)[i] <- paste("out",solver.list[[i]],sep=".")
                }
 

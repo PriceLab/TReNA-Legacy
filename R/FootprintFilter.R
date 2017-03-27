@@ -45,16 +45,17 @@ FootprintFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @aliases getCandidates-FootprintFilter
 #'
 #' @usage
-#' tfs <- getCandidates(obj, target.gene, genome.db.uri, project.db.uri, size.upstream, size.downstream)
+#' getCandidates(obj, extraArgs)
 #' 
 #' @param obj An object of class FootprintFilter
-#' @param target.gene A designated target gene that should be part of the mtx.assay data
-#' @param genome.db.uri A connection to a genome database containing footprint information
-#' @param project.db.uri A connection to a project database containing footprint information
-#' @param size.upstream An integer denoting the distance upstream of the target gene to look for footprints
-#' (default = 1000)
-#' @param size.downstream An integer denoting the distance downstream of the target gene to look for footprints
-#' (default = 1000)
+#' @param extraArgs A named list containing 5 fields:
+#' \itemize{
+#' \item{"target.gene" A designated target gene that should be part of the mtx.assay data}
+#' \item{"genome.db.uri" A connection to a genome database containing footprint information}
+#' \item{"project.db.uri" A connection to a project database containing footprint information}
+#' \item{"size.upstream" An integer denoting the distance upstream of the target gene to look for footprints}
+#' \item{"size.downstream" An integer denoting the distance downstream of the target gene to look for footprints}
+#' }
 #'
 #' @seealso \code{\link{FootprintFilter}}
 #' 
@@ -74,26 +75,37 @@ FootprintFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
 #' project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
 #' 
-#' tfs <- getCandidates(footprint.filter, target.gene, genome.db.uri, project.db.uri)
+#' tfs <- getCandidates(footprint.filter, extraArgs = list("target.gene" = target.gene,
+#' "genome.db.uri" = genome.db.uri, "project.db.uri" = project.db.uri,
+#' "size.upstream" = 1000, "size.downstream" = 1000))
     
 
 setMethod("getCandidates", "FootprintFilter",
 
-    function(obj,target.gene, genome.db.uri, project.db.uri, size.upstream=1000, size.downstream=1000){
-        # Create a FootprintFinder object and find the footprints
-        fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
-        tbl.fp <- getFootprintsForGene(fp, target.gene,
-                                       size.upstream=size.upstream, size.downstream=size.downstream)
+          function(obj,extraArgs){
 
-        # Convert the footprints to genes and close the database connection
-        tbl.out <- mapMotifsToTFsMergeIntoTable(fp, tbl.fp)
-        closeDatabaseConnections(fp)
+              # Extract the arguments
+              target.gene <- extraArgs[["target.gene"]]
+              genome.db.uri <- extraArgs[["genome.db.uri"]]
+              project.db.uri <- extraArgs[["project.db.uri"]]
+              size.upstream <- extraArgs[["size.upstream"]]
+              size.downstream <- extraArgs[["size.downstream"]]
+              
+              # Create a FootprintFinder object and find the footprints
+              fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+              tbl.fp <- getFootprintsForGene(fp, target.gene,
+                                             size.upstream=size.upstream, size.downstream=size.downstream)
+              
+              # Convert the footprints to genes and close the database connection
+              tbl.out <- mapMotifsToTFsMergeIntoTable(fp, tbl.fp)
+              closeDatabaseConnections(fp)
 
-        # Intersect the footprints with the rows in the matrix
-        candidate.tfs <- intersect(tbl.out$tf, rownames(obj@mtx.assay))
-
-	# Return the TFs
-	return(candidate.tfs)
-	}
+              # Intersect the footprints with the rows in the matrix
+              candidate.tfs <- intersect(tbl.out$tf, rownames(obj@mtx.assay))
+              
+              # Return the TFs
+              return(candidate.tfs)
+          }
+          
 )
 #----------------------------------------------------------------------------------------------------

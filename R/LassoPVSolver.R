@@ -61,11 +61,13 @@ setMethod("getSolverName", "LassoPVSolver",
 #' for each transcription factor as a predictor of the target gene's expression level. 
 #'
 #' @usage
-#' tbl.out <- solve(obj, target.gene, tfs)
+#' solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
 #' 
 #' @param obj An object of class TReNA with "lassopv" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
+#' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
+#' @param extraArgs Modifiers to the Lasso P-Value solver
 #'
 #' @return A data frame containing the p-values for each transcription factor pertaining to the target gene
 #' plus the Pearson correlations between each transcription factor and the target gene.
@@ -84,7 +86,7 @@ setMethod("getSolverName", "LassoPVSolver",
 
 setMethod("run", "LassoPVSolver",
 
-          function (obj, target.gene, tfs){
+          function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
               
               if(length(tfs) == 0)                  
                   return(data.frame())              

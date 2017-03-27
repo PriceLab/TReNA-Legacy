@@ -7,7 +7,7 @@
 \alias{solve.RandomForest}
 \title{Run the Random Forest Solver}
 \usage{
-tbl.out <- solve(obj, target.gene, tfs, tf.weights, extraArgs)
+solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
 }
 \arguments{
 \item{obj}{An object of class TReNA with "randomForest" as the solver string}

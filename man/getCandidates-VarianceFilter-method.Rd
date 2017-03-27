@@ -6,15 +6,16 @@
 \alias{getCandidates-VarianceFilter}
 \title{Get candidate genes using the variance filter}
 \usage{
-tfs <- getCandidates(obj, target.gene, var.size)
+getCandidates(obj, extraArgs)
 }
 \arguments{
 \item{obj}{An object of class VarianceFilter}
 
-\item{target.gene}{A designated target gene that should be part of the mtx.assay data}
-
-\item{var.size}{A user-specified percentage (0-1) of the target gene variance to use as a filter
-(default = 0.5)}
+\item{extraArgs}{A named list containing two fields:
+\itemize{
+\item{"target.gene" A designated target gene that should be part of the mtx.assay data}
+\item{"var.size" A user-specified percentage (0-1) of the target gene variance to use as a filter}
+}}
 }
 \value{
 A vector containing all genes with variances less than the target gene
@@ -30,7 +31,7 @@ load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RD
 variance.filter <- VarianceFilter(mtx.assay = mtx.sub)
 
 target.gene <- "MEF2C"
-tfs <- getCandidates(variance.filter, target.gene, var.size = 0.5)
+tfs <- getCandidates(variance.filter, extraArgs = list("target.gene" = target.gene, "var.size" = 0.5))
 }
 \seealso{
 \code{\link{VarianceFilter}}

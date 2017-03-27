@@ -6,10 +6,12 @@
 \alias{getCandidates-NullFilter}
 \title{Get candidate genes using the null filter}
 \usage{
-tfs <- getCandidates(obj)
+getCandidates(obj, extraArgs)
 }
 \arguments{
 \item{obj}{An object of class NullFilter}
+
+\item{extraArgs}{An empty list}
 }
 \value{
 A vector containing all genes in the assay matrix

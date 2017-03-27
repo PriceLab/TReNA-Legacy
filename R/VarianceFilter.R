@@ -47,13 +47,14 @@ VarianceFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @aliases getCandidates-VarianceFilter
 #'
 #' @usage
-#' tfs <- getCandidates(obj, target.gene, var.size)
+#' getCandidates(obj, extraArgs)
 #' 
 #' @param obj An object of class VarianceFilter
-#' @param target.gene A designated target gene that should be part of the mtx.assay data
-#' @param var.size A user-specified percentage (0-1) of the target gene variance to use as a filter
-#' (default = 0.5)
-#'
+#' @param extraArgs A named list containing two fields:
+#' \itemize{
+#' \item{"target.gene" A designated target gene that should be part of the mtx.assay data}
+#' \item{"var.size" A user-specified percentage (0-1) of the target gene variance to use as a filter}
+#' }
 #' @seealso \code{\link{VarianceFilter}}
 #' 
 #' @family getCandidate Methods
@@ -68,22 +69,27 @@ VarianceFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' variance.filter <- VarianceFilter(mtx.assay = mtx.sub)
 #' 
 #' target.gene <- "MEF2C"
-#' tfs <- getCandidates(variance.filter, target.gene, var.size = 0.5)
+#' tfs <- getCandidates(variance.filter, extraArgs = list("target.gene" = target.gene, "var.size" = 0.5))
 
 setMethod("getCandidates", "VarianceFilter",
 
-    function(obj,target.gene, var.size = 0.5){
-        # Designate the target genes and tfs
-	tfs <- setdiff(rownames(obj@mtx.assay), target.gene)
-	tf.mtx <- obj@mtx.assay[-c(which(rownames(obj@mtx.assay) == target.gene)),]
-	target.mtx <- obj@mtx.assay[which(rownames(obj@mtx.assay) == target.gene),]
+          function(obj,extraArgs){
 
-	# Find the variances
-	tf.var <- apply(tf.mtx,1,stats::var)
-	target.var <- stats::var(target.mtx)
-
-	# Return only the genes with variances within 50% of target gene variance
-	return(names(which(tf.var > (1-var.size)*target.var & tf.var < (1+var.size)*target.var)))
-	}
+              # Retrive the extra arguments
+              target.gene <- extraArgs[["target.gene"]]
+              var.size <- extraArgs[["var.size"]]
+              
+              # Designate the target genes and tfs              
+              tfs <- setdiff(rownames(obj@mtx.assay), target.gene)              
+              tf.mtx <- obj@mtx.assay[-c(which(rownames(obj@mtx.assay) == target.gene)),]              
+              target.mtx <- obj@mtx.assay[which(rownames(obj@mtx.assay) == target.gene),]
+              
+              # Find the variances              
+              tf.var <- apply(tf.mtx,1,stats::var)              
+              target.var <- stats::var(target.mtx)
+              
+              # Return only the genes with variances within 50% of target gene variance              
+              return(names(which(tf.var > (1-var.size)*target.var & tf.var < (1+var.size)*target.var)))              
+          }       
 )
 #----------------------------------------------------------------------------------------------------

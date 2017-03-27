@@ -7,7 +7,7 @@
 \alias{solve.BayesSpike}
 \title{Run the Bayes Spike Solver}
 \usage{
-tbl.out <- solve(obj, target.gene, tfs, tf.weights, extraArgs)
+solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
 }
 \arguments{
 \item{obj}{An object of the class TReNA with "bayesSpike" as the solver string}

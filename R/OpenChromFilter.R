@@ -1,8 +1,8 @@
 #' @title Create a OpenChromFilter object 
 #'
 #' @description
-#' An OpenChromFilter object allows for filtering based on a supplied chromasome and region. Using its
-#' associated \code{getCandidates} method, a chromasome, and starting/ending locations for a region, 
+#' An OpenChromFilter object allows for filtering based on a supplied chromosome and region. Using its
+#' associated \code{getCandidates} method, a chromosome, and starting/ending locations for a region, 
 #' an OpenChromFilter object can be used to filter a list of possible transcription factors to those
 #' that match motifs within the supplied region
 #'
@@ -45,12 +45,15 @@ OpenChromFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @aliases getCandidates-OpenChromFilter
 #'
 #' @usage
-#' tfs <- getCandidates(obj, chromasome, start, end)
+#' getCandidates(obj, extraArgs)
 #' 
 #' @param obj An object of class FootprintFilter
-#' @param chromasome A chromasome of interest that contains the regions to be used for filtering
-#' @param start An integer denoting the starting point of the region of interest
-#' @param end An integer denoting the ending point of the region of interest
+#' @param extraArgs
+#' \itemize{
+#' \item{"chromosome" A chromosome of interest that contains the regions to be used for filtering}
+#' \item{"start" An integer denoting the starting point of the region of interest}
+#' \item{"end" An integer denoting the ending point of the region of interest}
+#' }
 #'
 #' @seealso \code{\link{OpenChromFilter}}
 #' 
@@ -64,13 +67,18 @@ OpenChromFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' # in the included Alzheimer's dataset
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 #' openchrom.filter <- OpenChromFilter(mtx.assay = mtx.sub)
-#'
-
-    
+#' tfs <- getCandidates(openchrom.filter, extraArgs = list("chromosome" = "chr5",
+#' "start" = 888936629, "end" = 898936629))
 
 setMethod("getCandidates", "OpenChromFilter",
 
-    function(obj,chromosome, start, end){
+    function(obj,extraArgs){
+
+        # Collect arguments from extraArgs
+        chromosome <- extraArgs[["chromosome"]]
+        start <- extraArgs[["start"]]
+        end <- extraArgs[["end"]]
+
         # Connect to the UCSC MySQL hg38 database
         driver <- RMySQL::MySQL()
         host <- "genome-mysql.cse.ucsc.edu"
@@ -90,7 +98,7 @@ setMethod("getCandidates", "OpenChromFilter",
         # Convert the regions to motifs using FIMO
         
         # Convert the motifs to TFs and return those
-        
+        tbl.out <- regions ## Hack for now
 
         # Intersect the TFs with the rows in the matrix
         candidate.tfs <- intersect(tbl.out$tf, rownames(obj@mtx.assay))

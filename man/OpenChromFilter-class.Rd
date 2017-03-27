@@ -16,8 +16,8 @@ OpenChromFilter(mtx.assay = matrix(), quiet = TRUE)
 \item{quiet}{A logical denoting whether or not the filter should print output}
 }
 \description{
-An OpenChromFilter object allows for filtering based on a supplied chromasome and region. Using its
-associated \code{getCandidates} method, a chromasome, and starting/ending locations for a region, 
+An OpenChromFilter object allows for filtering based on a supplied chromosome and region. Using its
+associated \code{getCandidates} method, a chromosome, and starting/ending locations for a region, 
 an OpenChromFilter object can be used to filter a list of possible transcription factors to those
 that match motifs within the supplied region
 }

@@ -58,7 +58,7 @@ setMethod("getSolverName", "RandomForestSolver",
 #' @aliases run.RandomForestSolver solve.RandomForest
 #'
 #' @usage
-#' tbl.out <- solve(obj, target.gene, tfs, tf.weights, extraArgs)
+#' solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
 #'
 #' @param obj An object of class TReNA with "randomForest" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data

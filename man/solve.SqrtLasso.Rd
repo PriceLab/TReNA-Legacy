@@ -7,7 +7,7 @@
 \alias{solve.SqrtLasso}
 \title{Run the Square Root LASSO Solver}
 \usage{
-tbl.out <- solve(obj, target.gene, tfs, extraArgs)
+solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
 }
 \arguments{
 \item{obj}{An object of class TReNA with "sqrtlasso" as the solver string}
@@ -15,6 +15,8 @@ tbl.out <- solve(obj, target.gene, tfs, extraArgs)
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 
 \item{tfs}{The designated set of transcription factors that could be associated with the target gene.}
+
+\item{tf.weights}{A set of weights on the transcription factors (default = rep(1, length(tfs)))}
 
 \item{extraArgs}{Modifiers to the Square Root LASSO solver}
 }

@@ -45,9 +45,10 @@ NullFilter <- function(mtx.assay=matrix(), quiet = TRUE)
 #' @aliases getCandidates-NullFilter
 #'
 #' @usage
-#' tfs <- getCandidates(obj)
+#' getCandidates(obj, extraArgs)
 #' 
 #' @param obj An object of class NullFilter
+#' @param extraArgs An empty list
 #' 
 #' @return A vector containing all genes in the assay matrix
 #'
@@ -64,10 +65,10 @@ NullFilter <- function(mtx.assay=matrix(), quiet = TRUE)
 
 setMethod("getCandidates", "NullFilter",
 
-    function(obj){
+    function(obj, extraArgs=list()){
         # Simply return the genes
 	genes <- rownames(obj@mtx.assay)
 	return(genes)
 	})
-	
+
 #----------------------------------------------------------------------------------------------------

@@ -64,11 +64,12 @@ setMethod("getSolverName", "SqrtLassoSolver",
 #' for each transcription factor as a predictor of the target gene's expression level. 
 #'
 #' @usage
-#' tbl.out <- solve(obj, target.gene, tfs, extraArgs)
+#' solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
 #' 
 #' @param obj An object of class TReNA with "sqrtlasso" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
+#' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
 #' @param extraArgs Modifiers to the Square Root LASSO solver
 #'
 #' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
@@ -87,7 +88,7 @@ setMethod("getSolverName", "SqrtLassoSolver",
 
 setMethod("run", "SqrtLassoSolver",
 
-          function (obj, target.gene, tfs, extraArgs=list()){
+          function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
               
               if(length(tfs) == 0)                  
                   return(data.frame())              
@@ -175,7 +176,7 @@ setMethod("run", "SqrtLassoSolver",
               }
 
               lambda.list <- unlist(lambda.list)
-              stopCluster(cl)
+              parallel::stopCluster(cl)
               lambda <- mean(lambda.list) + (stats::sd(lambda.list)/sqrt(length(lambda.list)))
 
               # Run square root lasso and return an object of class "slim"              

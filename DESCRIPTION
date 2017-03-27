@@ -1,8 +1,8 @@
 Package: TReNA
 Type: Package
 Title: Fit transcriptional regulatory networks using gene expression, priors, machine learning
-Version: 0.99.93
-Date: 2017-03-24
+Version: 0.99.95
+Date: 2017-03-27
 Author: Seth Ament <seth.ament@systemsbiology.org>, Paul Shannon <pshannon@systemsbioloyg.org>, Matthew Richards <mrichard@systemsbiology.org>
 Maintainer: Seth Ament <seth.ament@systemsbiology.org>, Paul Shannon <pshannon@systemsbioloyg.org>, Matthew Richards <mrichard@systemsbiology.org>
 Imports:
@@ -15,7 +15,8 @@ Imports:
     doParallel,
     RPostgreSQL,
     methods,
-    RMySQL
+    RMySQL,
+    DBI
 Depends:
     R (>= 3.2.3),
     utils,
@@ -49,5 +50,6 @@ Collate:
     'SqrtLassoSolver.R'
     'TReNA.R'
     'VarianceFilter.R'
+    'help.R'
     'sharedFunctions.R'
 RoxygenNote: 6.0.1

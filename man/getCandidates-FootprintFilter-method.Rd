@@ -6,22 +6,19 @@
 \alias{getCandidates-FootprintFilter}
 \title{Get candidate genes using the variance filter}
 \usage{
-tfs <- getCandidates(obj, target.gene, genome.db.uri, project.db.uri, size.upstream, size.downstream)
+getCandidates(obj, extraArgs)
 }
 \arguments{
 \item{obj}{An object of class FootprintFilter}
 
-\item{target.gene}{A designated target gene that should be part of the mtx.assay data}
-
-\item{genome.db.uri}{A connection to a genome database containing footprint information}
-
-\item{project.db.uri}{A connection to a project database containing footprint information}
-
-\item{size.upstream}{An integer denoting the distance upstream of the target gene to look for footprints
-(default = 1000)}
-
-\item{size.downstream}{An integer denoting the distance downstream of the target gene to look for footprints
-(default = 1000)}
+\item{extraArgs}{A named list containing 5 fields:
+\itemize{
+\item{"target.gene" A designated target gene that should be part of the mtx.assay data}
+\item{"genome.db.uri" A connection to a genome database containing footprint information}
+\item{"project.db.uri" A connection to a project database containing footprint information}
+\item{"size.upstream" An integer denoting the distance upstream of the target gene to look for footprints}
+\item{"size.downstream" An integer denoting the distance downstream of the target gene to look for footprints}
+}}
 }
 \value{
 A vector containing all genes with variances less than the target gene
@@ -41,7 +38,9 @@ db.address <- system.file(package="TReNA", "extdata")
 genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
 project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
 
-tfs <- getCandidates(footprint.filter, target.gene, genome.db.uri, project.db.uri)
+tfs <- getCandidates(footprint.filter, extraArgs = list("target.gene" = target.gene,
+"genome.db.uri" = genome.db.uri, "project.db.uri" = project.db.uri,
+"size.upstream" = 1000, "size.downstream" = 1000))
 }
 \seealso{
 \code{\link{FootprintFilter}}

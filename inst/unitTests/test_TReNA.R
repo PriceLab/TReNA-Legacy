@@ -408,7 +408,9 @@ test_VarianceFilter <- function()
     # Create dummy data and filter it based on variance
     x <- test_developAndFitDummyTestData(quiet=TRUE)
     var.filter <- VarianceFilter(mtx.assay = x$assay)
-    checkTrue(length(getCandidates(var.filter, x$correlated.target)) > 0)
+    tfs <- getCandidates(var.filter, extraArgs = list("target.gene" = x$correlated.target,
+                                                      "var.size" = 0.5))
+    checkTrue(length(tfs) > 0)
 
 } # test_VarianceFilter
 #----------------------------------------------------------------------------------------------------
@@ -564,10 +566,11 @@ test_FootprintFilter <- function()
     genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
     project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
     target.gene <- "MEF2C"
-    tfs <- getCandidates(footprint.filter, target.gene,
-                         genome.db.uri, project.db.uri,
-                         size.upstream = 1000,
-                         size.downstream = 1000)
+    tfs <- getCandidates(footprint.filter, extraArgs = list("target.gene" = target.gene,
+                                                            "genome.db.uri" = genome.db.uri,
+                                                            "project.db.uri" = project.db.uri,
+                                                            "size.upstream" = 1000,
+                                                            "size.downstream" = 1000))
 
     # Make sure it grabs the right number of genes
     checkEquals(length(tfs), 64)

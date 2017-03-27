@@ -6,16 +6,16 @@
 \alias{getCandidates-OpenChromFilter}
 \title{Get candidate genes using the open chromatin filter}
 \usage{
-tfs <- getCandidates(obj, chromasome, start, end)
+getCandidates(obj, extraArgs)
 }
 \arguments{
 \item{obj}{An object of class FootprintFilter}
 
-\item{start}{An integer denoting the starting point of the region of interest}
-
-\item{end}{An integer denoting the ending point of the region of interest}
-
-\item{chromasome}{A chromasome of interest that contains the regions to be used for filtering}
+\item{extraArgs}{\itemize{
+\item{"chromosome" A chromosome of interest that contains the regions to be used for filtering}
+\item{"start" An integer denoting the starting point of the region of interest}
+\item{"end" An integer denoting the ending point of the region of interest}
+}}
 }
 \value{
 A vector containing all genes with motifs in the supplied region
@@ -29,7 +29,8 @@ Get candidate genes using the open chromatin filter
 # in the included Alzheimer's dataset
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 openchrom.filter <- OpenChromFilter(mtx.assay = mtx.sub)
-
+tfs <- getCandidates(openchrom.filter, extraArgs = list("chromosome" = "chr5",
+"start" = 888936629, "end" = 898936629))
 }
 \seealso{
 \code{\link{OpenChromFilter}}

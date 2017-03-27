@@ -7,7 +7,7 @@
 \alias{solve.Lasso}
 \title{Run the LASSO Solver}
 \usage{
-tbl.out <- solve(obj, target.gene, tfs, tf.weights, extraArgs)
+solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
 }
 \arguments{
 \item{obj}{An object of class TReNA with "lasso" as the solver string}

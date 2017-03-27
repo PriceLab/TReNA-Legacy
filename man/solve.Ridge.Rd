@@ -7,7 +7,7 @@
 \alias{solve.Ridge}
 \title{Run the Ridge Regression Solver}
 \usage{
-tbl.out <- solve(obj, target.gene, tfs, tf.weights, extraArgs)
+solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
 }
 \arguments{
 \item{obj}{An object of class TReNA with "ridge" as the solver string}
