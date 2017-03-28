@@ -46,9 +46,6 @@ VarianceFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #'
 #' @aliases getCandidates-VarianceFilter
 #'
-#' @usage
-#' getCandidates(obj, extraArgs)
-#' 
 #' @param obj An object of class VarianceFilter
 #' @param extraArgs A named list containing two fields:
 #' \itemize{

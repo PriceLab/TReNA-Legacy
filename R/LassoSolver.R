@@ -55,9 +55,6 @@ setMethod("getSolverName", "LassoSolver",
 #' @description Given a TReNA object with LASSO as the solver, use the \code{\link{glmnet}} function to estimate coefficients
 #' for each transcription factor as a predictor of the target gene's expression level. 
 #'
-#' @usage
-#' solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
-#' 
 #' @param obj An object of class TReNA with "lasso" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.

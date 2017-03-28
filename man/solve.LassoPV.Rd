@@ -7,7 +7,8 @@
 \alias{solve.LassoPV}
 \title{Run the LASSO P-Value Solver}
 \usage{
-solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
+\S4method{run}{LassoPVSolver}(obj, target.gene, tfs, tf.weights = rep(1,
+  length(tfs)), extraArgs = list())
 }
 \arguments{
 \item{obj}{An object of class TReNA with "lassopv" as the solver string}
@@ -40,11 +41,11 @@ tbl <- solve(trena, target.gene, tfs)
 \code{\link{lassopv}}
 
 Other solver methods: \code{\link{run,BayesSpikeSolver-method}},
+  \code{\link{run,EnsembleSolver-method}},
   \code{\link{run,LassoSolver-method}},
   \code{\link{run,PearsonSolver-method}},
   \code{\link{run,RandomForestSolver-method}},
   \code{\link{run,RidgeSolver-method}},
   \code{\link{run,SpearmanSolver-method}},
-  \code{\link{run,SqrtLassoSolver-method}},
-  \code{\link{solve.Ensemble}}
+  \code{\link{run,SqrtLassoSolver-method}}
 }

@@ -44,9 +44,6 @@ NullFilter <- function(mtx.assay=matrix(), quiet = TRUE)
 #'
 #' @aliases getCandidates-NullFilter
 #'
-#' @usage
-#' getCandidates(obj, extraArgs)
-#' 
 #' @param obj An object of class NullFilter
 #' @param extraArgs An empty list
 #' 

@@ -7,7 +7,8 @@
 \alias{solve.BayesSpike}
 \title{Run the Bayes Spike Solver}
 \usage{
-solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
+\S4method{run}{BayesSpikeSolver}(obj, target.gene, tfs, tf.weights = rep(1,
+  length(tfs)), extraArgs = list())
 }
 \arguments{
 \item{obj}{An object of the class TReNA with "bayesSpike" as the solver string}
@@ -42,12 +43,12 @@ tbl <- solve(trena, target.gene, tfs, extraArgs = list("n_orderings" = 100))
 \seealso{
 \code{\link{vbsr}}
 
-Other solver methods: \code{\link{run,LassoPVSolver-method}},
+Other solver methods: \code{\link{run,EnsembleSolver-method}},
+  \code{\link{run,LassoPVSolver-method}},
   \code{\link{run,LassoSolver-method}},
   \code{\link{run,PearsonSolver-method}},
   \code{\link{run,RandomForestSolver-method}},
   \code{\link{run,RidgeSolver-method}},
   \code{\link{run,SpearmanSolver-method}},
-  \code{\link{run,SqrtLassoSolver-method}},
-  \code{\link{solve.Ensemble}}
+  \code{\link{run,SqrtLassoSolver-method}}
 }

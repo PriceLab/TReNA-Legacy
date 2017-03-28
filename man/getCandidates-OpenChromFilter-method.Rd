@@ -6,7 +6,7 @@
 \alias{getCandidates-OpenChromFilter}
 \title{Get candidate genes using the open chromatin filter}
 \usage{
-getCandidates(obj, extraArgs)
+\S4method{getCandidates}{OpenChromFilter}(obj, extraArgs)
 }
 \arguments{
 \item{obj}{An object of class FootprintFilter}
@@ -35,7 +35,8 @@ tfs <- getCandidates(openchrom.filter, extraArgs = list("chromosome" = "chr5",
 \seealso{
 \code{\link{OpenChromFilter}}
 
-Other getCandidate Methods: \code{\link{getCandidates,FootprintFilter-method}},
+Other getCandidate Methods: \code{\link{getCandidates,CandidateFilter-method}},
+  \code{\link{getCandidates,FootprintFilter-method}},
   \code{\link{getCandidates,NullFilter-method}},
   \code{\link{getCandidates,VarianceFilter-method}}
 }

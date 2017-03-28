@@ -40,28 +40,37 @@ printf <- function(...) print(noquote(sprintf(...)))
 #   3) a motif/TF map, with scores & etc
 #			    
 #----------------------------------------------------------------------------------------------------
+#' @export
 setGeneric("getChromLoc", signature="obj",
            function(obj, name, biotype="protein_coding",moleculetype="gene")
                standardGeneric("getChromLoc"))
+#' @export
 setGeneric("getGenePromoterRegion", signature="obj",
            function(obj,  gene, size.upstream=1000, size.downstream=0,
                     biotype="protein_coding", moleculetype="gene")
                                                       standardGeneric("getGenePromoterRegion"))
+#' @export
 setGeneric("getFootprintsForGene", signature="obj",
            function(obj,  gene, size.upstream=1000, size.downstream=0,
                     biotype="protein_coding", moleculetype="gene")
                                                       standardGeneric("getFootprintsForGene"))
+#' @export
 setGeneric("getFootprintsInRegion", signature="obj",
            function(obj, chromosome, start, end) standardGeneric("getFootprintsInRegion"))
+#' @export
 setGeneric("getGtfGeneBioTypes", signature="obj",
            function(obj) standardGeneric("getGtfGeneBioTypes"))
+#' @export
 setGeneric("getGtfMoleculeTypes", signature="obj",
            function(obj) standardGeneric("getGtfMoleculeTypes"))
+#' @export
 setGeneric("closeDatabaseConnections", signature="obj",
            function(obj) standardGeneric("closeDatabaseConnections"))
+#' @export
 setGeneric("getPromoterRegionsAllGenes",signature="obj",
            function(obj ,size.upstream=10000 , size.downstream=10000 , use_gene_ids = T )
                standardGeneric("getPromoterRegionsAllGenes"))
+#' @export
 setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
            function(obj, tbl) standardGeneric("mapMotifsToTFsMergeIntoTable"))
 #----------------------------------------------------------------------------------------------------
@@ -180,10 +189,11 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
 #' This method takes a FootprintFinder object and closes connections to the footprint databases
 #' if they are currently open.
 #' 
-#' @name closeDatabaseConnections-methods
 #' @rdname FootprintFinder-class
 #' 
 #' @param obj An object of class FootprintFinder
+#'
+#' @return Closes the specified database connection
 
 setMethod("closeDatabaseConnections", "FootprintFinder",
 
@@ -200,7 +210,6 @@ setMethod("closeDatabaseConnections", "FootprintFinder",
 #' Using the gtf table in the genome database contained in a FootprintFinder object, get the list of
 #' different types of biological units (biotypes) contained in the table.
 #'
-#' @name getGtfGeneBioTypes-methods
 #' @rdname getGtfGeneBioTypes
 #' @aliases getGtfGeneBioTypes
 #' 
@@ -223,7 +232,6 @@ setMethod("getGtfGeneBioTypes", "FootprintFinder",
 #' Using the gtf table in the genome database contained in a FootprintFinder object, get the list of
 #' different types of molecules contained in the table.
 #'
-#' @name getGtfMoleculeTypes-methods
 #' @rdname getGtfMoleculeTypes
 #' @aliases getGtfMoleculeTypes
 #' 
@@ -246,7 +254,6 @@ setMethod("getGtfMoleculeTypes", "FootprintFinder",
 #' Using the gtf table in the genome database contained in a FootprintFinder object, get the locations
 #' of chromasomes with the specified gene name, biological unit type, and molecule type
 #'
-#' @name getChromLoc-methods
 #' @rdname getChromLoc
 #' @aliases getChromLoc
 #' 
@@ -278,7 +285,6 @@ setMethod("getChromLoc", "FootprintFinder",
 #' database specified by the FootprintFinder object, get the chromasome, starting location,
 #' and ending location for gene promoter region.
 #'
-#' @name getGenePromoterRegion-methods
 #' @rdname getGenePromoterRegion
 #' @aliases getGenePromoterRegion
 #' 
@@ -331,7 +337,6 @@ setMethod("getGenePromoterRegion", "FootprintFinder",
 #' in conjunction with the gtf table inside the genome database specified by the FootprintFinder object,
 #' retrieve a dataframe containing the footprints for a specified gene
 #'
-#' @name getFootprintsForGene-methods
 #' @rdname getFootprintsForGene
 #' @aliases getFootprintsForGene
 #' 
@@ -367,7 +372,6 @@ setMethod("getFootprintsForGene", "FootprintFinder",
 #' object, return the location, chromasome, starting position, and ending positions of all footprints
 #' for the specified region.
 #' 
-#' @name getFootprintsInRegion-methods
 #' @rdname getFootprintsInRegion
 #' @aliases getFootprintsInRegion
 #' 
@@ -412,7 +416,6 @@ setMethod("getFootprintsInRegion", "FootprintFinder",
 #' Using the gtf table inside the genome database specified by the FootprintFinder object, return the
 #' promoter regions for every protein-coding gene in the database. 
 #' 
-#' @name getPromoterRegionsAllGenes-methods
 #' @rdname getPromoterRegionsAllGenes
 #' @aliases getPromoterRegionsAllGenes
 #' 
@@ -475,7 +478,6 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 #' Using the motifsgenes table inside the genome database specified by the FootprintFinder object,
 #' return a table mapping each motif to transcription factors
 #' 
-#' @name mapMotifsToTFsMergeIntoTable-methods
 #' @rdname mapMotifsToTFsMergeIntoTable
 #' @aliases mapMotifsToTFsMergeIntoTable
 #' 

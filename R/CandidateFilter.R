@@ -25,13 +25,13 @@ printf <- function(...) print(noquote(sprintf(...)))
 setGeneric("getCandidates", signature="obj", function(obj,extraArgs) standardGeneric("getCandidates"))
 
 #----------------------------------------------------------------------------------------------------
-#' @title Class CandidateFilter
-#' @name CandidateFilter-class
-#' @rdname CandidateFilter-class
+#' CandidateFilter
 #'
-#' @description
 #' A CandidateFilter is an S4 class to represent a gene candidate filter. These filters can employ a variety of methods
 #' to reduce the number of transcription factors used as predictors for solving a TReNA object.
+#' 
+#' @rdname CandidateFilter-class
+#' @aliases CandidateFilter
 #'
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the CandidateFilter object should print output
@@ -49,4 +49,23 @@ CandidateFilter <- function(mtx.assay = matrix(), quiet = TRUE)
     .CandidateFilter(mtx.assay = mtx.assay, quiet = quiet)
 
 } # CandidateFilter, the constructor
+#----------------------------------------------------------------------------------------------------
+#' Get candidate genes using a CandidateFilter object
+#'
+#' @rdname getCandidates
+#' @aliases getCandidates
+#'
+#' @param obj An object of a CandidateFilter class
+#' @param extraArgs A named list of extra arguments corresponding to the chosen filter
+#'
+#' @return A vector containing genes from the assay matrix that are selected by the filter
+#'
+#' @family getCandidate Methods
+#'
+setMethod("getCandidates", "CandidateFilter",
+
+          function(obj, extraArgs){
+              # Call the appropriate method
+              callNextMethod()              
+          })
 #----------------------------------------------------------------------------------------------------

@@ -7,7 +7,8 @@
 \alias{solve.Spearman}
 \title{Run the Spearman Solver}
 \usage{
-solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
+\S4method{run}{SpearmanSolver}(obj, target.gene, tfs, tf.weights = rep(1,
+  length(tfs)), extraArgs = list())
 }
 \arguments{
 \item{obj}{An object of class TReNA with "spearman" as the solver string}
@@ -21,7 +22,7 @@ solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
 \item{extraArgs}{Modifiers to the Spearman solver}
 }
 \value{
-fit The set of Spearman Correlation Coefficients between each transcription factor and the target gene.
+The set of Spearman Correlation Coefficients between each transcription factor and the target gene.
 }
 \description{
 Given a TReNA object with Spearman as the solver, use the \code{\link{cor}} function with
@@ -40,11 +41,11 @@ tbl <- solve(trena, target.gene, tfs)
 \code{\link{cor}}
 
 Other solver methods: \code{\link{run,BayesSpikeSolver-method}},
+  \code{\link{run,EnsembleSolver-method}},
   \code{\link{run,LassoPVSolver-method}},
   \code{\link{run,LassoSolver-method}},
   \code{\link{run,PearsonSolver-method}},
   \code{\link{run,RandomForestSolver-method}},
   \code{\link{run,RidgeSolver-method}},
-  \code{\link{run,SqrtLassoSolver-method}},
-  \code{\link{solve.Ensemble}}
+  \code{\link{run,SqrtLassoSolver-method}}
 }

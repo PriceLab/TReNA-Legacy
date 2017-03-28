@@ -14,7 +14,7 @@
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
-
+#' @export
 setGeneric("solve",                    signature="obj", function(obj, target.gene, tfs,
                                                                  tf.weights=rep(1, length(tfs)), extraArgs=list())
                                                            standardGeneric ("solve"))
@@ -84,7 +84,6 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 #' gene and a designated set of transcription factors, returning a list of parameters that quantify
 #' the relationship between the transcription factors and the target gene. 
 #'
-#' @name solve-methods
 #' @rdname solve
 #' @aliases solve solve.TReNA
 #'

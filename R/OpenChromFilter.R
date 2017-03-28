@@ -44,9 +44,6 @@ OpenChromFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #'
 #' @aliases getCandidates-OpenChromFilter
 #'
-#' @usage
-#' getCandidates(obj, extraArgs)
-#' 
 #' @param obj An object of class FootprintFilter
 #' @param extraArgs
 #' \itemize{
