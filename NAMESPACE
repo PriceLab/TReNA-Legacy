@@ -3,7 +3,7 @@ exportClasses(
     NullFilter,
     VarianceFilter,
     FootprintFilter,
-    OpenChromFilter)
+    HumanDNAseClusterFilter)
 
 export(
     TReNA,
@@ -20,7 +20,7 @@ export(
     CandidateFilter,
     FootprintFilter,
     NullFilter,
-    OpenChromFilter,
+    HumanDNAseClusterFilter,
     VarianceFilter,
     FootprintFinder
 )
