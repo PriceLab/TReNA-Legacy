@@ -93,10 +93,26 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
 
         tbl.regions <- .getRegions(chrom, start, end, region.score.threshold)
         seqs <- .getSequence(tbl.regions)
-        motifs <- .getScoredMotifs(seqs, motif.min.match.percentage)
-        result <- list(tbl.regions=tbl.regions,
-                       seqs=seqs,
-                       motifs=motifs)
+        tbl.motifs <- .getScoredMotifs(seqs, motif.min.match.percentage, obj@quiet)
+        region.count <- length(seqs)
+        tbl.summary <- data.frame()
+        for(i in seq_len(region.count)){
+            tbl.summary <- rbind(tbl.summary, cbind(tbl.motifs[[i]], tbl.regions[i,]))
+            }
+        colnames(tbl.summary) <- c("motif.start", "motif.end", "motif.width", "motif.score", "motif", "match",
+                                   "strand", "chrom", "regionStart", "regionEnd", "regionScore", "sourceCount")
+        tbl.summary <- tbl.summary[, c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount", "motif",
+                                   "match", "motif.start", "motif.end", "motif.width", "motif.score", "strand")]
+        tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE,
+                             header=TRUE)
+
+        tfs.by.motif <- lapply(tbl.summary$motif, function(m) subset(tbl.mg, motif==m)$tf.gene)
+        all.tfs <- sort(unique(unlist(tfs.by.motif)))
+        tfs.by.motif.joined <- unlist(lapply(tfs.by.motif, function(m) paste(m, collapse=";")))
+        tbl.summary$tf <- tfs.by.motif.joined
+        result <- list(tbl=tbl.summary,
+                       tfs=all.tfs)
+
 	}) # getCandidates
 
 #----------------------------------------------------------------------------------------------------
@@ -139,7 +155,7 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
 
 } # .getSequence
 #----------------------------------------------------------------------------------------------------
-.findMotifs <- function(sequence, pfms, min.match.percentage=95)
+.findMotifs <- function(sequence, pfms, min.match.percentage=95, quiet=TRUE)
 {
    min.match.as.string <- sprintf("%02d%%", min.match.percentage)
 
@@ -150,12 +166,12 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
       hits.rev <- matchPWM(mtx, seq.revcomp, with.score=TRUE, min.score=min.match.as.string)
       tbl <- data.frame()
       if(length(hits.fwd) > 0){
-          printf("%d +", length(hits.fwd))
+          if(!quiet) printf("%d +", length(hits.fwd))
           match <- substring(as.character(subject(hits.fwd)), start(ranges(hits.fwd)), end(ranges(hits.fwd)))
           tbl <- data.frame(ranges(hits.fwd), score=mcols(hits.fwd)$score, motif=motifName, match=match, strand="+")
           }
       if(length(hits.rev) > 0){
-          printf("%d -", length(hits.rev))
+          if(!quiet) printf("%d -", length(hits.rev))
           match <- substring(as.character(subject(hits.rev)), start(ranges(hits.rev)), end(ranges(hits.rev)))
           tbl.rev <- data.frame(ranges(hits.rev), score=mcols(hits.rev)$score, motif=motifName, match=match, strand="-")
           tbl <- rbind(tbl, tbl.rev)
@@ -179,7 +195,7 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
 
 }  # .findMotifs
 #------------------------------------------------------------------------------------------------------------------------
-.getScoredMotifs <- function(seqs, min.match.percentage=95)
+.getScoredMotifs <- function(seqs, min.match.percentage=95, quiet=TRUE)
 {
      parseLine <- function(textOfLine) {
         # first delete the leading A, C, G or T.  then the square brackets.  then convert
@@ -234,7 +250,7 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
        names(pfms) <<- as.character(lapply(x, function(e) e$title))
        }
 
-   result <- lapply(seqs, function(seq) .findMotifs(seq, pfms, min.match.percentage))
+   result <- lapply(seqs, function(seq) .findMotifs(seq, pfms, min.match.percentage, quiet))
    result
 
 

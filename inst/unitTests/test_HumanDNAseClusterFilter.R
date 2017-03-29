@@ -104,7 +104,7 @@ test_mef2cPromoter.normalUse <- function()
 
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    checkTrue(exists("mtx.sub"))
-   ocf <- HumanDNAseClusterFilter(mtx.sub)
+   hdcf <- HumanDNAseClusterFilter(mtx.sub)
 
 
     # chr5:88,813,245-88,832,344: has just a few high scoring clusters
@@ -116,8 +116,12 @@ test_mef2cPromoter.normalUse <- function()
                 region.score.threshold=700,
                 motif.min.match.percentage=95)
 
-   x <- getCandidates(ocf, args)
-   checkEquals(sort(names(x)), c("motifs", "seqs", "tbl.regions"))
+   x <- getCandidates(hdcf, args)
+   checkEquals(sort(names(x)), c("tbl", "tfs"))
+   checkTrue(all(c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount", "motif", "match", "motif.start", "motif.end", "motif.width", "motif.score", "strand", "tf") %in% colnames(x$tbl)))
+   checkTrue(nrow(x$tbl) > 15)     # 16 on (29 mar 2017)
+   checkTrue(length(x$tfs) > 200)  # 217 on (29 mar 2017)
+   checkEquals(length(which(duplicated(x$tfs))), 0)
 
 } # test_mef2cPromoter.normalUse
 #----------------------------------------------------------------------------------------------------
