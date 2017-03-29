@@ -7,7 +7,7 @@
 \alias{FootprintFinder}
 \alias{FootprintFinder-class}
 \alias{FootprintFinder}
-\alias{closeDatabaseConnections-methods}
+\alias{closeDatabaseConnections,FootprintFinder-method}
 \title{Class FootprintFinder}
 \usage{
 FootprintFinder(genome.database.uri, project.database.uri, quiet = TRUE)
@@ -32,6 +32,8 @@ An object of the FootprintFinder class that can reduce a list of genes to a subs
 to forming a TReNA object
 
 An object of the FootprintFinder class
+
+Closes the specified database connection
 }
 \description{
 The FootprintFinder class is designed to query 2 supplied footprint databases (a genome database

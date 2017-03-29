@@ -4,7 +4,7 @@
 \name{EnsembleSolver-class}
 \alias{EnsembleSolver-class}
 \alias{.EnsembleSolver}
-\title{An S4 class to represent an Ensemble Solver}
+\title{Class EnsembleSolver}
 \description{
-An S4 class to represent an Ensemble Solver
+Class EnsembleSolver
 }

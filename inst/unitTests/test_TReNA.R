@@ -438,7 +438,7 @@ test_ampAD.mef2c.154tfs.278samples.sqrtlasso <- function()
    
    trena <- TReNA(mtx.assay=mtx.asinh, solver="sqrtlasso", quiet=FALSE)
    tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
-   tbl <- solve(trena, target.gene, tfs, extraArgs = list("num.cores" = detectCores()))
+   tbl <- solve(trena, target.gene, tfs, extraArgs = list("num.cores" = parallel::detectCores()))
 
    # Check for empirical values
    tbl <- tbl[order(abs(tbl$beta), decreasing=TRUE),, drop = FALSE]

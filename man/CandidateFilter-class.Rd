@@ -5,7 +5,6 @@
 \alias{CandidateFilter-class}
 \alias{.CandidateFilter}
 \alias{CandidateFilter}
-\alias{CandidateFilter-class}
 \alias{CandidateFilter}
 \title{Class CandidateFilter}
 \usage{

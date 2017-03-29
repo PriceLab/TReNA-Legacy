@@ -6,7 +6,7 @@
 \alias{getCandidates-VarianceFilter}
 \title{Get candidate genes using the variance filter}
 \usage{
-getCandidates(obj, extraArgs)
+\S4method{getCandidates}{VarianceFilter}(obj, extraArgs)
 }
 \arguments{
 \item{obj}{An object of class VarianceFilter}
@@ -36,7 +36,8 @@ tfs <- getCandidates(variance.filter, extraArgs = list("target.gene" = target.ge
 \seealso{
 \code{\link{VarianceFilter}}
 
-Other getCandidate Methods: \code{\link{getCandidates,FootprintFilter-method}},
+Other getCandidate Methods: \code{\link{getCandidates,CandidateFilter-method}},
+  \code{\link{getCandidates,FootprintFilter-method}},
   \code{\link{getCandidates,NullFilter-method}},
   \code{\link{getCandidates,OpenChromFilter-method}}
 }

@@ -43,9 +43,6 @@ FootprintFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 #' Get candidate genes using the variance filter
 #'
 #' @aliases getCandidates-FootprintFilter
-#'
-#' @usage
-#' getCandidates(obj, extraArgs)
 #' 
 #' @param obj An object of class FootprintFilter
 #' @param extraArgs A named list containing 5 fields:

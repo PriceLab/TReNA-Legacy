@@ -33,8 +33,8 @@ RandomForestSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 
 } # RandomForestSolver, the constructor
 #------------------------------------------------------------------------------------------------------------------------
-#' @rdname RandomForestSolver-class
-#' 
+#' Get RandomForest Solver Name
+#'
 #' @param obj An object of class RandomForestSolver
 #' 
 #' @return "RandomForestSolver"
@@ -56,9 +56,6 @@ setMethod("getSolverName", "RandomForestSolver",
 #'
 #' @rdname solve.RandomForest
 #' @aliases run.RandomForestSolver solve.RandomForest
-#'
-#' @usage
-#' solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
 #'
 #' @param obj An object of class TReNA with "randomForest" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data

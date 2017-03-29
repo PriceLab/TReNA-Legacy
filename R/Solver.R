@@ -24,10 +24,13 @@
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
+#' @export
 setGeneric("getSolverName",   signature="obj", function(obj, target.gene, tfs) standardGeneric ("getSolverName"))
+#' @export
 setGeneric("getAssayData",    signature="obj", function(obj) standardGeneric ("getAssayData"))
+#' @export
 setGeneric("run",             signature="obj", function(obj, target.gene, tfs, tf.weights, extraArgs=list()) standardGeneric ("run"))
-
+#' @export
 setGeneric("rescalePredictorWeights",
                               signature="obj", function(obj, rawValue.min, rawValue.max, rawValues) standardGeneric ("rescalePredictorWeights"))
 #----------------------------------------------------------------------------------------------------
@@ -50,7 +53,6 @@ setGeneric("rescalePredictorWeights",
 
 Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
-
     # If a matrix is supplied, check the distribution to see if it's too big
     if(!is.na(max(mtx.assay))){        
         mtx.ratio <- (max(mtx.assay) - stats::quantile(mtx.assay,0.75))/(stats::quantile(mtx.assay,0.75) - stats::median(mtx.assay))        
@@ -64,12 +66,11 @@ Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 
 } # Solver, the constructor
 #----------------------------------------------------------------------------------------------------
-#' @title Get Assay Data from Solver
+#' Get Assay Data from Solver
 #'
-#' @description
 #' Retrieve the assay matrix of gene expression data from a Solver object
 #' 
-#' @name getAssayData-methods
+#' @rdname getAssayData
 #' @aliases getAssayData
 #' 
 #' @param obj An object of class Solver
@@ -91,4 +92,61 @@ setMethod("getAssayData", "Solver",
       obj@mtx.assay
       })
 
+#----------------------------------------------------------------------------------------------------
+#' Get the Solver Name from a Solver Object
+#'
+#' Retrieve the name of the solver specified in a solver object
+#'
+#' @rdname getSolverName
+#' @aliases getSolverName
+#'
+#' @param obj An object of class Solver
+#'
+#' @export
+#'
+#' @return A string giving the name of the solver type for the given Solver object
+#'
+#' @examples
+#'
+#' # Create a LassoSolver object using the included Alzheimer's data and retrieve the solver name
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' solver <- LassoSolver(mtx.sub)
+#' mtx <- getSolverName(solver)
+
+setMethod("getSolverName", "Solver",
+
+          function(obj){
+              #Call the appropriate method
+              callNextMethod()
+          })
+
+#----------------------------------------------------------------------------------------------------
+#' Rescale the Predictor Weights
+#'
+#' Rescale the predictor weights for a specified solver object
+#'
+#' @rdname rescalePredictorWeights
+#' @aliases rescalePredictorWeights
+#'
+#' @param obj An object of the Solver class
+#' @param rawValue.min The minimum value of the raw expression values
+#' @param rawValue.max The maximum value of the raw expression values
+#' @param rawValues A matrix of raw expression values
+#'
+#' @export
+#'
+#' @return A matrix of the raw values re-scaled using the minimum and maximum values
+#'
+#' @examples
+#' # Create a LassoSolver object using the included Alzheimer's data and rescale the predictors
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' solver <- LassoSolver(mtx.sub)
+#' mtx <- rescalePredictorWeights(solver, rawValue.min = min(mtx.sub),
+#' rawValue.max = max(mtx.sub), rawValues = mtx.sub)
+setMethod("rescalePredictorWeights", "Solver",
+
+          function(obj, rawValue.min, rawValue.max, rawValues){
+              #Call the appropriate method
+              callNextMethod()
+          })
 #----------------------------------------------------------------------------------------------------

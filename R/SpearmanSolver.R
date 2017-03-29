@@ -61,9 +61,6 @@ setMethod("getSolverName", "SpearmanSolver",
 #' @description Given a TReNA object with Spearman as the solver, use the \code{\link{cor}} function with
 #' \code{method = "spearman"} to esimate coefficients for each transcription factor as a predictor of the target
 #' gene's expression level
-#'
-#' @usage
-#' solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
 #' 
 #' @param obj An object of class TReNA with "spearman" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
@@ -71,7 +68,7 @@ setMethod("getSolverName", "SpearmanSolver",
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
 #' @param extraArgs Modifiers to the Spearman solver
 #'
-#' @return fit The set of Spearman Correlation Coefficients between each transcription factor and the target gene.
+#' @return The set of Spearman Correlation Coefficients between each transcription factor and the target gene.
 #'
 #' @seealso \code{\link{cor}}
 #'

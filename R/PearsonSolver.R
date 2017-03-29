@@ -60,16 +60,13 @@ setMethod("getSolverName", "PearsonSolver",
 #' @description Given a TReNA object with Pearson as the solver, use the \code{\link{cor}} function to
 #' estimate coefficients for each transcription factor as a perdictor of the target gene's expression level
 #'
-#' @usage
-#' solve(obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list())
-#' 
 #' @param obj An object of class TReNA with "pearson" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
 #' @param extraArgs Modifiers to the Pearson solver
 #'
-#' @return fit The set of Pearson Correlation Coefficients between each transcription factor and the target gene.
+#' @return The set of Pearson Correlation Coefficients between each transcription factor and the target gene.
 #'
 #' @seealso \code{\link{cor}}
 #'

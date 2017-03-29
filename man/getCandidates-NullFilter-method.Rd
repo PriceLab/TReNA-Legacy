@@ -6,7 +6,7 @@
 \alias{getCandidates-NullFilter}
 \title{Get candidate genes using the null filter}
 \usage{
-getCandidates(obj, extraArgs)
+\S4method{getCandidates}{NullFilter}(obj, extraArgs = list())
 }
 \arguments{
 \item{obj}{An object of class NullFilter}
@@ -29,7 +29,8 @@ tfs <- getCandidates(null.filter)
 \seealso{
 \code{\link{NullFilter}}
 
-Other getCandidate Methods: \code{\link{getCandidates,FootprintFilter-method}},
+Other getCandidate Methods: \code{\link{getCandidates,CandidateFilter-method}},
+  \code{\link{getCandidates,FootprintFilter-method}},
   \code{\link{getCandidates,OpenChromFilter-method}},
   \code{\link{getCandidates,VarianceFilter-method}}
 }

@@ -6,7 +6,7 @@
 \alias{getCandidates-FootprintFilter}
 \title{Get candidate genes using the variance filter}
 \usage{
-getCandidates(obj, extraArgs)
+\S4method{getCandidates}{FootprintFilter}(obj, extraArgs)
 }
 \arguments{
 \item{obj}{An object of class FootprintFilter}
@@ -45,7 +45,8 @@ tfs <- getCandidates(footprint.filter, extraArgs = list("target.gene" = target.g
 \seealso{
 \code{\link{FootprintFilter}}
 
-Other getCandidate Methods: \code{\link{getCandidates,NullFilter-method}},
+Other getCandidate Methods: \code{\link{getCandidates,CandidateFilter-method}},
+  \code{\link{getCandidates,NullFilter-method}},
   \code{\link{getCandidates,OpenChromFilter-method}},
   \code{\link{getCandidates,VarianceFilter-method}}
 }
