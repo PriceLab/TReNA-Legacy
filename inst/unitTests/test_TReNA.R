@@ -32,6 +32,7 @@ runTests <- function()
    test_scalePredictorPenalties.lasso()
    test_eliminateSelfTFs()
 
+   test_CandidateFilter()
    test_NullFilter()
    test_VarianceFilter()
    test_FootprintFilter()
@@ -645,5 +646,15 @@ test_MatrixWarnings <- function()
     options(warn = 1)
 
 } #test_MatrixWarnings
+#----------------------------------------------------------------------------------------------------
+test_CandidateFilter <- function()
+{
+    printf("--- test_CandidateFilter")
+
+    # Create a filter with an empty matrix
+    candidate.filter <- CandidateFilter(matrix())
+    checkEquals(is(candidate.filter), "CandidateFilter")
+
+} #test_CandidateFilter
 #----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()
