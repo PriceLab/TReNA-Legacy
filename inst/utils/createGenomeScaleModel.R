@@ -27,7 +27,7 @@ createGenomeScaleModel <- function(mtx.assay, gene.list, genome.db.uri, project.
 
         # Solve the trena problem using the supplied values and the ensemble solver
 
-        if(!(class(out.list == "try-error"))){
+        if(!(class(out.list) == "try-error")){
             if(length(out.list$tfs) > 0){
                 
                 solve(trena, target.gene, out.list$tfs, extraArgs = extraArgs)}
