@@ -101,7 +101,8 @@ setMethod("getCandidates", "FootprintFilter",
               candidate.tfs <- intersect(tbl.out$tf, rownames(obj@mtx.assay))
               
               # Return the TFs
-              return(candidate.tfs)
+              return(list("tfs" = candidate.tfs,
+                          "tbl" = tbl.out))
           }
           
 )

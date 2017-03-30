@@ -14,7 +14,7 @@ runTests <- function()
    test_getFootprintsForGene()
    test_mapMotifsToTFsMergeIntoTable()
    
-   #test_getFootprintsForEnsemblGenes()
+#   test_getFootprintsForEnsemblGenes()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -281,7 +281,7 @@ test_getFootprintsForEnsemblGenes <- function()
 
    goi <- genes[3]
    loc <- getGenePromoterRegion(fp, goi, 250, 0)
-   tbl <- getFootprints(fp, goi, 250, 0)
+   tbl <- getFootprintsForGene(fp, goi, 250, 0)
    checkTrue(all(tbl$mfpStart >= loc$start))
    checkTrue(all(tbl$mfpStart <= loc$end))
    checkTrue(all(tbl$mfpEnd >= loc$start))

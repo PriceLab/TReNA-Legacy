@@ -17,19 +17,27 @@ createGenomeScaleModel <- function(mtx.assay, gene.list, genome.db.uri, project.
 
         # Designate the target gene and grab the tfs
         target.gene <- gene.list[[i]]        
-        tfs <- getCandidates(footprint.filter,extraArgs = list(
+        out.list <- try(getCandidates(footprint.filter,extraArgs = list(
                                                   "target.gene" = target.gene,
                                                   "genome.db.uri" = genome.db.uri,
                                                   "project.db.uri" = project.db.uri,
                                                   "size.upstream" = size.upstream,                                          
-                                                  "size.downstream" = size.downstream))
+                                                  "size.downstream" = size.downstream)),
+                        silent = TRUE)
 
         # Solve the trena problem using the supplied values and the ensemble solver
-        if(length(tfs) > 0){
-        solve(trena, target.gene, tfs, extraArgs = extraArgs)}
-        else{NULL}
-    }
 
+        if(is.character(out.list$tfs)){
+            if(length(out.list$tfs) > 0){
+                
+                solve(trena, target.gene, out.list$tfs, extraArgs = extraArgs)}
+            
+            else{NULL}
+
+            
+        }
+        else{NULL}
+}
     # Stop the cluster
     stopCluster(cl)
     

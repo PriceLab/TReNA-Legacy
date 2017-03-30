@@ -1,4 +1,4 @@
-#' @title Create a HumanDNAseClusterFilter object
+#' @title Create a HumanDNAseClusterFilter objects
 #'
 #' @description
 #' An HumanDNAseClusterFilter object allows for filtering based on a supplied chromosome and region. Using its
@@ -113,7 +113,7 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
         result <- list(tbl=tbl.summary,
                        tfs=all.tfs)
 
-	}) # getCandidates
+    }) # getCandidates
 
 #----------------------------------------------------------------------------------------------------
 .getRegions <- function(chromosome, start, end, score.threshold=200)

@@ -26,6 +26,7 @@ export(
 )
 
 exportMethods(
+    closeDatabaseConnections,
     getCandidates,
     getAssayData,
     getChromLoc,
