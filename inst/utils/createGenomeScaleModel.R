@@ -12,22 +12,17 @@ createGenomeScaleModel <- function(mtx.assay, gene.list, genome.db.uri, project.
         num.cores <- detectCores()/2}  
     cl <- makeForkCluster(nnodes = num.cores)
     registerDoParallel(cl)
-
-    
-
-#    dumb.test <- foreach(i = 1:10) %dopar% {
-#        i+1}
     
     full.result.list <- foreach(i = 1:length(gene.list), .packages='TReNA') %dopar% {
 
         # Designate the target gene and grab the tfs
         target.gene <- gene.list[[i]]        
-        tfs <- getCandidates(footprint.filter,
-                             target.gene = target.gene,
-                             genome.db.uri = genome.db.uri,
-                             project.db.uri = project.db.uri,
-                             size.upstream = size.upstream,
-                             size.downstream = size.downstream)
+        tfs <- getCandidates(footprint.filter,extraArgs = list(
+                                                  "target.gene" = target.gene,
+                                                  "genome.db.uri" = genome.db.uri,
+                                                  "project.db.uri" = project.db.uri,
+                                                  "size.upstream" = size.upstream,                                          
+                                                  "size.downstream" = size.downstream))
 
         # Solve the trena problem using the supplied values and the ensemble solver
         if(length(tfs) > 0){
