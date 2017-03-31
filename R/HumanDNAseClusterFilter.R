@@ -1,4 +1,4 @@
-#' @title Create a HumanDNAseClusterFilter objects
+#' @title Create a HumanDNAseClusterFilter object
 #'
 #' @description
 #' An HumanDNAseClusterFilter object allows for filtering based on a supplied chromosome and region. Using its
@@ -91,32 +91,35 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
         if("motif.min.match.percentage" %in% names(extraArgs))
             motif.min.match.percentage <- extraArgs$motif.min.match.percentage
 
-        tbl.regions <- .getRegions(chrom, start, end, region.score.threshold)
+        tbl.regions <- .getRegions(chrom, start, end, region.score.threshold, obj@quiet)
         seqs <- .getSequence(tbl.regions)
         tbl.motifs <- .getScoredMotifs(seqs, motif.min.match.percentage, obj@quiet)
         region.count <- length(seqs)
         tbl.summary <- data.frame()
+        all.tfs <- c()
         for(i in seq_len(region.count)){
-            tbl.summary <- rbind(tbl.summary, cbind(tbl.motifs[[i]], tbl.regions[i,]))
+            #printf("HumanDNAseClusterFilter, line 100, combining tbl.motifs and tbl.regions into tbl.summary")
+            #browser();
+            if(nrow(tbl.motifs[[i]]) > 0)
+               tbl.summary <- rbind(tbl.summary, cbind(tbl.motifs[[i]], tbl.regions[i,]))
             }
-        colnames(tbl.summary) <- c("motif.start", "motif.end", "motif.width", "motif.score", "motif", "match",
-                                   "strand", "chrom", "regionStart", "regionEnd", "regionScore", "sourceCount")
-        tbl.summary <- tbl.summary[, c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount", "motif",
-                                   "match", "motif.start", "motif.end", "motif.width", "motif.score", "strand")]
-        tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE,
-                             header=TRUE)
-
-        tfs.by.motif <- lapply(tbl.summary$motif, function(m) subset(tbl.mg, motif==m)$tf.gene)
-        all.tfs <- sort(unique(unlist(tfs.by.motif)))
-        tfs.by.motif.joined <- unlist(lapply(tfs.by.motif, function(m) paste(m, collapse=";")))
-        tbl.summary$tf <- tfs.by.motif.joined
-        result <- list(tbl=tbl.summary,
-                       tfs=all.tfs)
-
-    }) # getCandidates
+        if(nrow(tbl.summary) > 0){
+           colnames(tbl.summary) <- c("motif.start", "motif.end", "motif.width", "motif.score", "motif", "match",
+                                      "strand", "chrom", "regionStart", "regionEnd", "regionScore", "sourceCount")
+           tbl.summary <- tbl.summary[, c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount", "motif",
+                                      "match", "motif.start", "motif.end", "motif.width", "motif.score", "strand")]
+           tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE,
+                                header=TRUE)
+           tfs.by.motif <- lapply(tbl.summary$motif, function(m) subset(tbl.mg, motif==m)$tf.gene)
+           all.tfs <- sort(unique(unlist(tfs.by.motif)))
+           tfs.by.motif.joined <- unlist(lapply(tfs.by.motif, function(m) paste(m, collapse=";")))
+           tbl.summary$tf <- tfs.by.motif.joined
+           }
+        list(tbl=tbl.summary,tfs=all.tfs)
+	}) # getCandidates
 
 #----------------------------------------------------------------------------------------------------
-.getRegions <- function(chromosome, start, end, score.threshold=200)
+.getRegions <- function(chromosome, start, end, score.threshold=200, quiet=TRUE)
 {
    driver <- RMySQL::MySQL()
    host <- "genome-mysql.cse.ucsc.edu"
@@ -125,19 +128,55 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
 
    ucsc.db <- DBI::dbConnect(driver, user = user, host = host, dbname = dbname)
 
-   # Pull out the regions corresponding to the region in the ENCODE
+      # Pull out the regions corresponding to the region in ENCODE
    query <- paste("select chrom, chromStart, chromEnd, score, sourceCount from wgEncodeRegDnaseClustered where",
                   sprintf("chrom = '%s'", chromosome),
                   sprintf("and chromStart >= %d", start),
                   sprintf("and chromEnd <= %d", end),
                   collapse = " ")
 
-   suppressWarnings(  # MySQL returns unsigned integers.  do not wish to see the conversion warnings
+      # handle the usual case first: a start:end region many times larger than a typical DHS region
+   suppressWarnings(  # MySQL returns unsigned integers.  hide these unproblematic conversion warnings
      tbl.regions <- DBI::dbGetQuery(ucsc.db, query)
      )
 
+   if(!quiet)
+      printf("%d DHS regions reported in %d bases, start:end unmodified", nrow(tbl.regions), 1 + end - start)
+
+
+      # if no hits, then perhaps a very small region is requested, one which falls entirely within a DHS region
+   if(nrow(tbl.regions) == 0) {
+      extension <- 10000
+      if(!quiet)
+         printf("possible that start:end (%d) is small relative to DHS regions, extend by %d", (1 + end - start),
+                extension);
+      query <- paste("select chrom, chromStart, chromEnd, score, sourceCount from wgEncodeRegDnaseClustered where",
+                      sprintf("chrom = '%s'", chromosome),
+                      sprintf("and chromStart >= %d", start - extension),
+                      sprintf("and chromEnd   <= %d", end + extension),
+                      collapse = " ")
+      suppressWarnings(  # MySQL returns unsigned integers.  hide these unproblematic conversion warnings
+         tbl.regionsExtended <- DBI::dbGetQuery(ucsc.db, query)
+        )
+      #browser()
+      if(nrow(tbl.regionsExtended) > 0) { # now find just the intersection of DHS and requested region
+          if(!quiet)
+             printf("tbl.regionsExtended: %d rows, now do intersect", nrow(tbl.regionsExtended));
+          gr.regions <- with(tbl.regionsExtended, GRanges(seqnames=chromosome, IRanges(chromStart, chromEnd)))
+          gr.target <- GRanges(seqnames=chromosome, IRanges(start, end))
+          gr.intersect <- GenomicRanges::intersect(gr.target, gr.regions, ignore.strand=TRUE)
+          if(length(gr.intersect) == 1){
+             region.index <- subjectHits(findOverlaps(gr.target, gr.regions))
+             tbl.regions <- tbl.regionsExtended[region.index,]
+             tbl.regions$chromStart[1] <- max(tbl.regions$chromStart[1], start)
+             tbl.regions$chromEnd[1] <- min(tbl.regions$chromEnd[1], end)
+             } # one region from the extended query intersects with the requested start:end.
+          } # small region query, within DHS region
+      } # small region, extension search
+
    DBI::dbDisconnect(ucsc.db)
 
+   #browser();
    subset(tbl.regions, score >= score.threshold)
 
 } # .getRegions
@@ -155,15 +194,48 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
 
 } # .getSequence
 #----------------------------------------------------------------------------------------------------
+.matchForwardAndReverse <- function(sequence, pfm, motifName, min.match.percentage=95, quiet=TRUE)
+{
+   min.match.as.string <- sprintf("%02d%%", min.match.percentage)
+
+   hits.fwd <- matchPWM(pfm, sequence, with.score=TRUE, min.score=min.match.as.string)
+   seq.revcomp <- as.character(reverseComplement(DNAString(sequence)))
+   hits.rev <- matchPWM(pfm, seq.revcomp, with.score=TRUE, min.score=min.match.as.string)
+
+   tbl <- data.frame()
+   if(length(hits.fwd) > 0){
+      if(!quiet) printf("%d +", length(hits.fwd))
+      match <- substring(as.character(subject(hits.fwd)), start(ranges(hits.fwd)), end(ranges(hits.fwd)))
+      tbl <- data.frame(ranges(hits.fwd), score=mcols(hits.fwd)$score, motif=motifName, match=match, strand="+",
+                        stringsAsFactors=FALSE)
+      }
+
+   if(length(hits.rev) > 0){
+      if(!quiet) printf("%d -", length(hits.rev))
+      match <- substring(as.character(subject(hits.rev)), start(ranges(hits.rev)), end(ranges(hits.rev)))
+      tbl.rev <- data.frame(ranges(hits.rev), score=mcols(hits.rev)$score, motif=motifName, match=match, strand="-",
+                            stringsAsFactors=FALSE)
+         # transform the start/end so that they are forward-strand relative
+      true.start <- 1 + nchar(sequence) - tbl.rev$end
+      true.end   <- 1 + nchar(sequence) - tbl.rev$start
+      tbl.rev$start <- true.start
+      tbl.rev$end   <- true.end
+      tbl <- rbind(tbl, tbl.rev)
+      }
+
+   tbl
+
+} # .matchForwardAndReverse
+#----------------------------------------------------------------------------------------------------
 .findMotifs <- function(sequence, pfms, min.match.percentage=95, quiet=TRUE)
 {
    min.match.as.string <- sprintf("%02d%%", min.match.percentage)
 
    search <- function(motifName, mtx, seq){
-      #browser()
       hits.fwd <- matchPWM(mtx, seq, with.score=TRUE, min.score=min.match.as.string)
       seq.revcomp <- as.character(reverseComplement(DNAString(seq)))
       hits.rev <- matchPWM(mtx, seq.revcomp, with.score=TRUE, min.score=min.match.as.string)
+      #browser()
       tbl <- data.frame()
       if(length(hits.fwd) > 0){
           if(!quiet) printf("%d +", length(hits.fwd))
@@ -180,7 +252,8 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
        }
 
     count <- length(pfms)
-    xx <- lapply(1:count, function(i) search(names(pfms)[i], pfms[[i]], sequence))
+    #xx <- lapply(1:count, function(i) search(names(pfms)[i], pfms[[i]], sequence))
+    xx <- lapply(1:count, function(i) .matchForwardAndReverse(sequence, pfms[[i]], names(pfms)[i], min.match.percentage, quiet))
     tbl.result <- do.call("rbind", xx)
     if(nrow(tbl.result) == 0){
       return(data.frame())
@@ -252,7 +325,6 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
 
    result <- lapply(seqs, function(seq) .findMotifs(seq, pfms, min.match.percentage, quiet))
    result
-
 
 } # .getScoredMotifs
 #----------------------------------------------------------------------------------------------------
