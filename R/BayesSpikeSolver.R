@@ -1,4 +1,4 @@
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #' An S4 class to represent a Bayes Spike solver
 #'
 #' @import vbsr
@@ -8,7 +8,7 @@
 #' @name BayesSpikeSolver-class
 
 .BayesSpikeSolver <- setClass ("BayesSpikeSolver", contains="Solver")
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #' Create a Solver class object using the Bayes Spike Solver
 #' 
 #' @param mtx.assay An assay matrix of gene expression data
@@ -32,25 +32,6 @@ BayesSpikeSolver <- function(mtx.assay=matrix(), quiet=TRUE)
     obj
 
 } # BayesSpikeSolver, the constructor
-#------------------------------------------------------------------------------------------------------------------------
-#' Get Bayes Spike Solver name
-#'
-#' @param obj An object of the class BayesSpikeSolver
-#' 
-#' @return "BayesSpikeSolver"
-#'
-#' @export
-#' 
-#' @examples
-#' solver <- BayesSpikeSolver()
-#' getSolverName(solver)
-
-setMethod("getSolverName", "BayesSpikeSolver",
-
-  function (obj){
-     return("BayesSpikeSolver")
-     })
-
 #----------------------------------------------------------------------------------------------------
 #' Run the Bayes Spike Solver
 #'
@@ -122,33 +103,5 @@ setMethod("run", "BayesSpikeSolver",
     tbl.out$gene.cor <- as.numeric(gene.cor)
     tbl.out
     })
-
-
 #----------------------------------------------------------------------------------------------------
-#' Rescale Bayes Spike Predictor Weights
-#'
-#' @aliases rescalePredictorWeights.BayesSpikeSolver
-#'
-#' @param obj An object of class BayesSpikeSolver
-#' @param rawValue.min The minimum value of the raw expression values
-#' @param rawValue.max The maximum value of the raw expression values
-#' @param rawValues A matrix of raw expression values
-#'
-#' @export
-#'
-#' @return A matrix of the raw values re-scaled using the minimum and maximum values
 
-# lasso penalizes predictors on a scale of 1 (full weight) to infinity (zero weight)
-# hwere we wish to support incoming rawValues scaled between a possibly theoretical
-# rawValue.min and rawValue.max
-# we have empirical evidence that <large but non-infinite number> functions as a full penalty
-# without distorting the scale so much that even good rawValues get reduced to nothing
-# which is what .Machine$double.xmax would do
-
-setMethod("rescalePredictorWeights", "BayesSpikeSolver",
-
-   function (obj, rawValue.min, rawValue.max, rawValues){
-      rawValues
-      })
-
-#----------------------------------------------------------------------------------------------------

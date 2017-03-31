@@ -33,25 +33,6 @@ LassoPVSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 
 } # LassoPVSolver, the constructor
 #------------------------------------------------------------------------------------------------------------------------
-#' Get LassoPV Solver name
-#'
-#' @param obj An object of class LassoPVSolver
-#' 
-#' @return "LassoPVSolver"
-#'
-#' @export
-#' 
-#' @examples
-#' solver <- LassoPVSolver()
-#' getSolverName(solver)
-
-setMethod("getSolverName", "LassoPVSolver",
-
-          function (obj){              
-              return("LassoPVSolver")              
-     })
-
-#----------------------------------------------------------------------------------------------------
 #' Run the LASSO P-Value Solver
 #'
 #' @rdname solve.LassoPV
@@ -122,31 +103,3 @@ setMethod("run", "LassoPVSolver",
               return(tbl)
 })
 #----------------------------------------------------------------------------------------------------
-#' Rescale LASSO P-Value Predictor Weights
-#'
-#' @aliases rescalePredictorWeights.LassoPVSolver
-#'
-#' @param obj An object of class LassoPVSolver
-#' @param rawValue.min The minimum value of the raw expression values
-#' @param rawValue.max The maximum value of the raw expression values
-#' @param rawValues A matrix of raw expression values
-#'
-#' @export
-#'
-#' @return A matrix of the raw values re-scaled using the minimum and maximum values
-
-# lasso penalizes predictors on a scale of 1 (full weight) to infinity (zero weight)
-# here we wish to support incoming rawValues scaled between a possibly theoretical
-# rawValue.min and rawValue.max
-# we have empirical evidence that <large but non-infinite number> functions as a full penalty
-# without distorting the scale so much that even good rawValues get reduced to nothing
-# which is what .Machine$double.xmax would do
-
-setMethod("rescalePredictorWeights", "LassoPVSolver",
-
-   function (obj, rawValue.min, rawValue.max, rawValues){
-      1 - ((rawValues-rawValue.min)/(rawValue.max-rawValue.min))
-      })
-
-#----------------------------------------------------------------------------------------------------
-

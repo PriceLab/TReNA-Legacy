@@ -21,7 +21,7 @@ Get candidate genes using a CandidateFilter object
 }
 \seealso{
 Other getCandidate Methods: \code{\link{getCandidates,FootprintFilter-method}},
+  \code{\link{getCandidates,HumanDNAseClusterFilter-method}},
   \code{\link{getCandidates,NullFilter-method}},
-  \code{\link{getCandidates,OpenChromFilter-method}},
   \code{\link{getCandidates,VarianceFilter-method}}
 }

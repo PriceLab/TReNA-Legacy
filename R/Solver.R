@@ -25,8 +25,6 @@
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
 #' @export
-setGeneric("getSolverName",   signature="obj", function(obj, target.gene, tfs) standardGeneric ("getSolverName"))
-#' @export
 setGeneric("getAssayData",    signature="obj", function(obj) standardGeneric ("getAssayData"))
 #' @export
 setGeneric("run",             signature="obj", function(obj, target.gene, tfs, tf.weights, extraArgs=list()) standardGeneric ("run"))
@@ -91,39 +89,12 @@ setMethod("getAssayData", "Solver",
    function (obj){
       obj@mtx.assay
       })
-
-#----------------------------------------------------------------------------------------------------
-#' Get the Solver Name from a Solver Object
-#'
-#' Retrieve the name of the solver specified in a solver object
-#'
-#' @rdname getSolverName
-#' @aliases getSolverName
-#'
-#' @param obj An object of class Solver
-#'
-#' @export
-#'
-#' @return A string giving the name of the solver type for the given Solver object
-#'
-#' @examples
-#'
-#' # Create a LassoSolver object using the included Alzheimer's data and retrieve the solver name
-#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-#' solver <- LassoSolver(mtx.sub)
-#' mtx <- getSolverName(solver)
-
-setMethod("getSolverName", "Solver",
-
-          function(obj){
-              #Call the appropriate method
-              callNextMethod()
-          })
-
 #----------------------------------------------------------------------------------------------------
 #' Rescale the Predictor Weights
 #'
-#' Rescale the predictor weights for a specified solver object
+#' Solvers such as LASSO penalize predictors on a scale of 1 (full weight) to infinity (zero weight).
+#' With the \code{rescalePredictorWeights} method, incoming raw values can be scaled between a possibly
+#' theoretical minimum and maximum value. 
 #'
 #' @rdname rescalePredictorWeights
 #' @aliases rescalePredictorWeights
@@ -141,12 +112,13 @@ setMethod("getSolverName", "Solver",
 #' # Create a LassoSolver object using the included Alzheimer's data and rescale the predictors
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 #' solver <- LassoSolver(mtx.sub)
+#' raw.values <- c(241, 4739, 9854, 22215, 658334)
+#' cooked.values <- rescalePredictorWeights(solver, 
 #' mtx <- rescalePredictorWeights(solver, rawValue.min = min(mtx.sub),
 #' rawValue.max = max(mtx.sub), rawValues = mtx.sub)
 setMethod("rescalePredictorWeights", "Solver",
 
           function(obj, rawValue.min, rawValue.max, rawValues){
-              #Call the appropriate method
-              callNextMethod()
+              1 - ((rawValues-rawValue.min)/(rawValue.max-rawValue.min))           
           })
 #----------------------------------------------------------------------------------------------------

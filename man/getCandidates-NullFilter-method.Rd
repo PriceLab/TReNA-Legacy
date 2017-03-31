@@ -31,6 +31,6 @@ tfs <- getCandidates(null.filter)
 
 Other getCandidate Methods: \code{\link{getCandidates,CandidateFilter-method}},
   \code{\link{getCandidates,FootprintFilter-method}},
-  \code{\link{getCandidates,OpenChromFilter-method}},
+  \code{\link{getCandidates,HumanDNAseClusterFilter-method}},
   \code{\link{getCandidates,VarianceFilter-method}}
 }

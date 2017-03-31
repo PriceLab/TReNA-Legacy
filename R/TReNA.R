@@ -17,7 +17,9 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' @export
 setGeneric("solve",                    signature="obj", function(obj, target.gene, tfs,
                                                                  tf.weights=rep(1, length(tfs)), extraArgs=list())
-                                                           standardGeneric ("solve"))
+    standardGeneric ("solve"))
+#' @export
+setGeneric("getSolverName",   signature="obj", function(obj) standardGeneric ("getSolverName"))
 #----------------------------------------------------------------------------------------------------
 #' @title Class TReNA
 #'
@@ -54,24 +56,16 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
     stopifnot(solver %in% c("lasso", "randomForest", "bayesSpike", "pearson",
                             "spearman","sqrtlasso","lassopv","ridge", "ensemble"))
 
-    if(solver == "lasso")     
-        solver <- LassoSolver(mtx.assay) 
-    else if(solver == "randomForest")    
-        solver <- RandomForestSolver(mtx.assay) 
-    else if(solver == "bayesSpike")  
-        solver <- BayesSpikeSolver(mtx.assay)    
-    else if(solver == "pearson")        
-        solver <- PearsonSolver(mtx.assay)    
-    else if(solver == "spearman")        
-        solver <- SpearmanSolver(mtx.assay)    
-    else if(solver == "sqrtlasso")        
-        solver <- SqrtLassoSolver(mtx.assay)    
-    else if(solver == "lassopv")        
-        solver <- LassoPVSolver(mtx.assay)    
-    else if(solver == "ridge")        
-        solver <- RidgeSolver(mtx.assay)
-    else if(solver == "ensemble")
-        solver <- EnsembleSolver(mtx.assay)
+    solver <- switch(solver,
+                     "lasso" = LassoSolver(mtx.assay),
+                     "randomForest" = RandomForestSolver(mtx.assay),
+                     "bayesSpike" = BayesSpikeSolver(mtx.assay),
+                     "pearson" = PearsonSolver(mtx.assay),
+                     "spearman" = SpearmanSolver(mtx.assay),
+                     "sqrtlasso" = SqrtLassoSolver(mtx.assay),
+                     "lassopv" = LassoPVSolver(mtx.assay),
+                     "ridge" = RidgeSolver(mtx.assay),
+                     "ensemble" = EnsembleSolver(mtx.assay))
 
     .TReNA(solver=solver, quiet=quiet)    
 
@@ -114,3 +108,30 @@ setMethod("solve", "TReNA",
       run(obj@solver, target.gene, tfs, tf.weights, extraArgs)
       })
 #----------------------------------------------------------------------------------------------------
+#' Get the Solver Name from a TReNA Object
+#'
+#' Retrieve the name of the solver specified in a TReNA object
+#'
+#' @rdname getSolverName
+#' @aliases getSolverName
+#'
+#' @param obj An object of class TReNA
+#'
+#' @export
+#'
+#' @return A string giving the name of the solver type for the given Solver object
+#'
+#' @examples
+#'
+#' # Create a LassoSolver object using the included Alzheimer's data and retrieve the solver name
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' solver <- TReNA(mtx.sub, solver = "lasso")
+#' mtx <- getSolverName(solver)
+
+setMethod("getSolverName", "TReNA",
+
+          function(obj){
+              # Return the solver name stored in the object
+              return(class(obj@solver)[1])                
+          })
+

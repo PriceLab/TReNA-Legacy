@@ -28,25 +28,6 @@ EnsembleSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 
 } # EnsembleSolver, the constructor
 #----------------------------------------------------------------------------------------------------
-#' Get Ensemble Solver name
-#'
-#' @param obj An object of class EnsembleSolver
-#'
-#' @return "EnsembleSolver"
-#'
-#' @export
-#' 
-#' @examples
-#' solver <- EnsembleSolver()
-#' getSolverName(solver)
-
-setMethod("getSolverName", "EnsembleSolver",
-
-          function(obj){
-              return("EnsembleSolver")
-          })
-
-#----------------------------------------------------------------------------------------------------
 #' Run the Ensemble Solver
 #'
 #' @name run,EnsembleSolver-method

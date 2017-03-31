@@ -34,25 +34,6 @@ SpearmanSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 
 } #SpearmanSolver, the constructor
 #----------------------------------------------------------------------------------------------------
-#' Get Spearman Solver Name
-#'
-#' @param obj An object of class SpearmanSolver
-#' 
-#' @return "SpearmanSolver"
-#'
-#' @export
-#' 
-#' @examples
-#' solver <- SpearmanSolver()
-#' getSolverName(solver)
-
-setMethod("getSolverName", "SpearmanSolver",
-
-          function (obj){
-              return("SpearmanSolver")
-          })
-
-#----------------------------------------------------------------------------------------------------
 #' Run the Spearman Solver
 #'
 #' @rdname solve.Spearman

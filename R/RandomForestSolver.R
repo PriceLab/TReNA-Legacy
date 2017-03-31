@@ -8,7 +8,7 @@
 #' @rdname RandomForestSolver-class
 
 .RandomForestSolver <- setClass ("RandomForestSolver", contains="Solver")
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #' Create a Solver class object using the Random Forest solver
 #' 
 #' @param mtx.assay An assay matrix of gene expression data
@@ -32,25 +32,6 @@ RandomForestSolver <- function(mtx.assay=matrix(), quiet=TRUE)
     obj
 
 } # RandomForestSolver, the constructor
-#------------------------------------------------------------------------------------------------------------------------
-#' Get RandomForest Solver Name
-#'
-#' @param obj An object of class RandomForestSolver
-#' 
-#' @return "RandomForestSolver"
-#'
-#' @export
-#' 
-#' @examples
-#' solver <- RandomForestSolver()
-#' getSolverName(solver)
-
-setMethod("getSolverName", "RandomForestSolver",
-
-  function (obj){
-     return("RandomForestSolver")
-     })
-
 #----------------------------------------------------------------------------------------------------
 #' Run the Random Forest Solver
 #'

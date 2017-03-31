@@ -38,6 +38,6 @@ tfs <- getCandidates(variance.filter, extraArgs = list("target.gene" = target.ge
 
 Other getCandidate Methods: \code{\link{getCandidates,CandidateFilter-method}},
   \code{\link{getCandidates,FootprintFilter-method}},
-  \code{\link{getCandidates,NullFilter-method}},
-  \code{\link{getCandidates,OpenChromFilter-method}}
+  \code{\link{getCandidates,HumanDNAseClusterFilter-method}},
+  \code{\link{getCandidates,NullFilter-method}}
 }

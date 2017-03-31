@@ -34,24 +34,6 @@ PearsonSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 
 } #PearsonSolver, the constructor
 #----------------------------------------------------------------------------------------------------
-#' Get Pearson Solver name
-#'
-#' @param obj An object of class PearsonSolver
-#'
-#' @return "PearsonSolver
-#'
-#' @export
-#' 
-#' @examples
-#' solver <- PearsonSolver()
-#' getSolverName(solver)
-
-setMethod("getSolverName", "PearsonSolver",
-
-          function (obj){
-              return("PearsonSolver")
-          })
-#----------------------------------------------------------------------------------------------------
 #' Run the Pearson Solver
 #'
 #' @rdname solve.Pearson

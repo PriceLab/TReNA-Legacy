@@ -22,12 +22,16 @@
 A matrix of the raw values re-scaled using the minimum and maximum values
 }
 \description{
-Rescale the predictor weights for a specified solver object
+Solvers such as LASSO penalize predictors on a scale of 1 (full weight) to infinity (zero weight).
+With the \code{rescalePredictorWeights} method, incoming raw values can be scaled between a possibly
+theoretical minimum and maximum value.
 }
 \examples{
 # Create a LassoSolver object using the included Alzheimer's data and rescale the predictors
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 solver <- LassoSolver(mtx.sub)
+raw.values <- c(241, 4739, 9854, 22215, 658334)
+cooked.values <- rescalePredictorWeights(solver, 
 mtx <- rescalePredictorWeights(solver, rawValue.min = min(mtx.sub),
 rawValue.max = max(mtx.sub), rawValues = mtx.sub)
 }

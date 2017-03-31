@@ -28,25 +28,6 @@ LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 
 } # LassoSolver, the constructor
 #----------------------------------------------------------------------------------------------------
-#' Get Lasso Solver name
-#'
-#' @param obj An object of class LassoSolver
-#' 
-#' @return "LassoSolver"
-#'
-#' @export
-#' 
-#' @examples
-#' solver <- LassoSolver()
-#' getSolverName(solver)
-
-setMethod("getSolverName", "LassoSolver",
-
-  function (obj){
-     return("LassoSolver")
-     })
-
-#----------------------------------------------------------------------------------------------------
 #' Run the LASSO Solver
 #'
 #' @rdname solve.Lasso
@@ -102,34 +83,5 @@ setMethod("run", "LassoSolver",
 
       return(mtx.beta)
      })
-
-
-#----------------------------------------------------------------------------------------------------
-#' Rescale LASSO Predictor Weights
-#'
-#' @aliases rescalePredictorWeights.LassoSolver
-#'
-#' @param obj An object of class LassoSolver
-#' @param rawValue.min The minimum value of the raw expression values
-#' @param rawValue.max The maximum value of the raw expression values
-#' @param rawValues A matrix of raw expression values
-#'
-#' @export
-#' 
-#' @return A matrix of the raw values re-scaled using the minimum and maximum values
-
-# lasso penalizes predictors on a scale of 1 (full weight) to infinity (zero weight)
-# here we wish to support incoming rawValues scaled between a possibly theoretical
-# rawValue.min and rawValue.max
-# we have empirical evidence that <large but non-infinite number> functions as a full penalty
-# without distorting the scale so much that even good rawValues get reduced to nothing
-# which is what .Machine$double.xmax would do
-
-setMethod("rescalePredictorWeights", "LassoSolver",
-
-   function (obj, rawValue.min, rawValue.max, rawValues){
-      1 - ((rawValues-rawValue.min)/(rawValue.max-rawValue.min))
-      })
-
 #----------------------------------------------------------------------------------------------------
 

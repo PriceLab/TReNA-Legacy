@@ -16,9 +16,10 @@ runTests <- function()
 test_LassoSolverConstructor <- function()
 {
    printf("--- test_LassoSolverConstructor")
-   solver <- LassoSolver()
+   #solver <- LassoSolver()
+   solver <- TReNA(matrix(), solver = "lasso")
    checkEquals(getSolverName(solver), "LassoSolver")
-   checkTrue(all(c("LassoSolver", "Solver") %in% is(solver)))
+   #checkTrue(all(c("LassoSolver", "TReNA") %in% is(solver)))
 
 } # test_LassoSolverConstructor
 #----------------------------------------------------------------------------------------------------
