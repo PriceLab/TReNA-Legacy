@@ -14,7 +14,9 @@
 #' @aliases HumanDNAseClusterFilter
 
 #----------------------------------------------------------------------------------------------------
-.HumanDNAseClusterFilter <- setClass("HumanDNAseClusterFilter", contains = "CandidateFilter")
+.HumanDNAseClusterFilter <- setClass("HumanDNAseClusterFilter",
+                                     contains="CandidateFilter",
+                                     representation (pfms='list'))
 
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
@@ -36,7 +38,13 @@ printf <- function(...) print(noquote(sprintf(...)))
 
 HumanDNAseClusterFilter <- function(mtx.assay=matrix(), quiet=TRUE)
 {
-    .HumanDNAseClusterFilter(CandidateFilter(mtx.assay = mtx.assay, quiet = quiet))
+    uri <- "http://jaspar.genereg.net/html/DOWNLOAD/JASPAR_CORE/pfm/nonredundant/pfm_vertebrates.txt"
+    x <- .readRawJasparMatrices(uri)
+         # normalize, so that a frequency sum of 1.0 is true across the 4 possible bases at each position
+    pfms <- lapply(x, function(e) apply(e$matrix, 2, function(col) col/sum(col)))
+    names(pfms) <- as.character(lapply(x, function(e) e$title))
+
+    .HumanDNAseClusterFilter(CandidateFilter(mtx.assay = mtx.assay, quiet = quiet), pfms=pfms)
 
 } # HumanDNAseClusterFilter, the constructor
 #----------------------------------------------------------------------------------------------------
@@ -252,7 +260,6 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
        }
 
     count <- length(pfms)
-    #xx <- lapply(1:count, function(i) search(names(pfms)[i], pfms[[i]], sequence))
     xx <- lapply(1:count, function(i) .matchForwardAndReverse(sequence, pfms[[i]], names(pfms)[i], min.match.percentage, quiet))
     tbl.result <- do.call("rbind", xx)
     if(nrow(tbl.result) == 0){
@@ -328,3 +335,49 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
 
 } # .getScoredMotifs
 #----------------------------------------------------------------------------------------------------
+.parseLine <- function(textOfLine) {
+   # first delete the leading A, C, G or T.  then the square brackets.  then convert
+   x <- substr(textOfLine, 2, nchar(textOfLine))
+   x2 <- sub(" *\\[ *", "", x)
+   x3 <- sub(" *\\] *", "", x2)
+   counts <- as.integer(strsplit(x3, "\\s+", perl=TRUE)[[1]])
+   return(counts)
+   } # parseLine
+
+ .parseJasparPwm = function (lines) {
+   stopifnot(length(lines)==5) # title line, one line for each base
+   motif.name.raw = strsplit(lines[1], "\t")[[1]][1]
+   motif.name <- gsub(">", "", motif.name.raw, fixed=TRUE)
+     # expect 4 rows, and a number of columns we can discern from  the incoming text.
+   a.counts <- .parseLine(lines[[2]])
+   c.counts <- .parseLine(lines[[3]])
+   g.counts <- .parseLine(lines[[4]])
+   t.counts <- .parseLine(lines[[5]])
+   stopifnot(length(a.counts) == length(c.counts))
+   stopifnot(length(a.counts) == length(g.counts))
+   stopifnot(length(a.counts) == length(t.counts))
+   cols <- length(a.counts)
+   mtx <- matrix (nrow=4, ncol=cols, dimnames=list(c('A','C','G','T'), as.character(1:cols)))
+   mtx[1,] <- a.counts
+   mtx[2,] <- c.counts
+   mtx[3,] <- g.counts
+   mtx[4,] <- t.counts
+   return(list(title=motif.name, matrix=mtx))
+   } # parsePwm
+
+.readRawJasparMatrices = function (uri) {
+  all.lines <- scan(uri, what=character(0), sep='\n', quiet=TRUE)
+  title.lines <- grep ('^>', all.lines)
+  title.line.count <- length (title.lines)
+  max <- title.line.count - 1
+  pwms <- list()
+  for(i in 1:max){
+    start.line <- title.lines [i]
+    end.line <- title.lines [i+1] - 1
+    x <- .parseJasparPwm (all.lines [start.line:end.line])
+    pwms[[i]] <- list(title=x$title, matrix=x$matrix)
+    } # for i
+  invisible (pwms)
+  } # readRawJasparMatrices
+
+

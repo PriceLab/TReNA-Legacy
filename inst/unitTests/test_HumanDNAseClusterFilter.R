@@ -231,15 +231,18 @@ test_mef2cPromoter.normalUse <- function()
 test_rs34423320 <- function()
 {
    printf("--- test_rs34423320")
+     # chr1 167830170 167830170  rs34423320-C-T
 
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    checkTrue(exists("mtx.sub"))
    hdcf <- HumanDNAseClusterFilter(mtx.sub)
 
+     # chr1 167830170 167830170  rs34423320-C-T
 
-    # chr5:88,813,245-88,832,344: has just a few high scoring clusters
    chrom <- "chr1"
    snp.loc.hg38 <- 167830170
+   checkEquals(as.character(getSeq(reference.genome, chrom, snp.loc.hg38, snp.loc.hg38)), "C")
+
    start <- snp.loc.hg38 - 10
    end   <- snp.loc.hg38 + 10
 
@@ -250,9 +253,20 @@ test_rs34423320 <- function()
    x <- getCandidates(hdcf, args)
    checkEquals(sort(names(x)), c("tbl", "tfs"))
    checkTrue(all(c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount", "motif", "match", "motif.start", "motif.end", "motif.width", "motif.score", "strand", "tf") %in% colnames(x$tbl)))
-   checkTrue(nrow(x$tbl) > 15)     # 16 on (29 mar 2017)
-   checkTrue(length(x$tfs) > 200)  # 217 on (29 mar 2017)
+   checkTrue(nrow(x$tbl) == 2)
+   checkTrue(length(x$tfs) == 25
    checkEquals(length(which(duplicated(x$tfs))), 0)
+   checkEquals(x$tbl$motif, c("MA0081.1", "MA0056.1"))
 
-} # test_mef2cPromoter.normalUse
+   seq.wt <-  as.character(getSeq(reference.genome, "chr1", 167830170-10, 167830170+10))
+   seq.mut <- sprintf("%s%s%s", substr(seq.wt, 1, 10), "T", substr(seq.wt, 12, 21))
+
+   TReNA:::.findMotifs(seq.wt, hdcf@pfms["MA0081.1"], 90)
+   TReNA:::.findMotifs(seq.wt, hdcf@pfms["MA0056.1"], 90)
+   TReNA:::.findMotifs(seq.mut, hdcf@pfms["MA0081.1"], 90)
+   TReNA:::.findMotifs(seq.mut, hdcf@pfms["MA0056.1"], 90)
+
+   TReNA:::.getScoredMotifs(list(seq.wt, seq.mut), min.match.percentage=90, quiet=TRUE)
+
+} # test_rs34423320
 #----------------------------------------------------------------------------------------------------
