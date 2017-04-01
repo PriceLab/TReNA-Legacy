@@ -90,19 +90,24 @@ setMethod("getCandidates", "FootprintFilter",
               
               # Create a FootprintFinder object and find the footprints
               fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
-              tbl.fp <- getFootprintsForGene(fp, target.gene,
-                                             size.upstream=size.upstream, size.downstream=size.downstream)
+              tbl.fp <- try(getFootprintsForGene(fp, target.gene,
+                                                 size.upstream=size.upstream, size.downstream=size.downstream),
+                            silent = TRUE)
               
-              # Convert the footprints to genes and close the database connection
-              tbl.out <- mapMotifsToTFsMergeIntoTable(fp, tbl.fp)
-              closeDatabaseConnections(fp)
-
-              # Intersect the footprints with the rows in the matrix
-              candidate.tfs <- intersect(tbl.out$tf, rownames(obj@mtx.assay))
               
-              # Return the TFs
-              return(list("tfs" = candidate.tfs,
-                          "tbl" = tbl.out))
+              # Convert the footprints to genes if it's a table and close the database connection
+              if(!(class(tbl.fp) == "try-error")){
+                  tbl.out <- mapMotifsToTFsMergeIntoTable(fp, tbl.fp)                        
+                  closeDatabaseConnections(fp)
+                  # Intersect the footprints with the rows in the matrix                  
+                  candidate.tfs <- intersect(tbl.out$tf, rownames(obj@mtx.assay))                             
+                  # Return the TFs                  
+                  return(list("tfs" = candidate.tfs,                              
+                              "tbl" = tbl.out))}
+              else{closeDatabaseConnections(fp)
+                  return(NULL)}
+                  
+                  
           }
           
 )
