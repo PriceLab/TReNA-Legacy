@@ -32,6 +32,5 @@ variance.filter <- VarianceFilter(mtx.assay = mtx.sub)
 \code{\link{getCandidates-VarianceFilter}}
 
 Other Filtering Objects: \code{\link{FootprintFilter-class}},
-  \code{\link{HumanDNAseClusterFilter-class}},
   \code{\link{NullFilter-class}}
 }

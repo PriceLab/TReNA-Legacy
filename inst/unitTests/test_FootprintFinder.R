@@ -2,6 +2,8 @@ library(TReNA)
 library(RUnit)
 library(RPostgreSQL)
 #----------------------------------------------------------------------------------------------------
+printf <- function(...) print(noquote(sprintf(...)))
+#----------------------------------------------------------------------------------------------------
 runTests <- function()
 {
    test_.parseDatabaseUri()

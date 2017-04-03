@@ -87,7 +87,7 @@ setMethod("run", "PearsonSolver",
               # If target gene was the only tf, then return nothing
               if(length(tfs)==0) return(NULL)
 
-              x = t(mtx[tfs,,drop=F])
+              x = t(mtx[tfs,,drop=FALSE])
               y = as.vector(t(mtx[target.gene,])) # Make target gene levels into a vector
 
               # Calculate Pearson correlation coefficients

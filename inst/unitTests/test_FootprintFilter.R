@@ -28,7 +28,7 @@ test_FootprintFilter <- function()
                                                             "size.downstream" = 1000))
 
     # Make sure it grabs the right number of genes
-    checkEquals(length(list.out[["tfs"]]), 64)
+    checkEquals(length(list.out$tfs), 64)
 
 } # test_FootprintFilter
 #----------------------------------------------------------------------------------------------------

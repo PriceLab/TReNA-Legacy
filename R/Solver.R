@@ -111,11 +111,10 @@ setMethod("getAssayData", "Solver",
 #' @examples
 #' # Create a LassoSolver object using the included Alzheimer's data and rescale the predictors
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-#' solver <- LassoSolver(mtx.sub)
+#' ls <- LassoSolver(mtx.sub)
 #' raw.values <- c(241, 4739, 9854, 22215, 658334)
-#' cooked.values <- rescalePredictorWeights(solver, 
-#' mtx <- rescalePredictorWeights(solver, rawValue.min = min(mtx.sub),
-#' rawValue.max = max(mtx.sub), rawValues = mtx.sub)
+#' cooked.values <- rescalePredictorWeights(ls, rawValue.min = 1, rawValue.max = 1000000, raw.values)
+
 setMethod("rescalePredictorWeights", "Solver",
 
           function(obj, rawValue.min, rawValue.max, rawValues){

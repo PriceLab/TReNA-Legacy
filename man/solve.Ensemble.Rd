@@ -23,10 +23,18 @@
 arguments denoting extraArgs that correspond to a given solver (e.g. "lasso")}
 }
 \value{
-A data frame containing the scores for all solvers and a composite score relating the target gene to each transcription factor
+A data frame containing the scores for all solvers and two composite scores
+relating the target gene to each transcription factor. The two new scores are:
+"extr": a composite score created using the root mean square of the principal
+components of the individual solver scores
+"comp": a composite score created similarly to "extreme_score", but with each solver's
+score scaled using *atan(x)*. This score scales from 0-1
 }
 \description{
-Given a TReNA object with Ensemble as the solver and a list of solvers (default = "all.solvers"), estimate coefficients for each transcription factor as a predictor of the target gene's expression level. The final scores for the ensemble method combine all specified solvers to create a composite score for each transcription factor.
+Given a TReNA object with Ensemble as the solver and a list of solvers
+(default = "default.solvers"), estimate coefficients for each transcription factor
+as a predictor of the target gene's expression level. The final scores for the ensemble
+method combine all specified solvers to create a composite score for each transcription factor.
 }
 \examples{
 # Load included Alzheimer's data, create a TReNA object with LASSO as solver, and solve

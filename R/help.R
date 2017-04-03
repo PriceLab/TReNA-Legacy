@@ -9,5 +9,5 @@
 #'
 #' @docType package
 #'
-#' 
+#' @seealso \code{\link{TReNA}}
 NULL

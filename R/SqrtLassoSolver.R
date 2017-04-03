@@ -58,11 +58,12 @@ SqrtLassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #'
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with Square Root LASSO as solver, and solve
+#' # Use 4 cores with the extraArgs argument
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 #' trena <- TReNA(mtx.assay = mtx.sub, solver = "sqrtlasso")
 #' target.gene <- "MEF2C"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
-#' tbl <- solve(trena, target.gene, tfs)
+#' tbl <- solve(trena, target.gene, tfs, extraArgs = list("num.cores" = 4))
 
 setMethod("run", "SqrtLassoSolver",
 
@@ -102,7 +103,7 @@ setMethod("run", "SqrtLassoSolver",
               stopifnot(target.gene %in% rownames(mtx))             
               stopifnot(all(tfs %in% rownames(mtx)))              
               stopifnot(class(lambda) %in% c("NULL","numeric"))              
-              features <- t(mtx[tfs,,drop=F ])              
+              features <- t(mtx[tfs,,drop=FALSE ])              
               target <- as.numeric(mtx[target.gene,])
               
               if( length(tfs) == 1 ) {                  

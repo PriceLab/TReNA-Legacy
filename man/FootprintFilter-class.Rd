@@ -28,7 +28,6 @@ footprint.filter <- FootprintFilter(mtx.assay = mtx.sub)
 \seealso{
 \code{\link{getCandidates-FootprintFilter}}
 
-Other Filtering Objects: \code{\link{HumanDNAseClusterFilter-class}},
-  \code{\link{NullFilter-class}},
+Other Filtering Objects: \code{\link{NullFilter-class}},
   \code{\link{VarianceFilter-class}}
 }

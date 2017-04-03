@@ -21,6 +21,17 @@
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
+#' Get candidate genes using a CandidateFilter object
+#'
+#' @rdname getCandidates
+#' @aliases getCandidates
+#'
+#' @param obj An object of a CandidateFilter class
+#' @param extraArgs A named list of extra arguments corresponding to the chosen filter
+#'
+#' @return A vector containing genes from the assay matrix that are selected by the filter
+#'
+#' @family getCandidate Methods
 #' @export
 setGeneric("getCandidates", signature="obj", function(obj,extraArgs) standardGeneric("getCandidates"))
 
@@ -49,18 +60,4 @@ CandidateFilter <- function(mtx.assay = matrix(), quiet = TRUE)
     .CandidateFilter(mtx.assay = mtx.assay, quiet = quiet)
 
 } # CandidateFilter, the constructor
-#----------------------------------------------------------------------------------------------------
-#' Get candidate genes using a CandidateFilter object
-#'
-#' @rdname getCandidates
-#' @aliases getCandidates
-#'
-#' @param obj An object of a CandidateFilter class
-#' @param extraArgs A named list of extra arguments corresponding to the chosen filter
-#'
-#' @return A vector containing genes from the assay matrix that are selected by the filter
-#'
-#' @family getCandidate Methods
-#'
-NULL
 #----------------------------------------------------------------------------------------------------

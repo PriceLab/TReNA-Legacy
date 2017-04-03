@@ -27,3 +27,11 @@ chr, start, endpos, strand
 Using the gtf table in the genome database contained in a FootprintFinder object, get the locations
 of chromasomes with the specified gene name, biological unit type, and molecule type
 }
+\examples{
+db.address <- system.file(package="TReNA", "extdata")
+genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+fp <- FootprintFinder(genome.db.uri, project.db.uri)
+
+chrom.locs <- getChromLoc(fp, name = "MEF2C")
+}

@@ -8,3 +8,6 @@
 TReNA provides a framework for using gene expression data to infer relationships
 between a target gene and a set of transcription factors.
 }
+\seealso{
+\code{\link{TReNA}}
+}

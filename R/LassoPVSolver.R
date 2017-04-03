@@ -87,7 +87,7 @@ setMethod("run", "LassoPVSolver",
               mtx <- obj@mtx.assay              
               stopifnot(target.gene %in% rownames(mtx))             
               stopifnot(all(tfs %in% rownames(mtx)))              
-              features <- t(mtx[tfs,,drop=F ])              
+              features <- t(mtx[tfs,,drop=FALSE ])              
               target <- as.numeric(mtx[target.gene,])
 
               # Run LASSO P-Value and return the P-values, ordered by increasing value

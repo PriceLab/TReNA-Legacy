@@ -22,6 +22,15 @@ factors they map to
 Using the motifsgenes table inside the genome database specified by the FootprintFinder object,
 return a table mapping each motif to transcription factors
 }
+\examples{
+db.address <- system.file(package="TReNA", "extdata")
+genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+fp <- FootprintFinder(genome.db.uri, project.db.uri)
+
+footprints <- getFootprintsForGene(fp, gene = "MEF2C")
+tfs <- mapMotifsToTFsMergeIntoTable(fp, footprints)
+}
 \seealso{
 \code{\link{getFootprintsInRegion}}, \code{\link{getFootprintsForGene}}
 }

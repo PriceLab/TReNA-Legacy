@@ -34,7 +34,10 @@ EnsembleSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @rdname solve.Ensemble
 #' @aliases run.EnsembleSolver solve.Ensemble
 #' 
-#' @description Given a TReNA object with Ensemble as the solver and a list of solvers (default = "all.solvers"), estimate coefficients for each transcription factor as a predictor of the target gene's expression level. The final scores for the ensemble method combine all specified solvers to create a composite score for each transcription factor. 
+#' @description Given a TReNA object with Ensemble as the solver and a list of solvers
+#' (default = "default.solvers"), estimate coefficients for each transcription factor
+#' as a predictor of the target gene's expression level. The final scores for the ensemble
+#' method combine all specified solvers to create a composite score for each transcription factor. 
 #'
 #' @param obj An object of class TReNA with "ensemble" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
@@ -43,7 +46,12 @@ EnsembleSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @param extraArgs Modifiers to the Ensemble solver, including "solver.list", "gene.cutoff", and solver-named
 #' arguments denoting extraArgs that correspond to a given solver (e.g. "lasso")
 #'
-#' @return A data frame containing the scores for all solvers and a composite score relating the target gene to each transcription factor
+#' @return A data frame containing the scores for all solvers and two composite scores
+#' relating the target gene to each transcription factor. The two new scores are:
+#' "extr": a composite score created using the root mean square of the principal
+#' components of the individual solver scores
+#' "comp": a composite score created similarly to "extreme_score", but with each solver's
+#' score scaled using *atan(x)*. This score scales from 0-1
 #'
 #' @family solver methods
 #' 
@@ -73,7 +81,7 @@ setMethod("run", "EnsembleSolver",
                
                # Specify defaults for gene cutoff and solver list
                gene.cutoff <- 0.1
-               solver.list <- "all.solvers"
+               solver.list <- "default.solvers"
                
                # Check for the gene cutoff and solvers, then and set them if they're not there
                if("gene.cutoff" %in% names(extraArgs))
@@ -83,7 +91,7 @@ setMethod("run", "EnsembleSolver",
                    solver.list <- extraArgs[["solver.list"]]
 
                # Convert the "all" solvers argument
-               if(solver.list[1] == "all.solvers"){
+               if(solver.list[1] == "default.solvers"){
                    solver.list <- c("lasso",                                    
                                     "randomForest",                                    
 #                                    "bayesSpike",                                    

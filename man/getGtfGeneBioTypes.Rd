@@ -19,3 +19,11 @@ database.
 Using the gtf table in the genome database contained in a FootprintFinder object, get the list of
 different types of biological units (biotypes) contained in the table.
 }
+\examples{
+db.address <- system.file(package="TReNA", "extdata")
+genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+fp <- FootprintFinder(genome.db.uri, project.db.uri)
+
+biotypes <- getGtfGeneBioTypes(fp)
+}

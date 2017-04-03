@@ -81,7 +81,7 @@ setMethod("run", "RandomForestSolver",
      }
      if(length(tfs)==0) return(NULL)
 
-     x = t(mtx[tfs,,drop=F])
+     x = t(mtx[tfs,,drop=FALSE])
      y = as.vector(t(mtx[target.gene,])) # Change y to a vector to avoid RF warning
 
      fit <- randomForest( x = x, y = y )

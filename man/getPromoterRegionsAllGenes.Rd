@@ -7,7 +7,7 @@
 \title{Get Promoter Regions for All Genes}
 \usage{
 \S4method{getPromoterRegionsAllGenes}{FootprintFinder}(obj,
-  size.upstream = 10000, size.downstream = 10000, use_gene_ids = T)
+  size.upstream = 10000, size.downstream = 10000, use_gene_ids = TRUE)
 }
 \arguments{
 \item{obj}{An object of class FootprintFinder}
@@ -26,4 +26,12 @@ A GRanges object containing the promoter regions for all genes
 \description{
 Using the gtf table inside the genome database specified by the FootprintFinder object, return the
 promoter regions for every protein-coding gene in the database.
+}
+\examples{
+db.address <- system.file(package="TReNA", "extdata")
+genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+fp <- FootprintFinder(genome.db.uri, project.db.uri)
+
+footprints <- getPromoterRegionsAllGenes(fp)
 }

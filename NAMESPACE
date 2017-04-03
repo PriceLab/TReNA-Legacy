@@ -2,8 +2,7 @@ exportClasses(
     TReNA,
     NullFilter,
     VarianceFilter,
-    FootprintFilter,
-    HumanDNAseClusterFilter)
+    FootprintFilter)
 
 export(
     TReNA,
@@ -20,7 +19,6 @@ export(
     CandidateFilter,
     FootprintFilter,
     NullFilter,
-    HumanDNAseClusterFilter,
     VarianceFilter,
     FootprintFinder
 )
@@ -56,6 +54,5 @@ import(
 
 importFrom(RSQLite, SQLite)
 importFrom(RPostgreSQL, PostgreSQL)
-importFrom(RMySQL, MySQL)
 importFrom(GenomicRanges, makeGRangesFromDataFrame)
 importFrom(utils, head)

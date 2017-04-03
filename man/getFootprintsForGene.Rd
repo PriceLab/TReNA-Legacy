@@ -33,6 +33,14 @@ Using the \code{\link{getGenePromoterRegion}} and \code{\link{getFootprintsInReg
 in conjunction with the gtf table inside the genome database specified by the FootprintFinder object,
 retrieve a dataframe containing the footprints for a specified gene
 }
+\examples{
+db.address <- system.file(package="TReNA", "extdata")
+genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+fp <- FootprintFinder(genome.db.uri, project.db.uri)
+
+footprints <- getFootprintsForGene(fp, gene = "MEF2C")
+}
 \seealso{
 \code{\link{getGenePromoterRegion}}, \code{\link{getFootprintsInRegion}}
 }

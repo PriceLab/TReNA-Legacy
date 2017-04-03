@@ -25,3 +25,12 @@ Using the regions and hits tables inside the project database specified by the F
 object, return the location, chromasome, starting position, and ending positions of all footprints
 for the specified region.
 }
+\examples{
+db.address <- system.file(package="TReNA", "extdata")
+genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+fp <- FootprintFinder(genome.db.uri, project.db.uri)
+
+footprints <- getFootprintsInRegion(fp, chromosome = "chr5",
+start = 88903305, end = 88903319 )
+}
