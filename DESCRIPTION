@@ -1,7 +1,7 @@
 Package: TReNA
 Type: Package
 Title: Fit transcriptional regulatory networks using gene expression, priors, machine learning
-Version: 0.98.107
+Version: 0.99.0
 Date: 2017-04-03
 Author: Seth Ament <seth.ament@systemsbiology.org>,
     Paul Shannon <pshannon@systemsbioloyg.org>,
