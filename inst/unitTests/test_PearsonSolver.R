@@ -13,9 +13,10 @@ runTests <- function()
 test_PearsonSolverConstructor <- function()
 {
     printf("--- test_PearsonSolverConstructor")
-    solver <- PearsonSolver()
+    #solver <- PearsonSolver()
+    solver <- TReNA(matrix(), solver = "pearson")
     checkEquals(getSolverName(solver), "PearsonSolver")
-    checkTrue(all(c("PearsonSolver", "Solver") %in% is(solver)))
+    #checkTrue(all(c("PearsonSolver", "Solver") %in% is(solver)))
 
 } # test_PearsonSolverConstructor
 #----------------------------------------------------------------------------------------------------

@@ -129,67 +129,6 @@ test_fitDummyData <- function()
 
 } # test_fitDummyData
 #----------------------------------------------------------------------------------------------------
-# locate all tfs mapped within 3k bases of MEF2C's transcription start site
-# get their expression data
-prepare_predict.mef2c.regulators <- function()
-{
-   print("--- prepare_predict.mef2c.regulators")
-   tbl.candidates <- getFootprints("MEF2C", 10000, 10000)[, c("chr", "mfpStart", "mfpEnd", "motif", "tfs")] # 59 x 5
-   table(tbl.candidates$motif)
-       #  MA0103.2  MA0715.1 ZBTB16.p2
-       #        14        43         2
-   candidates <- sort(c(unique(tbl.candidates$tfs), "MEF2C"))
-
-       # need ENSG ids for these gene symbols, in order to extract a small
-       # expression matrix for testing
-
-   if(!exists("ensembl.hg38"))
-      ensembl.hg38 <<- useMart("ensembl", dataset="hsapiens_gene_ensembl")
-
-    tbl.ids <- getBM(attributes=c("ensembl_gene_id", "hgnc_symbol"),
-                   filters="hgnc_symbol", values=candidates, mart=ensembl.hg38)
-    deleters <- which(duplicated(tbl.ids$hgnc_symbol))
-    if(length(deleters) > 0)
-       tbl.ids <- tbl.ids[-deleters,]
-
-    print(load("~/s/data/priceLab/AD/ampADMayo.64253genes.278samples.RData"))  # "mtx"
-    gene.medians <- apply(mtx, 1, median)
-    gene.sds     <- apply(mtx, 1, sd)
-    median.keepers <- which(gene.medians > 0.4)
-    sd.keepers     <- which(gene.sds > 0.1)
-    keepers <- sort(c(median.keepers, sd.keepers))
-    mtx.keep <- mtx[keepers,]
-    ens.goi <- intersect(tbl.ids$ensembl_gene_id, rownames(mtx.keep)) # 154
-    mtx.sub <- mtx.keep[ens.goi,]   # 154 genes, 278 samples
-    tbl.ids <- subset(tbl.ids, ensembl_gene_id %in% ens.goi)
-    rownames(mtx.sub) <- tbl.ids$hgnc_symbol
-    filename <- sprintf("../extdata/ampAD.%dgenes.mef2cTFs.%dsamples.RData", nrow(mtx.sub),
-                        ncol(mtx.sub))
-    printf("saving mtx.sub to %s", filename)
-    save(mtx.sub, file=filename)
-
-} # prepare_predict.mef2c.regulators
-#----------------------------------------------------------------------------------------------------
-test_predict.mef2c.regulators <- function()
-{
-   print("--- test_predict.mef2c.regulators")
-   if(!exists("mtx.sub"))
-       load(system.file(package="TReNA", "extdata/ampAD.58genes.mef2cTFs.278samples.RData"))
-   if(!exists("tbl.mef2c.candidates"))
-      tbl.mef2c.candidates <<- getFootprints("MEF2C", 3000, 0)[, c("chr", "mfpStart", "mfpEnd", "motif", "tfs")] # 59 x 5
-   #candidates.sub <- subset(tbl.mef2c.candidates, motif != "MA0715.1")$tfs
-   #mtx.sub <- mtx.sub[c(candidates.sub, "MEF2C"),]
-
-   # mtx.sub <- log10(mtx.sub + 0.001)
-
-   target.gene <- "MEF2C"
-
-   trena <- TReNA(mtx.assay=mtx.sub, solver="lasso", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.sub), "MEF2C")
-   result <- solve(trena, target.gene, tfs)
-
-} # test_predict.mef2c.regulators
-#----------------------------------------------------------------------------------------------------
 test_eliminateSelfTFs <- function()
 {
    printf("--- test_eliminateSelfTFs")

@@ -85,8 +85,13 @@ setMethod("getCandidates", "VarianceFilter",
               tf.var <- apply(tf.mtx,1,stats::var)              
               target.var <- stats::var(target.mtx)
               
-              # Return only the genes with variances within 50% of target gene variance              
-              return(names(which(tf.var > (1-var.size)*target.var & tf.var < (1+var.size)*target.var)))              
+              # Return only the genes with variances within the var.size of target gene variance              
+              var.idx <- which(tf.var > (1-var.size)*target.var & tf.var < (1+var.size)*target.var)
+              tfs <- names(tf.var[var.idx])
+              tf.vars <- tf.var[var.idx]
+
+              return(list(tfs = tfs, tf.vars = tf.vars))
+
           }       
 )
 #----------------------------------------------------------------------------------------------------

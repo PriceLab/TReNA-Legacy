@@ -15,10 +15,10 @@ test_RidgeSolverConstructor <- function()
     printf("--- test_RidgeSolverConstructor")
 
     # Construct the RidgeSolver and check that it's correct
-
-    solver <- RidgeSolver()
+    #solver <- RidgeSolver()
+    solver <- TReNA(matrix(), solver = "ridge")
     checkEquals(getSolverName(solver), "RidgeSolver")
-    checkTrue(all(c("RidgeSolver", "Solver") %in% is(solver)))
+    #checkTrue(all(c("RidgeSolver", "Solver") %in% is(solver)))
 }
 
 # test_RidgeSolverConstructor

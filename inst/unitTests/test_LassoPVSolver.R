@@ -16,9 +16,10 @@ test_LassoPVSolverConstructor <- function()
 
     # Construct the SqrtLassoSolver and check that it's correct
 
-    solver <- LassoPVSolver()
+    #solver <- LassoPVSolver()
+    solver <- TReNA(matrix(), solve = "lassopv")
     checkEquals(getSolverName(solver), "LassoPVSolver")
-    checkTrue(all(c("LassoPVSolver", "Solver") %in% is(solver)))
+    #checkTrue(all(c("LassoPVSolver", "Solver") %in% is(solver)))
 }
 
 # test_LassoPVSolverConstructor

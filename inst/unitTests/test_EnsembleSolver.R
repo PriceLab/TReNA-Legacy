@@ -16,9 +16,10 @@ test_EnsembleSolverConstructor <- function()
 
     # Construct the EnsembleSolver and check that it's correct
 
-    solver <- EnsembleSolver()
+    #solver <- EnsembleSolver()
+    solver <- TReNA(matrix(), solver = "ensemble")
     checkEquals(getSolverName(solver), "EnsembleSolver")
-    checkTrue(all(c("EnsembleSolver", "Solver") %in% is(solver)))
+    #checkTrue(all(c("EnsembleSolver", "Solver") %in% is(solver)))
 }
 
 # test_EnsembleSolverConstructor

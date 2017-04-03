@@ -16,9 +16,10 @@ test_VarianceFilter <- function()
     # Create dummy data and filter it based on variance
     x <- test_developAndFitDummyTestData(quiet=TRUE)
     var.filter <- VarianceFilter(mtx.assay = x$assay)
-    tfs <- getCandidates(var.filter, extraArgs = list("target.gene" = x$correlated.target,
-                                                      "var.size" = 0.5))
-    checkTrue(length(tfs) > 0)
+    tf.list <- getCandidates(var.filter, extraArgs = list("target.gene" = x$correlated.target,
+                                                          "var.size" = 0.5))
+    
+    checkTrue(length(tf.list$tfs) > 0)
 
 } # test_VarianceFilter
 #----------------------------------------------------------------------------------------------------

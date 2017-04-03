@@ -13,8 +13,6 @@ runTests <- function()
    test_getFootprintsInRegion()
    test_getFootprintsForGene()
    test_mapMotifsToTFsMergeIntoTable()
-   
-#   test_getFootprintsForEnsemblGenes()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -260,33 +258,5 @@ test_mapMotifsToTFsMergeIntoTable <- function()
    closeDatabaseConnections(fp)
 
 } # test_getFootprintsInRegion
-#----------------------------------------------------------------------------------------------------
-# FootprintFinder originally accepted only HUGO gene symbols, which is still the expected case
-# however, ensembl reports, and we currently have expression data for, a variety of DNA elements
-# including miRNA, linkRNA, antisense genes, pseudogenes of various sorts, etc.
-# these each have a unique ENSG id, which we test out here
-# the constructor of FootprintFinder needs to recognise these identifiers, and make a corresponding
-# call to biomart
-test_getFootprintsForEnsemblGenes <- function()
-{
-   printf("--- test_getFootprintsForEnsemblGenes")
-
-   genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/brain_wellington"
-   fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
-
-   genes <- c("ENSG00000267051", "ENSG00000264503", "ENSG00000273141", "ENSG00000212712",
-              "ENSG00000236396", "ENSG00000154889", "ENSG00000267794",  "ENSG00000264843",
-              "ENSG00000260759", "ENSG00000154856")
-
-   goi <- genes[3]
-   loc <- getGenePromoterRegion(fp, goi, 250, 0)
-   tbl <- getFootprintsForGene(fp, goi, 250, 0)
-   checkTrue(all(tbl$mfpStart >= loc$start))
-   checkTrue(all(tbl$mfpStart <= loc$end))
-   checkTrue(all(tbl$mfpEnd >= loc$start))
-   checkTrue(all(tbl$mfpEnd <= loc$end))
-
-} # test_getFootprintsForEnsemblGenes
 #----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()

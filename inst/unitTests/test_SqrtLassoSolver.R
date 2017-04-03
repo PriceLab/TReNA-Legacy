@@ -15,9 +15,10 @@ test_SqrtLassoSolverConstructor <- function()
     printf("--- test_SqrtLassoSolverConstructor")
 
     # Construct the SqrtLassoSolver and check that it's correct
-    solver <- SqrtLassoSolver()
+    #solver <- SqrtLassoSolver()
+    solver <- TReNA(matrix(), solver = "sqrtlasso")
     checkEquals(getSolverName(solver), "SqrtLassoSolver")
-    checkTrue(all(c("SqrtLassoSolver", "Solver") %in% is(solver)))
+    #checkTrue(all(c("SqrtLassoSolver", "Solver") %in% is(solver)))
 }
 
 # test_SqrtLassoSolverConstructor   

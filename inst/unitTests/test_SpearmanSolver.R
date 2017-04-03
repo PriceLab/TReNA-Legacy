@@ -13,9 +13,10 @@ runTests <- function()
 test_SpearmanSolverConstructor <- function()
 {
     printf("--- test_SpearmanSolverConstructor")
-    solver <- SpearmanSolver()
+    #solver <- SpearmanSolver()
+    solver <- TReNA(matrix(), solver = "spearman")
     checkEquals(getSolverName(solver), "SpearmanSolver")
-    checkTrue(all(c("SpearmanSolver", "Solver") %in% is(solver)))
+    #checkTrue(all(c("SpearmanSolver", "Solver") %in% is(solver)))
 
 } # test_SpearmanSolverConstructor
 #----------------------------------------------------------------------------------------------------

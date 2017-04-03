@@ -13,9 +13,10 @@ runTests <- function()
 test_RandomForestSolverConstructor <- function()
 {
    printf("--- test_RandomForestSolverConstructor")
-   solver <- RandomForestSolver()
+   #solver <- RandomForestSolver()
+   solver <- TReNA(matrix(), solver = "randomForest")
    checkEquals(getSolverName(solver), "RandomForestSolver")
-   checkTrue(all(c("RandomForestSolver", "Solver") %in% is(solver)))
+   #checkTrue(all(c("RandomForestSolver", "Solver") %in% is(solver)))
 
 } # test_RandomForestSolverConstructor
 #----------------------------------------------------------------------------------------------------
