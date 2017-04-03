@@ -37,7 +37,7 @@
      stopifnot(target.gene %in% rownames(mtx))
      stopifnot(all(tfs %in% rownames(mtx)))
      stopifnot(class(lambda) %in% c("NULL","numeric"))
-     features <- t(mtx[tfs,,drop=F ])
+     features <- t(mtx[tfs,,drop=FALSE ])
      target <- as.numeric(mtx[target.gene,])
 
      if( length(tfs) == 1 ) {

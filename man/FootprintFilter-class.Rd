@@ -15,6 +15,9 @@ FootprintFilter(mtx.assay = matrix(), quiet = TRUE)
 
 \item{quiet}{A logical denoting whether or not the filter should print output}
 }
+\value{
+An object of the FootprintFilter class
+}
 \description{
 A FootprintFilter object allows for filtering based on gene footprinting databases. Using its
 associated \code{getCandidates} method and URIs for both a genome database and project database,

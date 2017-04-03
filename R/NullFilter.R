@@ -28,6 +28,8 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' 
 #' @seealso \code{\link{getCandidates-NullFilter}}
 #'
+#' @return An object of the NullFilter class
+#' 
 #' @family Filtering Objects
 #'
 #' @examples

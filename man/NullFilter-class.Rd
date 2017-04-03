@@ -17,6 +17,8 @@ NullFilter(mtx.assay = matrix(), quiet = TRUE)
 }
 \value{
 A CandidateFilter class object with null as the filtering method
+
+An object of the NullFilter class
 }
 \description{
 A NullFilter object allows for "filtering" of the genes in an assay matrix. Its associated

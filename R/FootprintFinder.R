@@ -1,10 +1,4 @@
-#' @title Class FootprintFinder
-#'
-#' @description
-#' The FootprintFinder class is designed to query 2 supplied footprint databases (a genome database
-#' and a project database) for supplied genes or regions. Within the TReNA package, the
-#' FootprintFinder class is mainly used by the FootprintFilter class, but the FootprintFinder class
-#' offers more flexibility in constructing queries. 
+#' Class FootprintFinder
 #'
 #' @import methods
 #' 
@@ -19,7 +13,7 @@
 #' @return An object of the FootprintFinder class that can reduce a list of genes to a subset prior
 #' to forming a TReNA object
 #'
-#' @seealso \code{\link{FootprintFilter}}
+
 
 
 #----------------------------------------------------------------------------------------------------
@@ -68,7 +62,7 @@ setGeneric("closeDatabaseConnections", signature="obj",
            function(obj) standardGeneric("closeDatabaseConnections"))
 #' @export
 setGeneric("getPromoterRegionsAllGenes",signature="obj",
-           function(obj ,size.upstream=10000 , size.downstream=10000 , use_gene_ids = T )
+           function(obj ,size.upstream=10000 , size.downstream=10000 , use_gene_ids = TRUE )
                standardGeneric("getPromoterRegionsAllGenes"))
 #' @export
 setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
@@ -91,6 +85,12 @@ setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
 #' @name FootprintFinder-class
 #' @rdname FootprintFinder-class
 #'
+#' @description
+#' The FootprintFinder class is designed to query 2 supplied footprint databases (a genome database
+#' and a project database) for supplied genes or regions. Within the TReNA package, the
+#' FootprintFinder class is mainly used by the FootprintFilter class, but the FootprintFinder class
+#' offers more flexibility in constructing queries. 
+#'
 #' @param genome.database.uri The address of a genome database for use in filtering. This database
 #' must contain the tables "gtf" and "motifsgenes" at a minimum. The URI format is as follows:
 #' "dbtype://host/database" (e.g. "postgres://localhost/genomedb")
@@ -102,6 +102,8 @@ setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
 #' @return An object of the FootprintFinder class
 #'
 #' @export
+#' 
+#' @seealso \code{\link{FootprintFilter}}
 
 FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRUE)
 {

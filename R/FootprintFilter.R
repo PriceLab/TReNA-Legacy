@@ -27,6 +27,8 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' @seealso \code{\link{getCandidates-FootprintFilter}}
 #'
 #' @export
+#'
+#' @return An object of the FootprintFilter class
 #' 
 #' @family Filtering Objects
 #' 

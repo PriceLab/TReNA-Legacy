@@ -30,6 +30,8 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' 
 #' @seealso \code{\link{getCandidates-VarianceFilter}}
 #'
+#' @return An object of the VarianceFilter class
+#' 
 #' @family Filtering Objects
 #'
 #' @examples

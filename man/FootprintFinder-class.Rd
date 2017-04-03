@@ -29,6 +29,8 @@ to forming a TReNA object
 An object of the FootprintFinder class
 }
 \description{
+Class FootprintFinder
+
 The FootprintFinder class is designed to query 2 supplied footprint databases (a genome database
 and a project database) for supplied genes or regions. Within the TReNA package, the
 FootprintFinder class is mainly used by the FootprintFilter class, but the FootprintFinder class

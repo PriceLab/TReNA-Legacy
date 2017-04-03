@@ -17,6 +17,8 @@ VarianceFilter(mtx.assay = matrix(), quiet = TRUE)
 }
 \value{
 A CandidateFilter class object with variance as the filtering method
+
+An object of the VarianceFilter class
 }
 \description{
 A VarianceFilter object allows for filtering based on the variance of a target gene in relation to
