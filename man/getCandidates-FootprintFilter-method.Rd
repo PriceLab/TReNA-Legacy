@@ -45,8 +45,7 @@ tfs <- getCandidates(footprint.filter, extraArgs = list("target.gene" = target.g
 \seealso{
 \code{\link{FootprintFilter}}
 
-Other getCandidate Methods: \code{\link{getCandidates,CandidateFilter-method}},
-  \code{\link{getCandidates,HumanDNAseClusterFilter-method}},
+Other getCandidate Methods: \code{\link{getCandidates,HumanDNAseClusterFilter-method}},
   \code{\link{getCandidates,NullFilter-method}},
   \code{\link{getCandidates,VarianceFilter-method}}
 }

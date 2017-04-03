@@ -6,7 +6,7 @@
 \alias{.HumanDNAseClusterFilter}
 \alias{HumanDNAseClusterFilter}
 \alias{HumanDNAseClusterFilter}
-\title{Create a HumanDNAseClusterFilter objects}
+\title{Create a HumanDNAseClusterFilter object}
 \usage{
 HumanDNAseClusterFilter(mtx.assay = matrix(), quiet = TRUE)
 }

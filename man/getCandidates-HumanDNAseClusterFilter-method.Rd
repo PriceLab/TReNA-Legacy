@@ -35,8 +35,7 @@ tfs <- getCandidates(openchrom.filter, extraArgs = list("chromosome" = "chr5",
 \seealso{
 \code{\link{HumanDNAseClusterFilter}}
 
-Other getCandidate Methods: \code{\link{getCandidates,CandidateFilter-method}},
-  \code{\link{getCandidates,FootprintFilter-method}},
+Other getCandidate Methods: \code{\link{getCandidates,FootprintFilter-method}},
   \code{\link{getCandidates,NullFilter-method}},
   \code{\link{getCandidates,VarianceFilter-method}}
 }

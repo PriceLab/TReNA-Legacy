@@ -62,10 +62,5 @@ CandidateFilter <- function(mtx.assay = matrix(), quiet = TRUE)
 #'
 #' @family getCandidate Methods
 #'
-setMethod("getCandidates", "CandidateFilter",
-
-          function(obj, extraArgs){
-              # Call the appropriate method
-              callNextMethod()              
-          })
+NULL
 #----------------------------------------------------------------------------------------------------
