@@ -39,11 +39,11 @@ test_ampAD.mef2c.154tfs.278samples.randomForest <- function()
    tbl.scores <- tbl.scores[order(tbl.scores$IncNodePurity, decreasing=TRUE),, drop=FALSE]
 
    # a loose test, ignoring rank of these 7 genes for now
-   actual.genes.reported <- sort(rownames(subset(tbl.scores, IncNodePurity > 2.8)))
+   actual.genes.reported <- sort(rownames(subset(tbl.scores, IncNodePurity > 12)))
    # Updated to reflect asinh results
-   expected.genes <- sort(c("HLF", "STAT4", "SATB1", "SATB2", "FOXP2", "DRGX","TSHZ3"))
-   printf("expected: %s", paste(expected.genes, collapse=","))
-   printf("actual: %s", paste(actual.genes.reported, collapse=","))
+   expected.genes <- sort(c("HLF", "STAT4", "SATB1", "SATB2"))
+#   printf("expected: %s", paste(expected.genes, collapse=","))
+#   printf("actual: %s", paste(actual.genes.reported, collapse=","))
    checkEquals(actual.genes.reported, expected.genes)
 
    
