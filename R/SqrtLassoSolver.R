@@ -127,7 +127,7 @@ setMethod("run", "SqrtLassoSolver",
                   if(is.null(num.cores))                      
                       num.cores <- parallel::detectCores()/2
                   
-                  cl <- parallel::makeForkCluster(nnodes = num.cores)
+                  cl <- parallel::makeCluster(num.cores)
                   doParallel::registerDoParallel(cl)
                   
                   lambda.list <- foreach::foreach(i = 1:30) %dopar% {
