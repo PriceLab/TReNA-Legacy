@@ -1,6 +1,10 @@
 ---
 title: "A Brief Introduction to TReNA"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{A Brief Introduction to TReNA}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
@@ -33,7 +37,7 @@ load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RD
 
 This gives us a matrix, *mtx.sub*, that contains our gene expression data in units of TMM. Before creating a TReNA object, it is wise to inspect the distribution of the matrix and consider using some sort of data transformation to normalize the mean-variance relationship. We can see, for instance, that our dataset is fairly skewed, with most of the expression values falling close to 0 and only a few values on the higher end of the spectrum.
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.width = 6}
 hist(mtx.sub, main = "Expression Matrix Data")
 ```
 
@@ -46,7 +50,7 @@ mtx.voom <- voom(mtx.sub)$E
 
 If we now plot our transformed matrix, we can see that it's been scaled down substantially.
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.width = 6}
 hist(mtx.voom, main = "VOOM-Transformed Expression Matrix Data")
 ```
 
@@ -86,7 +90,7 @@ null.filter <- NullFilter(mtx.assay = mtx.voom)
 tfs <- getCandidates(null.filter)
 str(tfs)
 
-````
+```
 
 The VarianceFilter is slightly more complex; it requires the specification of a target gene and also allows you to specify a variance size range. The filter finds the variance of all genes in the assay matrix, then returns all transcription factors with variance within the variance size range of the target gene. For instance, we can create a VarianceFilter and use it to find all transcription factors with variance within 50% of the target gene's variance. This will return both the names of the transcription factors and their variances in a named list. 
 
@@ -125,9 +129,9 @@ Once a user reaches the point of actually solving the TReNA object, a solver has
 trena <- TReNA(mtx.assay = mtx.voom, solver = "lasso")
 target.gene <- "MEF2C"
 gene.filter <- VarianceFilter(mtx.assay = mtx.voom)
-tfs <- getCandidates(gene.filter, extraArgs = list("target.gene" = target.gene, "var.size" = 0.5))
+tf.list <- getCandidates(gene.filter, extraArgs = list("target.gene" = target.gene, "var.size" = 0.5))
 
-tbl.out <- solve(trena, target.gene, tfs)
+tbl.out <- solve(trena, target.gene, tf.list$tfs)
 head(tbl.out)
 
 ```
@@ -142,8 +146,8 @@ In addition to the individual solvers, TReNA includes an ensemble approach as a 
 trena <- TReNA(mtx.assay = mtx.voom, solver = "ensemble")
 target.gene <- "MEF2C"
 gene.filter <- VarianceFilter(mtx.assay = mtx.voom)
-tfs <- getCandidates(gene.filter, extraArgs = list("target.gene" = target.gene, "var.size" = 0.5))
-tbl.out <- solve(trena, target.gene, tfs)
+tf.list <- getCandidates(gene.filter, extraArgs = list("target.gene" = target.gene, "var.size" = 0.5))
+tbl.out <- solve(trena, target.gene, tf.list$tfs)
 tbl.out
 ```
 
@@ -157,7 +161,7 @@ We can optionally pass solver-specific parameters as well using named arguments 
 
 ```{r}
 
-tbl.out.2 <- solve(trena, target.gene, tfs, 
+tbl.out.2 <- solve(trena, target.gene, tf.list$tfs, 
                    extraArgs = list(
                      "solver.list" = c("lasso", "ridge", "sqrtlasso", "randomForest",
                                        "lassopv", "spearman", "pearson"),
