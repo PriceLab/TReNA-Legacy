@@ -218,8 +218,10 @@ test_getFootprintsInRegion <- function()
 {
    printf("--- test_getFootprintsInRegion")
 
-   genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/brain_wellington"
+   db.address <- system.file(package="TReNA", "extdata")
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
       # use MEF2C and the hg38 assembly
@@ -241,8 +243,9 @@ test_mapMotifsToTFsMergeIntoTable <- function()
 {
     printf("--- test_mapMotifsToTFsMergeIntoTable")
     
-   genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/brain_wellington"
+   db.address <- system.file(package="TReNA", "extdata")
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
 
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
