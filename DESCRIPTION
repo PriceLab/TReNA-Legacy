@@ -40,7 +40,7 @@ Collate:
     'EnsembleSolver.R'
     'FootprintFilter.R'
     'FootprintFinder.R'
-    'HumanDNAseClusterFilter.R'
+    'HumanDHSFilter.R'
     'LassoPVSolver.R'
     'LassoSolver.R'
     'NullFilter.R'
