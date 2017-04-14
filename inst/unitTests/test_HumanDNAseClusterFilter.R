@@ -5,7 +5,9 @@ library(RUnit)
 runTests <- function()
 {
    test_defaultConstructor()
-   test_.getRegions()
+   test_getEncodeRegulatoryTableNames()
+   test_checkAllTables()
+   test_getRegulatoryRegions()
    test_.fetchSequence()
    test_.matchForwardAndReverse()
    test_.getScoredMotifs()
@@ -20,21 +22,88 @@ test_defaultConstructor <- function()
    printf("--- test_defaultConstructor")
 
    ocf <- HumanDNAseClusterFilter();
-   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 
 } # test_defaultConstructor
 #----------------------------------------------------------------------------------------------------
-test_.getRegions <- function()
+test_getEncodeRegulatoryTableNames <- function()
 {
-   printf("--- test_.getRegions");
+    printf("--- test_getEncodeRegulatoryTableNames")
+    df <- HumanDNAseClusterFilter();
+    names <- getEncodeRegulatoryTableNames(df)
+    checkTrue(length(names) > 90)   # 96 on (13 apr 2017)
+
+} # test_getEncodeRegulatoryTableNames
+#----------------------------------------------------------------------------------------------------
+test_checkAllTables <- function(quiet=TRUE)
+{
+   printf("--- test_checkAllTables")
+
+   df <- HumanDNAseClusterFilter();
+   tableNames <- getEncodeRegulatoryTableNames(df)
+
+   chrom <- "chr5"
+   start <- 8800000
+   end   <- 8850000
+
+   for(tableName in tableNames){
+      tbl <-getRegulatoryRegions(df, tableName, chrom, start, end)
+      if(!quiet) printf("--- %s: %d rows", tableName, nrow(tbl))
+      checkTrue(nrow(tbl) >= 0)
+      checkEquals(colnames(tbl), c("chrom", "chromStart", "chromEnd",  "name",  "score"))
+      }
+
+} # test_checkAllTables
+#----------------------------------------------------------------------------------------------------
+# use this sample code to poke at the encode data offered by uscs
+# note that most of the tables here only serve to list, not regions, but
+# metadata:  what the inputs where, where the bb (bigBed) file can be found.
+# for instance, the Hotspot table has this single line:
+#                                                                     fileName
+# 1 /gbdb/hg38/bbi/wgEncodeRegDnase/wgEncodeRegDnaseUwA549Hotspot.broadPeak.bb
+explore.ucsc.database <- function()
+{
+   library(RMySQL)
+   driver <- MySQL()
+   host <- "genome-mysql.cse.ucsc.edu"
+   user <- "genome"
+   dbname <- "hg38"
+
+   db <- dbConnect(driver, user = user, host = host, dbname = dbname)
+   tables <- c("wgEncodeRegDnaseClustered", "wgEncodeRegDnaseUwA549Hotspot",  "wgEncodeRegDnaseUwA549Peak")
+   main.clause <- sprintf("select * from %s where", tables[1]);
 
    chrom <- "chr5"
    start <- 88819630
    end   <- 88835936
 
-   tbl.regions <- TReNA:::.getRegions(chrom, start, end, score.threshold=200, quiet=FALSE)
+   query <- paste(main.clause,
+                  sprintf("chrom = '%s'", chromosome),
+                   sprintf("and chromStart >= %d", start),
+                   sprintf("and chromEnd <= %d", end),
+                   collapse = " ")
+   suppressWarnings(dbGetQuery(db, sprintf("select * from %s limit 5", tables[3])))
+
+
+} # explore.ucsc.database
+#----------------------------------------------------------------------------------------------------
+test_getRegulatoryRegions <- function()
+{
+   printf("--- test_getRegulatoryRegions");
+
+   chrom <- "chr5"
+   start <- 88819630
+   end   <- 88835936
+
+
+   df <- HumanDNAseClusterFilter();
+   tableNames <- getEncodeRegulatoryTableNames(df)
+   table <- "wgEncodeRegDnaseClustered"
+   checkTrue(table %in% tableNames)
+
+   tbl.regions <-getRegulatoryRegions(df, table, chrom, start, end)
+
    checkTrue(nrow(tbl.regions) > 20)
-   checkEquals(colnames(tbl.regions), c("chrom", "chromStart", "chromEnd", "score", "sourceCount"))
+   checkEquals(colnames(tbl.regions), c("chrom", "chromStart", "chromEnd", "name", "score"))
    checkTrue(all(tbl.regions$chrom == chrom))
    checkTrue(all(tbl.regions$chromStart >= start))
    checkTrue(all(tbl.regions$chromStart <= end))
@@ -53,7 +122,7 @@ test_.getRegions <- function()
    chrom = "chr1"
    start <-  88802520
    end   <-  88802530
-   tbl.regions <- TReNA:::.getRegions(chrom, start, end, quiet=FALSE)
+   tbl.regions <- getRegulatoryRegions(df, table, chrom, start, end)
    checkEquals(nrow(tbl.regions), 1)
    checkEquals(tbl.regions$chromStart, start)
    checkEquals(tbl.regions$chromEnd, end)
@@ -62,7 +131,7 @@ test_.getRegions <- function()
    chrom = "chr1"
    start <-  88802145
    end   <-  88802155
-   tbl.regions <- TReNA:::.getRegions(chrom, start, end, quiet=FALSE)
+   tbl.regions <- getRegulatoryRegions(df, table, chrom, start, end)
    checkEquals(nrow(tbl.regions), 1)
    checkEquals(tbl.regions$chromStart, start)
    checkEquals(tbl.regions$chromEnd, 88802150)
@@ -71,7 +140,7 @@ test_.getRegions <- function()
    chrom = "chr1"
    start <-  88801878
    end   <-  88801883
-   tbl.regions <- TReNA:::.getRegions(chrom, start, end, quiet=FALSE)
+   tbl.regions <- getRegulatoryRegions(df, table, chrom, start, end)
    checkEquals(nrow(tbl.regions), 1)
    checkEquals(tbl.regions$chromStart, 88801880)
    checkEquals(tbl.regions$chromEnd, end)
@@ -80,12 +149,12 @@ test_.getRegions <- function()
    chrom <- "chr1"
    start <- 167830160
    end   <- 167830180
-   tbl.regions <- TReNA:::.getRegions(chrom, start, end, quiet=FALSE)
+   tbl.regions <- getRegulatoryRegions(df, table, chrom, start, end)
    checkEquals(nrow(tbl.regions), 1)
    checkEquals(tbl.regions$chromStart, start)
    checkEquals(tbl.regions$chromEnd, end)
 
-} # test_.getRegions
+} # test_getRegulatoryRegions
 #----------------------------------------------------------------------------------------------------
 test_.fetchSequence <- function()
 {
@@ -182,21 +251,22 @@ test_mef2cPromoter.incrementally <- function()
    start <- 88824500
    end   <- 88832344
 
-   tbl.regions <- TReNA:::.getRegions(chrom, start, end, score.threshold=0)   # 31 open chromatin regions
+   df <- HumanDNAseClusterFilter();
+
+   table <- "wgEncodeRegDnaseClustered"
+   tbl.regions <- getRegulatoryRegions(df, table, chrom, start, end)
    checkEquals(dim(tbl.regions), c(18, 5))
    checkTrue(all(tbl.regions$chrom == chrom))
    checkTrue(all(tbl.regions$chromStart >= start))
    checkTrue(all(tbl.regions$chromEnd <= end))
 
-   tbl.regions <- TReNA:::.getRegions(chrom, start, end, score.threshold=200)   # 31 open chromatin regions
-   checkEquals(dim(tbl.regions), c(13, 5))
-
-   tbl.regions <- TReNA:::.getRegions(chrom, start, end, score.threshold=700)   # 31 open chromatin regions
-   checkEquals(dim(tbl.regions), c(2, 5))
-   checkTrue(all(tbl.regions$score >= 700))
-
+   tbl.regions <- subset(tbl.regions, score >= 700)
+   checkEquals(nrow(tbl.regions), 2)
    seqs <- TReNA:::.getSequence(tbl.regions)
+   checkEquals(with(tbl.regions, 1 + chromEnd - chromStart), nchar(seqs))  #  231 391
+
    motifs <- TReNA:::.getScoredMotifs(seqs, min.match.percentage=95)
+   checkEquals(unlist(lapply(motifs, dim)), c(8,7,8,7))
 
 } # test_mef2cPromoter.incrementally
 #----------------------------------------------------------------------------------------------------
@@ -216,7 +286,8 @@ test_mef2cPromoter.normalUse <- function()
 
    args <- list(chrom=chrom, start=start, end=end,
                 region.score.threshold=700,
-                motif.min.match.percentage=95)
+                motif.min.match.percentage=95,
+                tableName="wgEncodeRegDnaseClustered")
 
    x <- getCandidates(hdcf, args)
    checkEquals(sort(names(x)), c("tbl", "tfs"))
@@ -254,7 +325,7 @@ test_rs34423320 <- function()
    checkEquals(sort(names(x)), c("tbl", "tfs"))
    checkTrue(all(c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount", "motif", "match", "motif.start", "motif.end", "motif.width", "motif.score", "strand", "tf") %in% colnames(x$tbl)))
    checkTrue(nrow(x$tbl) == 2)
-   checkTrue(length(x$tfs) == 25
+   checkTrue(length(x$tfs) == 25)
    checkEquals(length(which(duplicated(x$tfs))), 0)
    checkEquals(x$tbl$motif, c("MA0081.1", "MA0056.1"))
 

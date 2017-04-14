@@ -16,12 +16,12 @@ Imports:
     RPostgreSQL,
     methods,
     RMySQL,
-    DBI,
-    GenomicRanges
+    DBI
 Depends:
     R (>= 3.2.3),
     utils,
     glmnet (>= 2.0.3),
+    GenomicRanges
 Suggests:
     RUnit,
     limma,
@@ -33,7 +33,7 @@ Description: Methods for reconstructing transcriptional regulatory networks, esp
   for which genome-wide TF binding site information is available.
 License: GPL-3
 biocViews: Transcription, GeneRegulation, NetworkInference, FeatureExtraction, Regression, SystemsBiology
-Collate: 
+Collate:
     'Solver.R'
     'BayesSpikeSolver.R'
     'CandidateFilter.R'

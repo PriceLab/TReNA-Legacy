@@ -39,7 +39,9 @@ exportMethods(
     getSolverName,
     mapMotifsToTFsMergeIntoTable,
     rescalePredictorWeights,
-    solve
+    solve,
+    getEncodeRegulatoryTableNames,
+    getRegulatoryRegions
 )
 
 import(
@@ -51,11 +53,12 @@ import(
     lassopv,
     methods,
     randomForest,
-    vbsr
+    vbsr,
+    GenomicRanges
 )
 
 importFrom(RSQLite, SQLite)
 importFrom(RPostgreSQL, PostgreSQL)
 importFrom(RMySQL, MySQL)
-importFrom(GenomicRanges, makeGRangesFromDataFrame)
+# importFrom(GenomicRanges, makeGRangesFromDataFrame)
 importFrom(utils, head)
