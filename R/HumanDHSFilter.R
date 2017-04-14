@@ -2,6 +2,7 @@
 .HumanDHSFilter <- setClass("HumanDHSFilter",
                             contains="CandidateFilter",
                             representation (genomeName='character',
+                                            genome='BSgenome',
                                             pfms='list'))
 
 #----------------------------------------------------------------------------------------------------
@@ -11,6 +12,7 @@ setGeneric('getEncodeRegulatoryTableNames', signature='obj', function(obj) stand
 setGeneric('getRegulatoryRegions', signature='obj',
            function(obj, tableName, chromosome, start, end, score.threshold=200, quiet=TRUE)
                standardGeneric ('getRegulatoryRegions'))
+setGeneric('getSequence', signature='obj', function(obj, tbl.regions) standardGeneric ('getSequence'))
 #----------------------------------------------------------------------------------------------------
 HumanDHSFilter <- function(genomeName, mtx.assay=matrix(), quiet=TRUE)
 {
@@ -20,7 +22,21 @@ HumanDHSFilter <- function(genomeName, mtx.assay=matrix(), quiet=TRUE)
     pfms <- lapply(x, function(e) apply(e$matrix, 2, function(col) col/sum(col)))
     names(pfms) <- as.character(lapply(x, function(e) e$title))
 
-    .HumanDHSFilter(CandidateFilter(mtx.assay = mtx.assay, quiet = quiet), geneomeName=genomeName, pfms=pfms)
+    if(genomeName == "hg38"){
+       library(BSgenome.Hsapiens.UCSC.hg38)
+       reference.genome <<- BSgenome.Hsapiens.UCSC.hg38
+       }
+    else if(genomeName == "hg19"){
+       library(BSgenome.Hsapiens.UCSC.hg19)
+       reference.genome <<- BSgenome.Hsapiens.UCSC.hg19
+       }
+    else {
+      stop(sprintf("HumanDHSFilter genome.name not in hg19, hg38: '%s'", genomeName))
+       }
+
+
+    .HumanDHSFilter(CandidateFilter(mtx.assay = mtx.assay, quiet = quiet), genomeName=genomeName,
+                    genome=reference.genome, pfms=pfms)
 
 } # HumanDHSFilter, the constructor
 #----------------------------------------------------------------------------------------------------
@@ -30,7 +46,7 @@ setMethod("getEncodeRegulatoryTableNames", "HumanDHSFilter",
        driver <- RMySQL::MySQL()
        host <- "genome-mysql.cse.ucsc.edu"
        user <- "genome"
-       dbname <- "hg38"
+       dbname <- obj@genomeName
        db <- DBI::dbConnect(driver, user = user, host = host, dbname = dbname)
        all.tableNames <- DBI::dbListTables(db);
           # manual check (13 apr 2017) shows that only wgEncodeReg Peak tabel
@@ -61,7 +77,7 @@ setMethod("getCandidates", "HumanDHSFilter",
 
         tbl.regions <- getRegulatoryRegions(obj, tableName, chrom, start, end)
         tbl.regions <- subset(tbl.regions, score >= region.score.threshold)
-        seqs <- .getSequence(tbl.regions)
+        seqs <- getSequence(obj, tbl.regions)
         tbl.motifs <- .getScoredMotifs(seqs, motif.min.match.percentage, obj@quiet)
         region.count <- length(seqs)
         tbl.summary <- data.frame()
@@ -95,7 +111,7 @@ setMethod("getRegulatoryRegions", "HumanDHSFilter",
        driver <- RMySQL::MySQL()
        host <- "genome-mysql.cse.ucsc.edu"
        user <- "genome"
-       dbname <- "hg38"
+       dbname <- obj@genomeName
 
        db <- dbConnect(driver, user = user, host = host, dbname = dbname)
 
@@ -162,18 +178,14 @@ setMethod("getRegulatoryRegions", "HumanDHSFilter",
    }) # getRegulatoryRegions
 
 #----------------------------------------------------------------------------------------------------
-.getSequence <- function(tbl.regions)
-{
-   if(!exists("reference.genome")){   # move to constructor
-      library(BSgenome.Hsapiens.UCSC.hg38)
-      reference.genome <<- BSgenome.Hsapiens.UCSC.hg38
-      }
+setMethod("getSequence", "HumanDHSFilter",
 
-   gr.regions <- with(tbl.regions, GRanges(seqnames=chrom, IRanges(start=chromStart, end=chromEnd)))
-   seqs <- getSeq(reference.genome, gr.regions)
-   as.character(seqs)
+   function(obj, tbl.regions){
+     gr.regions <- with(tbl.regions, GRanges(seqnames=chrom, IRanges(start=chromStart, end=chromEnd)))
+     seqs <- getSeq(obj@genome, gr.regions)
+     as.character(seqs)
+     })  # getSequence
 
-} # .getSequence
 #----------------------------------------------------------------------------------------------------
 .matchForwardAndReverse <- function(sequence, pfm, motifName, min.match.percentage=95, quiet=TRUE)
 {

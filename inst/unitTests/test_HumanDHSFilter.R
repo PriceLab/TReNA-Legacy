@@ -8,7 +8,7 @@ runTests <- function()
    test_getEncodeRegulatoryTableNames()
    test_checkAllTables()
    test_getRegulatoryRegions()
-   test_.fetchSequence()
+   test_getSequence()
    test_.matchForwardAndReverse()
    test_.getScoredMotifs()
    test_mef2cPromoter.incrementally()
@@ -21,14 +21,14 @@ test_defaultConstructor <- function()
 {
    printf("--- test_defaultConstructor")
 
-   ocf <- HumanDHSFilter();
+   ocf <- HumanDHSFilter("hg38");
 
 } # test_defaultConstructor
 #----------------------------------------------------------------------------------------------------
 test_getEncodeRegulatoryTableNames <- function()
 {
     printf("--- test_getEncodeRegulatoryTableNames")
-    df <- HumanDHSFilter();
+    df <- HumanDHSFilter("hg38");
     names <- getEncodeRegulatoryTableNames(df)
     checkTrue(length(names) > 90)   # 96 on (13 apr 2017)
 
@@ -38,7 +38,7 @@ test_checkAllTables <- function(quiet=TRUE)
 {
    printf("--- test_checkAllTables")
 
-   df <- HumanDHSFilter();
+   df <- HumanDHSFilter("hg38");
    tableNames <- getEncodeRegulatoryTableNames(df)
 
    chrom <- "chr5"
@@ -95,7 +95,7 @@ test_getRegulatoryRegions <- function()
    end   <- 88835936
 
 
-   df <- HumanDHSFilter();
+   df <- HumanDHSFilter("hg38");
    tableNames <- getEncodeRegulatoryTableNames(df)
    table <- "wgEncodeRegDnaseClustered"
    checkTrue(table %in% tableNames)
@@ -156,24 +156,43 @@ test_getRegulatoryRegions <- function()
 
 } # test_getRegulatoryRegions
 #----------------------------------------------------------------------------------------------------
-test_.fetchSequence <- function()
+test_getSequence <- function()
 {
-   printf("--- test_.fetchSequence")
+   printf("--- test_getSequence")
    chroms <- rep("chr5", 3)
    starts <- c(88819700, 88820700, 88820980)
    ends   <- c(88819910, 88820850, 88821130)
 
    tbl.regions <- data.frame(chrom=chroms, chromStart=starts, chromEnd=ends, stringsAsFactors=FALSE)
-   seqs <- TReNA:::.getSequence(tbl.regions)
-   expected.lengths <- 1 + ends - starts
-   checkEquals(unlist(lapply(seqs, nchar)), expected.lengths)
-   invisible(seqs)
 
-} # test_.fetchSequence
+   if(exists("reference.genome", envir=.GlobalEnv))
+      rm(reference.genome, envir=.GlobalEnv)
+
+   hdf.38 <- HumanDHSFilter("hg38")
+   seqs.hg38 <- getSequence(hdf.38, tbl.regions)
+
+   expected.lengths <- 1 + ends - starts
+   checkEquals(unlist(lapply(seqs.hg38, nchar)), expected.lengths)
+
+   if(exists("reference.genome", envir=.GlobalEnv))
+      rm(reference.genome, envir=.GlobalEnv)
+
+   hdf.19 <- HumanDHSFilter("hg19")
+   seqs.hg19 <- getSequence(hdf.19, tbl.regions)
+   checkEquals(unlist(lapply(seqs.hg19, nchar)), expected.lengths)
+
+      # minimal test:  the sequences should differ
+   checkTrue(substr(seqs.hg38[1], 1, 10) != substr(seqs.hg19[1], 1, 10))
+
+   invisible(seqs.hg38)
+
+} # test_getSequence
 #----------------------------------------------------------------------------------------------------
 test_.matchForwardAndReverse <- function()
 {
    printf("--- test_.matchForwardAndReverse")
+
+   df <- HumanDHSFilter("hg38");
 
    chrom <- "chr1"
    start <- 167829960
@@ -181,7 +200,9 @@ test_.matchForwardAndReverse <- function()
 
    motifName <- "MA0476.1"
    mtx <- query(MotifDb, motifName)[[1]];
-   sequence <- as.character(getSeq(reference.genome, chrom, start, end))
+
+   tbl.regions <- data.frame(chrom=chrom, chromStart=start, chromEnd=end, stringsAsFactors=FALSE)
+   sequence <- getSequence(df, tbl.regions)
 
    tbl <- TReNA:::.matchForwardAndReverse(sequence, mtx, motifName, min.match.percentage=90, quiet=TRUE)
 
@@ -227,7 +248,7 @@ test_.findMofits <- function()
 {
    printf("--- test_.findMotifs")
    x <- .findMotifs("ACTATTCCCCT", pfms, 90)
-   seqs <- test_.fetchSequence()
+   seqs <- test_getSequence()
    motifs <- TReNA:::.getScoredMotifs(seqs, min.match.percentage=95)
    checkEquals(unlist(lapply(motifs, nrow)), c(2, 4, 3))
 
@@ -236,7 +257,7 @@ test_.findMofits <- function()
 test_.getScoredMotifs <- function()
 {
    printf("--- test_.getScoredMotifs")
-   seqs <- test_.fetchSequence()
+   seqs <- test_getSequence()
    motifs <- TReNA:::.getScoredMotifs(seqs, min.match.percentage=95)
    checkEquals(unlist(lapply(motifs, nrow)), c(2, 4, 3))
 
@@ -251,7 +272,7 @@ test_mef2cPromoter.incrementally <- function()
    start <- 88824500
    end   <- 88832344
 
-   df <- HumanDHSFilter();
+   df <- HumanDHSFilter("hg38");
 
    table <- "wgEncodeRegDnaseClustered"
    tbl.regions <- getRegulatoryRegions(df, table, chrom, start, end)
@@ -262,7 +283,7 @@ test_mef2cPromoter.incrementally <- function()
 
    tbl.regions <- subset(tbl.regions, score >= 700)
    checkEquals(nrow(tbl.regions), 2)
-   seqs <- TReNA:::.getSequence(tbl.regions)
+   seqs <-getSequence(df, tbl.regions)
    checkEquals(with(tbl.regions, 1 + chromEnd - chromStart), nchar(seqs))  #  231 391
 
    motifs <- TReNA:::.getScoredMotifs(seqs, min.match.percentage=95)
@@ -276,7 +297,7 @@ test_mef2cPromoter.normalUse <- function()
 
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    checkTrue(exists("mtx.sub"))
-   hdcf <- HumanDHSFilter(mtx.sub)
+   hdcf <- HumanDHSFilter("hg38", mtx.sub)
 
 
     # chr5:88,813,245-88,832,344: has just a few high scoring clusters
@@ -306,7 +327,7 @@ test_rs34423320 <- function()
 
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    checkTrue(exists("mtx.sub"))
-   hdcf <- HumanDHSFilter(mtx.sub)
+   hdcf <- HumanDHSFilter("hg38", mtx.sub)
 
      # chr1 167830170 167830170  rs34423320-C-T
 
