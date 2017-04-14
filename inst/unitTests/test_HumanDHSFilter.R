@@ -21,14 +21,14 @@ test_defaultConstructor <- function()
 {
    printf("--- test_defaultConstructor")
 
-   ocf <- HumanDNAseClusterFilter();
+   ocf <- HumanDHSFilter();
 
 } # test_defaultConstructor
 #----------------------------------------------------------------------------------------------------
 test_getEncodeRegulatoryTableNames <- function()
 {
     printf("--- test_getEncodeRegulatoryTableNames")
-    df <- HumanDNAseClusterFilter();
+    df <- HumanDHSFilter();
     names <- getEncodeRegulatoryTableNames(df)
     checkTrue(length(names) > 90)   # 96 on (13 apr 2017)
 
@@ -38,7 +38,7 @@ test_checkAllTables <- function(quiet=TRUE)
 {
    printf("--- test_checkAllTables")
 
-   df <- HumanDNAseClusterFilter();
+   df <- HumanDHSFilter();
    tableNames <- getEncodeRegulatoryTableNames(df)
 
    chrom <- "chr5"
@@ -95,7 +95,7 @@ test_getRegulatoryRegions <- function()
    end   <- 88835936
 
 
-   df <- HumanDNAseClusterFilter();
+   df <- HumanDHSFilter();
    tableNames <- getEncodeRegulatoryTableNames(df)
    table <- "wgEncodeRegDnaseClustered"
    checkTrue(table %in% tableNames)
@@ -251,7 +251,7 @@ test_mef2cPromoter.incrementally <- function()
    start <- 88824500
    end   <- 88832344
 
-   df <- HumanDNAseClusterFilter();
+   df <- HumanDHSFilter();
 
    table <- "wgEncodeRegDnaseClustered"
    tbl.regions <- getRegulatoryRegions(df, table, chrom, start, end)
@@ -276,7 +276,7 @@ test_mef2cPromoter.normalUse <- function()
 
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    checkTrue(exists("mtx.sub"))
-   hdcf <- HumanDNAseClusterFilter(mtx.sub)
+   hdcf <- HumanDHSFilter(mtx.sub)
 
 
     # chr5:88,813,245-88,832,344: has just a few high scoring clusters
@@ -306,7 +306,7 @@ test_rs34423320 <- function()
 
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    checkTrue(exists("mtx.sub"))
-   hdcf <- HumanDNAseClusterFilter(mtx.sub)
+   hdcf <- HumanDHSFilter(mtx.sub)
 
      # chr1 167830170 167830170  rs34423320-C-T
 

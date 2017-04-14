@@ -1,7 +1,8 @@
 #----------------------------------------------------------------------------------------------------
-.HumanDNAseClusterFilter <- setClass("HumanDNAseClusterFilter",
-                                     contains="CandidateFilter",
-                                     representation (pfms='list'))
+.HumanDHSFilter <- setClass("HumanDHSFilter",
+                            contains="CandidateFilter",
+                            representation (genomeName='character',
+                                            pfms='list'))
 
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
@@ -11,7 +12,7 @@ setGeneric('getRegulatoryRegions', signature='obj',
            function(obj, tableName, chromosome, start, end, score.threshold=200, quiet=TRUE)
                standardGeneric ('getRegulatoryRegions'))
 #----------------------------------------------------------------------------------------------------
-HumanDNAseClusterFilter <- function(mtx.assay=matrix(), quiet=TRUE)
+HumanDHSFilter <- function(genomeName, mtx.assay=matrix(), quiet=TRUE)
 {
     uri <- "http://jaspar.genereg.net/html/DOWNLOAD/JASPAR_CORE/pfm/nonredundant/pfm_vertebrates.txt"
     x <- .readRawJasparMatrices(uri)
@@ -19,11 +20,11 @@ HumanDNAseClusterFilter <- function(mtx.assay=matrix(), quiet=TRUE)
     pfms <- lapply(x, function(e) apply(e$matrix, 2, function(col) col/sum(col)))
     names(pfms) <- as.character(lapply(x, function(e) e$title))
 
-    .HumanDNAseClusterFilter(CandidateFilter(mtx.assay = mtx.assay, quiet = quiet), pfms=pfms)
+    .HumanDHSFilter(CandidateFilter(mtx.assay = mtx.assay, quiet = quiet), geneomeName=genomeName, pfms=pfms)
 
-} # HumanDNAseClusterFilter, the constructor
+} # HumanDHSFilter, the constructor
 #----------------------------------------------------------------------------------------------------
-setMethod("getEncodeRegulatoryTableNames", "HumanDNAseClusterFilter",
+setMethod("getEncodeRegulatoryTableNames", "HumanDHSFilter",
 
      function(obj){
        driver <- RMySQL::MySQL()
@@ -43,7 +44,7 @@ setMethod("getEncodeRegulatoryTableNames", "HumanDNAseClusterFilter",
        })
 
 #----------------------------------------------------------------------------------------------------
-setMethod("getCandidates", "HumanDNAseClusterFilter",
+setMethod("getCandidates", "HumanDHSFilter",
 
     function(obj, extraArgs){
 
@@ -66,7 +67,7 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
         tbl.summary <- data.frame()
         all.tfs <- c()
         for(i in seq_len(region.count)){
-            #printf("HumanDNAseClusterFilter, line 100, combining tbl.motifs and tbl.regions into tbl.summary")
+            #printf("HumanDHSFilter, line 100, combining tbl.motifs and tbl.regions into tbl.summary")
             #browser();
             if(nrow(tbl.motifs[[i]]) > 0)
                tbl.summary <- rbind(tbl.summary, cbind(tbl.motifs[[i]], tbl.regions[i,]))
@@ -87,7 +88,7 @@ setMethod("getCandidates", "HumanDNAseClusterFilter",
 	}) # getCandidates
 
 #----------------------------------------------------------------------------------------------------
-setMethod("getRegulatoryRegions", "HumanDNAseClusterFilter",
+setMethod("getRegulatoryRegions", "HumanDHSFilter",
 
     function(obj, tableName, chromosome, start, end, score.threshold=200, quiet=TRUE) {
 
