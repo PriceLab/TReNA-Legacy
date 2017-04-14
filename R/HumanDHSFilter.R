@@ -24,11 +24,11 @@ HumanDHSFilter <- function(genomeName, mtx.assay=matrix(), quiet=TRUE)
 
     if(genomeName == "hg38"){
        library(BSgenome.Hsapiens.UCSC.hg38)
-       reference.genome <<- BSgenome.Hsapiens.UCSC.hg38
+       reference.genome <- BSgenome.Hsapiens.UCSC.hg38
        }
     else if(genomeName == "hg19"){
        library(BSgenome.Hsapiens.UCSC.hg19)
-       reference.genome <<- BSgenome.Hsapiens.UCSC.hg19
+       reference.genome <- BSgenome.Hsapiens.UCSC.hg19
        }
     else {
       stop(sprintf("HumanDHSFilter genome.name not in hg19, hg38: '%s'", genomeName))
@@ -52,7 +52,10 @@ setMethod("getEncodeRegulatoryTableNames", "HumanDHSFilter",
           # manual check (13 apr 2017) shows that only wgEncodeReg Peak tabel
           # and the "wgEncodeRegDnaseClustered" table, have scored chromosomal regions in them
        tableNames <- grep("wgEncodeReg.*Peak$", DBI::dbListTables(db), value=TRUE)
-       clusteredTable <- "wgEncodeRegDnaseClustered"
+       clusteredTable <- switch(obj@genomeName,
+                                hg19="wgEncodeRegDnaseClusteredV3",
+                                hg38="wgEncodeRegDnaseClustered",
+                                NA)
        if(clusteredTable %in% all.tableNames)
           tableNames <- c(clusteredTable, tableNames)
        lapply(dbListConnections(driver), DBI::dbDisconnect)

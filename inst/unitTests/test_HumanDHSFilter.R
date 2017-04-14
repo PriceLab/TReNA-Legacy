@@ -21,7 +21,9 @@ test_defaultConstructor <- function()
 {
    printf("--- test_defaultConstructor")
 
-   ocf <- HumanDHSFilter("hg38");
+   hdf <- HumanDHSFilter("hg38");
+   hdf <- HumanDHSFilter("hg19");
+   checkException(hdf <- HumanDHSFilter("bogus32"), silent=TRUE)
 
 } # test_defaultConstructor
 #----------------------------------------------------------------------------------------------------
@@ -31,6 +33,11 @@ test_getEncodeRegulatoryTableNames <- function()
     df <- HumanDHSFilter("hg38");
     names <- getEncodeRegulatoryTableNames(df)
     checkTrue(length(names) > 90)   # 96 on (13 apr 2017)
+
+    df <- HumanDHSFilter("hg19");
+    names <- getEncodeRegulatoryTableNames(df)
+    checkTrue(length(names) == 1)   # no peak files, just "wgEncodeRegDnaseClusteredV3"
+
 
 } # test_getEncodeRegulatoryTableNames
 #----------------------------------------------------------------------------------------------------
