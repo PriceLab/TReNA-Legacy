@@ -188,6 +188,20 @@ test_getRegulatoryRegions_hardCase <- function()
     checkEquals(tbl.reg$chromStart, c(start, 127107620))
     checkEquals(tbl.reg$chromEnd, c(127107470, end))
 
+       # now skip the second partial dhs region, get only the first
+    end   <-  127107500
+    tbl.reg <- getRegulatoryRegions(dhsFilter, "wgEncodeRegDnaseClustered", chrom, start, end)
+    checkEquals(nrow(tbl.reg), 1)
+    checkEquals(tbl.reg$chromStart, start)
+    checkEquals(tbl.reg$chromEnd, 127107470)
+
+       # now place start and end BOTH within the dhs region
+    end <- 127107465
+    tbl.reg <- getRegulatoryRegions(dhsFilter, "wgEncodeRegDnaseClustered", chrom, start, end)
+    checkEquals(nrow(tbl.reg), 1)
+    checkEquals(tbl.reg$chromStart, start)
+    checkEquals(tbl.reg$chromEnd, end)
+
 } # test_getRegulatoryRegions_hardCase
 #----------------------------------------------------------------------------------------------------
 test_getSequence <- function()
