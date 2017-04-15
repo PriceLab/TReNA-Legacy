@@ -8,6 +8,7 @@ runTests <- function()
    test_getEncodeRegulatoryTableNames()
    test_checkAllTables()
    test_getRegulatoryRegions()
+   test_getRegulatoryRegions_hardCase()
    test_getSequence()
    test_.matchForwardAndReverse()
    test_.getScoredMotifs()
@@ -101,13 +102,12 @@ test_getRegulatoryRegions <- function()
    start <- 88819630
    end   <- 88835936
 
-
-   df <- HumanDHSFilter("hg38");
-   tableNames <- getEncodeRegulatoryTableNames(df)
+   dhsFilter <- HumanDHSFilter("hg38", quiet=TRUE);
+   tableNames <- getEncodeRegulatoryTableNames(dhsFilter)
    table <- "wgEncodeRegDnaseClustered"
    checkTrue(table %in% tableNames)
 
-   tbl.regions <-getRegulatoryRegions(df, table, chrom, start, end)
+   tbl.regions <-getRegulatoryRegions(dhsFilter, table, chrom, start, end)
 
    checkTrue(nrow(tbl.regions) > 20)
    checkEquals(colnames(tbl.regions), c("chrom", "chromStart", "chromEnd", "name", "score"))
@@ -129,7 +129,7 @@ test_getRegulatoryRegions <- function()
    chrom = "chr1"
    start <-  88802520
    end   <-  88802530
-   tbl.regions <- getRegulatoryRegions(df, table, chrom, start, end)
+   tbl.regions <- getRegulatoryRegions(dhsFilter, table, chrom, start, end)
    checkEquals(nrow(tbl.regions), 1)
    checkEquals(tbl.regions$chromStart, start)
    checkEquals(tbl.regions$chromEnd, end)
@@ -138,7 +138,7 @@ test_getRegulatoryRegions <- function()
    chrom = "chr1"
    start <-  88802145
    end   <-  88802155
-   tbl.regions <- getRegulatoryRegions(df, table, chrom, start, end)
+   tbl.regions <- getRegulatoryRegions(dhsFilter, table, chrom, start, end)
    checkEquals(nrow(tbl.regions), 1)
    checkEquals(tbl.regions$chromStart, start)
    checkEquals(tbl.regions$chromEnd, 88802150)
@@ -147,7 +147,7 @@ test_getRegulatoryRegions <- function()
    chrom = "chr1"
    start <-  88801878
    end   <-  88801883
-   tbl.regions <- getRegulatoryRegions(df, table, chrom, start, end)
+   tbl.regions <- getRegulatoryRegions(dhsFilter, table, chrom, start, end)
    checkEquals(nrow(tbl.regions), 1)
    checkEquals(tbl.regions$chromStart, 88801880)
    checkEquals(tbl.regions$chromEnd, end)
@@ -156,12 +156,39 @@ test_getRegulatoryRegions <- function()
    chrom <- "chr1"
    start <- 167830160
    end   <- 167830180
-   tbl.regions <- getRegulatoryRegions(df, table, chrom, start, end)
+   tbl.regions <- getRegulatoryRegions(dhsFilter, table, chrom, start, end)
    checkEquals(nrow(tbl.regions), 1)
    checkEquals(tbl.regions$chromStart, start)
    checkEquals(tbl.regions$chromEnd, end)
-
 } # test_getRegulatoryRegions
+#----------------------------------------------------------------------------------------------------
+test_getRegulatoryRegions_hardCase <- function()
+{
+   printf("--- test_getRegulatoryRegions_hardCase")
+
+     # a hard case.  the requested region overlaps incompletely with two neighboring
+     # dhs regions.  we want to get those two partial intersecting regions,
+     # one shortened on the left, the other shortened on the right
+
+   dhsFilter <- HumanDHSFilter("hg38", quiet=TRUE);
+
+   chrom <- "chr2"
+   start <-  127107283
+   end   <-  127107637
+
+       # dhs region 1: chr2:127,107,061 - 470
+       # dhs region 2:              620 - 929
+       # we expect back:
+       #      107,283 - 470
+       #      107,620 - 637
+
+    tbl.reg <- getRegulatoryRegions(dhsFilter, "wgEncodeRegDnaseClustered", chrom, start, end)
+    checkEquals(dim(tbl.reg), c(2, 5))
+    checkEquals(tbl.reg$chrom, c(chrom, chrom))
+    checkEquals(tbl.reg$chromStart, c(start, 127107620))
+    checkEquals(tbl.reg$chromEnd, c(127107470, end))
+
+} # test_getRegulatoryRegions_hardCase
 #----------------------------------------------------------------------------------------------------
 test_getSequence <- function()
 {
@@ -319,7 +346,8 @@ test_mef2cPromoter.normalUse <- function()
 
    x <- getCandidates(hdcf, args)
    checkEquals(sort(names(x)), c("tbl", "tfs"))
-   checkTrue(all(c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount", "motif", "match", "motif.start", "motif.end", "motif.width", "motif.score", "strand", "tf") %in% colnames(x$tbl)))
+   checkTrue(all(c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount", "motif", "match",
+                   "motif.start", "motif.end", "motif.width", "motif.score", "strand", "tf") %in% colnames(x$tbl)))
    checkTrue(nrow(x$tbl) > 15)     # 16 on (29 mar 2017)
    checkTrue(length(x$tfs) > 200)  # 217 on (29 mar 2017)
    checkEquals(length(which(duplicated(x$tfs))), 0)

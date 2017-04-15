@@ -3,7 +3,8 @@
                             contains="CandidateFilter",
                             representation (genomeName='character',
                                             genome='BSgenome',
-                                            pfms='list'))
+                                            pfms='list',
+                                            quiet='logical'))
 
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
@@ -36,7 +37,7 @@ HumanDHSFilter <- function(genomeName, mtx.assay=matrix(), quiet=TRUE)
 
 
     .HumanDHSFilter(CandidateFilter(mtx.assay = mtx.assay, quiet = quiet), genomeName=genomeName,
-                    genome=reference.genome, pfms=pfms)
+                    genome=reference.genome, pfms=pfms, quiet=quiet)
 
 } # HumanDHSFilter, the constructor
 #----------------------------------------------------------------------------------------------------
@@ -109,7 +110,7 @@ setMethod("getCandidates", "HumanDHSFilter",
 #----------------------------------------------------------------------------------------------------
 setMethod("getRegulatoryRegions", "HumanDHSFilter",
 
-    function(obj, tableName, chromosome, start, end, score.threshold=200, quiet=TRUE) {
+    function(obj, tableName, chromosome, start, end, score.threshold=200) {
 
        driver <- RMySQL::MySQL()
        host <- "genome-mysql.cse.ucsc.edu"
@@ -142,13 +143,13 @@ setMethod("getRegulatoryRegions", "HumanDHSFilter",
          tbl.regions <- dbGetQuery(db, query)
           )
 
-       if(!quiet)
+       if(!obj@quiet)
            printf("%d DHS regions reported in %d bases, start:end unmodified", nrow(tbl.regions), 1 + end - start)
 
       # if no hits, then perhaps a very small region is requested, one which falls entirely within a DHS region
        if(nrow(tbl.regions) == 0) {
           extension <- 10000
-          if(!quiet)
+          if(!obj@quiet)
              printf("possible that start:end (%d) is small relative to DHS regions, extend by %d", (1 + end - start),
                    extension);
           query <- paste(main.clause,
@@ -159,23 +160,27 @@ setMethod("getRegulatoryRegions", "HumanDHSFilter",
            suppressWarnings(  # MySQL returns unsigned integers.  hide these unproblematic conversion warnings
               tbl.regionsExtended <- dbGetQuery(db, query)
               )
+         if(!obj@quiet) printf("query with extended region, %d rows", nrow(tbl.regionsExtended))
          if(nrow(tbl.regionsExtended) > 0) { # now find just the intersection of DHS and requested region
-            if(!quiet)
-               printf("tbl.regionsExtended: %d rows, now do intersect", nrow(tbl.regionsExtended));
-             gr.regions <- with(tbl.regionsExtended, GRanges(seqnames=chromosome, IRanges(chromStart, chromEnd)))
-             gr.target <- GRanges(seqnames=chromosome, IRanges(start, end))
-             gr.intersect <- GenomicRanges::intersect(gr.target, gr.regions, ignore.strand=TRUE)
-             if(length(gr.intersect) == 1){
-                region.index <- subjectHits(findOverlaps(gr.target, gr.regions))
-                tbl.regions <- tbl.regionsExtended[region.index,]
-                tbl.regions$chromStart[1] <- max(tbl.regions$chromStart[1], start)
-                tbl.regions$chromEnd[1] <- min(tbl.regions$chromEnd[1], end)
-                } # one region from the extended query intersects with the requested start:end.
-             } # small region query, within DHS region
+            if(!obj@quiet)
+               printf("tbl.regionsExtended: %d rows, now have intersection", nrow(tbl.regionsExtended));
+            gr.regions <- with(tbl.regionsExtended, GRanges(seqnames=chromosome, IRanges(chromStart, chromEnd)))
+            gr.target <- GRanges(seqnames=chromosome, IRanges(start, end))
+              # use range to collapse any multiple intersections down to that of the original target
+            gr.intersect <- GenomicRanges::intersect(gr.target, gr.regions, ignore.strand=TRUE)
+            if(!obj@quiet) printf("GenomicRanges intersections of extended region with original target: %d", length(gr.intersect))
+            if(length(gr.intersect) >= 1){
+               tbl.ov <- as.data.frame(findOverlaps(gr.intersect, gr.regions, type="any"))
+               tbl.regions <- cbind(as.data.frame(gr.intersect[tbl.ov$queryHits]),
+                                    tbl.regionsExtended[tbl.ov$subjectHits, c("name", "score")])
+               colnames(tbl.regions) <- c("chrom", "chromStart", "chromEnd", "width", "strand", "name", "score")
+               } # one or more region from the extended query intersects with the requested start:end.
+            } # small region query, within DHS region
           } # small region, extension search
 
    lapply(dbListConnections(driver), dbDisconnect)
 
+   tbl.regions$chrom <- as.character(tbl.regions$chrom)
    invisible(tbl.regions[, c("chrom", "chromStart", "chromEnd", "name", "score")])
 
    }) # getRegulatoryRegions
