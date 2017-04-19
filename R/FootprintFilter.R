@@ -102,7 +102,7 @@ setMethod("getCandidates", "FootprintFilter",
                   tbl.out <- mapMotifsToTFsMergeIntoTable(fp, tbl.fp)                        
                   closeDatabaseConnections(fp)
                   # Intersect the footprints with the rows in the matrix                  
-                  candidate.tfs <- intersect(tbl.out$tf, rownames(getAssayData(obj)))                             
+                  candidate.tfs <- intersect(tbl.out$tf, rownames(getFilterAssayData(obj)))                             
                   # Return the TFs                  
                   return(list("tfs" = candidate.tfs,                              
                               "tbl" = tbl.out))}

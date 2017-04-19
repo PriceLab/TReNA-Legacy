@@ -24,7 +24,15 @@
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
+#' Retrieve the assay matrix of gene expression data from a Solver object
+#' 
+#' @rdname getAssayData
+#' 
+#' @param obj An object of class Solver
+#'
 #' @export
+#' 
+#' @return The assay matrix of gene expression data associated with a Solver object
 setGeneric("getAssayData",    signature="obj", function(obj) standardGeneric ("getAssayData"))
 #' @export
 setGeneric("run",             signature="obj", function(obj, target.gene, tfs, tf.weights, extraArgs=list()) standardGeneric ("run"))
@@ -64,19 +72,10 @@ Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 
 } # Solver, the constructor
 #----------------------------------------------------------------------------------------------------
-#' Get Assay Data from Solver
+#' @describeIn Solver Retrieve the assay matrix of gene expression data
 #'
-#' Retrieve the assay matrix of gene expression data from a Solver object
+#' @param obj An object of the Solver class
 #' 
-#' @rdname getAssayData
-#' @aliases getAssayData
-#' 
-#' @param obj An object of class Solver
-#'
-#' @export
-#' 
-#' @return The assay matrix of gene expression data associated with a Solver object
-#'
 #' @examples
 #'
 #' # Create a Solver object using the included Alzheimer's data and retrieve the matrix

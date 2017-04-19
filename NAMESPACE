@@ -27,6 +27,7 @@ exportMethods(
     closeDatabaseConnections,
     getCandidates,
     getAssayData,
+    getFilterAssayData,
     getChromLoc,
     getFootprintsForGene,
     getFootprintsInRegion,

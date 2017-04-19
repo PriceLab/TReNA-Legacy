@@ -5,14 +5,19 @@
 \alias{Solver-class}
 \alias{.Solver}
 \alias{Solver}
+\alias{getAssayData,Solver-method}
 \title{Solver Class}
 \usage{
 Solver(mtx.assay = matrix(), quiet = TRUE)
+
+\S4method{getAssayData}{Solver}(obj)
 }
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
 
 \item{quiet}{A logical indicating whether or not the Solver object should print output}
+
+\item{obj}{An object of the Solver class}
 }
 \value{
 An object of the Solver class
@@ -25,6 +30,11 @@ is achieved using the \code{\link{solve}} method on a TReNA object.
 
 Define an object of class Solver
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{getAssayData}: Retrieve the assay matrix of gene expression data
+}}
+
 \section{Slots}{
 
 \describe{
@@ -37,6 +47,11 @@ Define an object of class Solver
 mtx <- matrix(rnorm(10000), nrow = 100)
 solver <- Solver(mtx)
 
+
+# Create a Solver object using the included Alzheimer's data and retrieve the matrix
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+solver <- Solver(mtx.sub)
+mtx <- getAssayData(solver)
 }
 \seealso{
 \code{\link{TReNA}}, \code{\link{solve}}

@@ -79,9 +79,9 @@ setMethod("getCandidates", "VarianceFilter",
               var.size <- extraArgs[["var.size"]]
               
               # Designate the target genes and tfs              
-              tfs <- setdiff(rownames(getAssayData(obj)), target.gene)              
-              tf.mtx <- getAssayData(obj)[-c(which(rownames(getAssayData(obj)) == target.gene)),]              
-              target.mtx <- getAssayData(obj)[which(rownames(getAssayData(obj)) == target.gene),]
+              tfs <- setdiff(rownames(getFilterAssayData(obj)), target.gene)              
+              tf.mtx <- getFilterAssayData(obj)[-c(which(rownames(getFilterAssayData(obj)) == target.gene)),]              
+              target.mtx <- getFilterAssayData(obj)[which(rownames(getFilterAssayData(obj)) == target.gene),]
               
               # Find the variances              
               tf.var <- apply(tf.mtx,1,stats::var)              

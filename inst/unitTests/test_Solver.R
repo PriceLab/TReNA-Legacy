@@ -18,7 +18,7 @@ test_getAssayData <- function()
 {
     printf("--- test_getAssayData")
     trena <- TReNA(matrix(1:10, nrow=2), solver = "lasso")
-    checkEquals(class(getAssayData(getSolverObject(trena))), matrix)
+    checkEquals(class(getAssayData(getSolverObject(trena))), "matrix")
     checkEquals(matrix(1:10, nrow=2), getAssayData(getSolverObject(trena)))
     
     } # test_getAssayData

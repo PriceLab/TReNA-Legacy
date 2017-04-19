@@ -1,5 +1,3 @@
-#' Class CandidateFilter
-#'
 #' @import methods
 #' 
 #' @name CandidateFilter-class
@@ -9,9 +7,7 @@
 #' @slot mtx.assay An assay matrix of gene expression data
 #' @slot quiet A logical denoting whether or not the CandidateFilter object should print output
 #'
-#' @return An object of the CandidateFilter class
-#'
-#' @seealso \code{\link{FootprintFilter}} \code{\link{VarianceFilter}} \code{\link{NullFilter}}
+#' @family Filtering objects
 
 .CandidateFilter <- setClass("CandidateFilter",
                     slots = c(mtx.assay = "matrix",
@@ -35,6 +31,17 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' @export
 setGeneric("getCandidates", signature="obj", function(obj,extraArgs) standardGeneric("getCandidates"))
 
+#' Retrieve the assay matrix of gene expression data
+#'
+#' @aliases getFilterAssayData
+#'
+#' @param obj An object of a CandidateFilter class
+#'
+#' @return The assay matrix of gene expression data associated with a CandidateFilter object
+#'
+
+#' @export
+setGeneric("getFilterAssayData",    signature="obj", function(obj) standardGeneric ("getFilterAssayData"))
 #----------------------------------------------------------------------------------------------------
 #' CandidateFilter
 #'
@@ -60,4 +67,21 @@ CandidateFilter <- function(mtx.assay = matrix(), quiet = TRUE)
     .CandidateFilter(mtx.assay = mtx.assay, quiet = quiet)
 
 } # CandidateFilter, the constructor
+#----------------------------------------------------------------------------------------------------
+#' @describeIn CandidateFilter Retrieve the assay matrix of gene expression data
+#'
+#' @param obj An object of the CandidateFilter class
+#' 
+#' @examples
+#'
+#' # Create a CandidateFilter object using the included Alzheimer's data and retrieve the matrix
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' my.filter <- CandidateFilter(mtx.sub)
+#' mtx <- getFilterAssayData(my.filter)
+
+setMethod("getFilterAssayData", "CandidateFilter",
+
+   function (obj){
+      obj@mtx.assay
+      })
 #----------------------------------------------------------------------------------------------------
