@@ -34,3 +34,14 @@ fp <- FootprintFinder(genome.db.uri, project.db.uri)
 footprints <- getFootprintsInRegion(fp, chromosome = "chr5",
 start = 88903305, end = 88903319 )
 }
+\seealso{
+Other FootprintFinder methods: \code{\link{FootprintFinder-class}},
+  \code{\link{closeDatabaseConnections,FootprintFinder-method}},
+  \code{\link{getChromLoc,FootprintFinder-method}},
+  \code{\link{getFootprintsForGene,FootprintFinder-method}},
+  \code{\link{getGenePromoterRegion,FootprintFinder-method}},
+  \code{\link{getGtfGeneBioTypes,FootprintFinder-method}},
+  \code{\link{getGtfMoleculeTypes,FootprintFinder-method}},
+  \code{\link{getPromoterRegionsAllGenes,FootprintFinder-method}},
+  \code{\link{mapMotifsToTFsMergeIntoTable,FootprintFinder-method}}
+}

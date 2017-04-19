@@ -23,14 +23,9 @@ must contain the tables "regions" and "hits" at a minimum. The URI format is as 
 \item{quiet}{A logical denoting whether or not the FootprintFinder object should print output}
 }
 \value{
-An object of the FootprintFinder class that can reduce a list of genes to a subset prior
-to forming a TReNA object
-
 An object of the FootprintFinder class
 }
 \description{
-Class FootprintFinder
-
 The FootprintFinder class is designed to query 2 supplied footprint databases (a genome database
 and a project database) for supplied genes or regions. Within the TReNA package, the
 FootprintFinder class is mainly used by the FootprintFilter class, but the FootprintFinder class
@@ -48,4 +43,14 @@ offers more flexibility in constructing queries.
 
 \seealso{
 \code{\link{FootprintFilter}}
+
+Other FootprintFinder methods: \code{\link{closeDatabaseConnections,FootprintFinder-method}},
+  \code{\link{getChromLoc,FootprintFinder-method}},
+  \code{\link{getFootprintsForGene,FootprintFinder-method}},
+  \code{\link{getFootprintsInRegion,FootprintFinder-method}},
+  \code{\link{getGenePromoterRegion,FootprintFinder-method}},
+  \code{\link{getGtfGeneBioTypes,FootprintFinder-method}},
+  \code{\link{getGtfMoleculeTypes,FootprintFinder-method}},
+  \code{\link{getPromoterRegionsAllGenes,FootprintFinder-method}},
+  \code{\link{mapMotifsToTFsMergeIntoTable,FootprintFinder-method}}
 }

@@ -1,5 +1,3 @@
-#' Class TReNA
-#'
 #' @name TReNA-class
 #' @rdname TReNA-class
 #' @aliases TReNA
@@ -20,6 +18,8 @@ setGeneric("solve",                    signature="obj", function(obj, target.gen
     standardGeneric ("solve"))
 #' @export
 setGeneric("getSolverName",   signature="obj", function(obj) standardGeneric ("getSolverName"))
+#' @export
+setGeneric("getSolverObject", signature="obj", function(obj) standardGeneric ("getSolverObject"))
 #----------------------------------------------------------------------------------------------------
 #' @title Class TReNA
 #'
@@ -105,7 +105,7 @@ setMethod("solve", "TReNA",
 
    function (obj, target.gene, tfs, tf.weights=rep(1, length(tfs)), extraArgs=list()){
       # printf("entering TReNA::solve")
-      run(obj@solver, target.gene, tfs, tf.weights, extraArgs)
+      run(getSolverObject(obj), target.gene, tfs, tf.weights, extraArgs)
       })
 #----------------------------------------------------------------------------------------------------
 #' Get the Solver Name from a TReNA Object
@@ -135,3 +135,31 @@ setMethod("getSolverName", "TReNA",
               return(class(obj@solver)[1])                
           })
 
+#----------------------------------------------------------------------------------------------------
+#' Get the Solver Object from a TReNA Object
+#'
+#' Retrieve the name of the solver specified in a TReNA object
+#'
+#' @rdname getSolverObject
+#' @aliases getSolverObject
+#'
+#' @param obj An object of class TReNA
+#'
+#' @export
+#'
+#' @return The Solver object contained by the given TReNA object
+#'
+#' @examples
+#'
+#' # Create a LassoSolver object using the included Alzheimer's data and retrieve the solver object
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' solver <- TReNA(mtx.sub, solver = "lasso")
+#' mtx <- getSolverObject(solver)
+
+setMethod("getSolverObject", "TReNA",
+
+          function(obj){
+              # Return the solver name stored in the object
+              return(obj@solver)                
+          })
+#----------------------------------------------------------------------------------------------------

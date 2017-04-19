@@ -5,31 +5,23 @@ printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
 runTests <- function()
 {
-   test_emptyConstructor()
-   test_developAndFitDummyTestData()
-   test_fitDummyData()   
-   test_scalePredictorPenalties.lasso()
-   test_eliminateSelfTFs()
-   test_MatrixWarnings()
+    test_getAssayData()
+    test_developAndFitDummyTestData()    
+    test_fitDummyData()    
+    test_scalePredictorPenalties.lasso()    
+    test_eliminateSelfTFs()    
+    test_MatrixWarnings()    
    
 } # runTests
 #----------------------------------------------------------------------------------------------------
-test_emptyConstructor <- function()
+test_getAssayData <- function()
 {
-   printf("--- test_emptyConstructor")
-   trena <- TReNA()
-   checkEquals(is(trena), "TReNA")
-
-   #mtx <- getAssayData(trena)
-   #checkTrue("matrix" %in% is(mtx))
-   #checkEquals(dim(mtx), c(1,1))   # the default (and implicilty empty) matrix
-   #checkTrue(is.na(mtx[1,1]))
-
-   #mtx.priors <- getPriors(trena)
-   #checkTrue("matrix" %in% is(mtx.priors))
-   #checkEquals(dim(mtx.priors), c(1,1))
-
-} # test_emptyConstructor
+    printf("--- test_getAssayData")
+    trena <- TReNA(matrix(1:10, nrow=2), solver = "lasso")
+    checkEquals(class(getAssayData(getSolverObject(trena))), matrix)
+    checkEquals(matrix(1:10, nrow=2), getAssayData(getSolverObject(trena)))
+    
+    } # test_getAssayData
 #----------------------------------------------------------------------------------------------------
 test_developAndFitDummyTestData <- function(quiet=FALSE)
 {

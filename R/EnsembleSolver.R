@@ -39,7 +39,7 @@ EnsembleSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' as a predictor of the target gene's expression level. The final scores for the ensemble
 #' method combine all specified solvers to create a composite score for each transcription factor. 
 #'
-#' @param obj An object of class TReNA with "ensemble" as the solver string
+#' @param obj An object of class Solver with "ensemble" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
@@ -75,7 +75,7 @@ setMethod("run", "EnsembleSolver",
            function(obj, target.gene, tfs, tf.weights = rep(1, length(tfs)), extraArgs = list()){
 
                # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning               
-               if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                   
+               if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){                   
                    warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")                  
                }               
                
@@ -105,7 +105,7 @@ setMethod("run", "EnsembleSolver",
 
                for(i in 1:length(solver.list)){
                    # Create and solve the TReNA object for each solver
-                   trena <- TReNA(obj@mtx.assay, solver = solver.list[[i]] )
+                   trena <- TReNA(getAssayData(obj), solver = solver.list[[i]] )
 
                    # if there's extraArgs, pass them
                    if(solver.list[[i]] %in% names(extraArgs)){                       

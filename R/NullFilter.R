@@ -66,7 +66,7 @@ setMethod("getCandidates", "NullFilter",
 
     function(obj, extraArgs=list()){
         # Simply return the genes
-	genes <- rownames(obj@mtx.assay)
+	genes <- rownames(getAssayData(obj))
 	return(genes)
 	})
 

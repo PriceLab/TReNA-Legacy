@@ -18,3 +18,14 @@ Closes the specified database connection
 This method takes a FootprintFinder object and closes connections to the footprint databases
 if they are currently open.
 }
+\seealso{
+Other FootprintFinder methods: \code{\link{FootprintFinder-class}},
+  \code{\link{getChromLoc,FootprintFinder-method}},
+  \code{\link{getFootprintsForGene,FootprintFinder-method}},
+  \code{\link{getFootprintsInRegion,FootprintFinder-method}},
+  \code{\link{getGenePromoterRegion,FootprintFinder-method}},
+  \code{\link{getGtfGeneBioTypes,FootprintFinder-method}},
+  \code{\link{getGtfMoleculeTypes,FootprintFinder-method}},
+  \code{\link{getPromoterRegionsAllGenes,FootprintFinder-method}},
+  \code{\link{mapMotifsToTFsMergeIntoTable,FootprintFinder-method}}
+}

@@ -35,3 +35,14 @@ fp <- FootprintFinder(genome.db.uri, project.db.uri)
 
 chrom.locs <- getChromLoc(fp, name = "MEF2C")
 }
+\seealso{
+Other FootprintFinder methods: \code{\link{FootprintFinder-class}},
+  \code{\link{closeDatabaseConnections,FootprintFinder-method}},
+  \code{\link{getFootprintsForGene,FootprintFinder-method}},
+  \code{\link{getFootprintsInRegion,FootprintFinder-method}},
+  \code{\link{getGenePromoterRegion,FootprintFinder-method}},
+  \code{\link{getGtfGeneBioTypes,FootprintFinder-method}},
+  \code{\link{getGtfMoleculeTypes,FootprintFinder-method}},
+  \code{\link{getPromoterRegionsAllGenes,FootprintFinder-method}},
+  \code{\link{mapMotifsToTFsMergeIntoTable,FootprintFinder-method}}
+}

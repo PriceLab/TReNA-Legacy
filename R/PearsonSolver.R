@@ -42,7 +42,7 @@ PearsonSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 #' @description Given a TReNA object with Pearson as the solver, use the \code{\link{cor}} function to
 #' estimate coefficients for each transcription factor as a perdictor of the target gene's expression level
 #'
-#' @param obj An object of class TReNA with "pearson" as the solver string
+#' @param obj An object of class Solver with "pearson" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
@@ -67,12 +67,11 @@ setMethod("run", "PearsonSolver",
           function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
 
               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning              
-              if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                  
+              if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){                  
                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")                  
               }
               
-
-              mtx <- obj@mtx.assay
+              mtx <- getAssayData(obj)
               # Check that target gene and tfs are all part of the matrix
               stopifnot(target.gene %in% rownames(mtx))
               stopifnot(all(tfs %in% rownames(mtx)))

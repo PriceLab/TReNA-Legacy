@@ -44,3 +44,14 @@ fp <- FootprintFinder(genome.db.uri, project.db.uri)
 
 prom.region <- getGenePromoterRegion(fp, gene = "MEF2C")
 }
+\seealso{
+Other FootprintFinder methods: \code{\link{FootprintFinder-class}},
+  \code{\link{closeDatabaseConnections,FootprintFinder-method}},
+  \code{\link{getChromLoc,FootprintFinder-method}},
+  \code{\link{getFootprintsForGene,FootprintFinder-method}},
+  \code{\link{getFootprintsInRegion,FootprintFinder-method}},
+  \code{\link{getGtfGeneBioTypes,FootprintFinder-method}},
+  \code{\link{getGtfMoleculeTypes,FootprintFinder-method}},
+  \code{\link{getPromoterRegionsAllGenes,FootprintFinder-method}},
+  \code{\link{mapMotifsToTFsMergeIntoTable,FootprintFinder-method}}
+}

@@ -11,7 +11,7 @@
   length(tfs)), extraArgs = list())
 }
 \arguments{
-\item{obj}{An object of class TReNA with "pearson" as the solver string}
+\item{obj}{An object of class Solver with "pearson" as the solver string}
 
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 

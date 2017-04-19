@@ -11,7 +11,7 @@
   length(tfs)), extraArgs = list())
 }
 \arguments{
-\item{obj}{An object of the class TReNA with "bayesSpike" as the solver string}
+\item{obj}{An object of the class Solver with "bayesSpike" as the solver string}
 
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 

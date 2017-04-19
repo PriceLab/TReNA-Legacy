@@ -33,7 +33,7 @@
 
      if( length(tfs) == 0 ) return( data.frame() )
 
-     mtx <- obj@mtx.assay
+     mtx <- getAssayData(obj)
      stopifnot(target.gene %in% rownames(mtx))
      stopifnot(all(tfs %in% rownames(mtx)))
      stopifnot(class(lambda) %in% c("NULL","numeric"))

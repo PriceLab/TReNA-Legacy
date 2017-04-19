@@ -1,5 +1,3 @@
-#' Class FootprintFinder
-#'
 #' @import methods
 #' 
 #' @name FootprintFinder-class
@@ -9,9 +7,6 @@
 #' @slot genome.db The address of a genome database for use in filtering
 #' @slot project.db The address of a project database for use in filtering
 #' @slot quiet A logical argument denoting whether the FootprintFinder object should behave quietly
-#' 
-#' @return An object of the FootprintFinder class that can reduce a list of genes to a subset prior
-#' to forming a TReNA object
 #'
 
 
@@ -104,6 +99,8 @@ setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
 #' @export
 #' 
 #' @seealso \code{\link{FootprintFilter}}
+#'
+#' @family FootprintFinder methods
 
 FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRUE)
 {
@@ -196,6 +193,8 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
 #' 
 #' @param obj An object of class FootprintFinder
 #'
+#' @family FootprintFinder methods
+#'
 #' @return Closes the specified database connection
 
 setMethod("closeDatabaseConnections", "FootprintFinder",
@@ -219,6 +218,8 @@ setMethod("closeDatabaseConnections", "FootprintFinder",
 #' @param obj An object of class FootprintFinder
 #'
 #' @export
+#'
+#' @family FootprintFinder methods
 #' 
 #' @return A sorted list of the types of biological units contained in the gtf table of the genome
 #' database.
@@ -250,6 +251,8 @@ setMethod("getGtfGeneBioTypes", "FootprintFinder",
 #'
 #' @export
 #'
+#' @family FootprintFinder methods
+#' 
 #' @return A sorted list of the types of molecules contained in the gtf table of the genome
 #' database.
 #'
@@ -283,6 +286,8 @@ setMethod("getGtfMoleculeTypes", "FootprintFinder",
 #'
 #' @export
 #'
+#' @family FootprintFinder methods
+#' 
 #' @return A dataframe containing the results of a database query pertaining to the specified name,
 #' biotype, and molecule type. This dataframe contains the following columns: gene_id, gene_name,
 #' chr, start, endpos, strand
@@ -326,6 +331,8 @@ setMethod("getChromLoc", "FootprintFinder",
 #'
 #' @export
 #'
+#' @family FootprintFinder methods
+#'
 #' @return A list containing 3 elements:
 #' 1) chr : The name of the chromasome containing the promoter region for the specified gene
 #' 2) start : The starting location of the promoter region for the specified gene
@@ -344,7 +351,7 @@ setMethod("getGenePromoterRegion", "FootprintFinder",
    function(obj, gene, size.upstream=1000, size.downstream=0, biotype="protein_coding", moleculetype="gene"){
 
       tbl.loc <- getChromLoc(obj, gene, biotype=biotype, moleculetype=moleculetype)
-      if(nrow(tbl.loc) != 1){
+      if(nrow(tbl.loc) < 1){
           warning(sprintf("no chromosomal location for %s (%s, %s)", gene, biotype, moleculetype))
           return(NA)
           }
@@ -388,7 +395,7 @@ setMethod("getGenePromoterRegion", "FootprintFinder",
 #'
 #' @export
 #' 
-#' @seealso \code{\link{getGenePromoterRegion}}, \code{\link{getFootprintsInRegion}}
+#' @family FootprintFinder methods
 #'
 #' @examples
 #' db.address <- system.file(package="TReNA", "extdata")
@@ -424,6 +431,8 @@ setMethod("getFootprintsForGene", "FootprintFinder",
 #' @param end An integer denoting the end of the desired region
 #'
 #' @export
+#'
+#' @family FootprintFinder methods
 #' 
 #' @return A dataframe containing all footprints for the specified region
 #'
@@ -482,6 +491,8 @@ setMethod("getFootprintsInRegion", "FootprintFinder",
 #'
 #' @export
 #'
+#' @family FootprintFinder methods
+#' 
 #' @examples
 #' db.address <- system.file(package="TReNA", "extdata")
 #' genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
@@ -550,7 +561,7 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 #'
 #' @export
 #' 
-#' @seealso \code{\link{getFootprintsInRegion}}, \code{\link{getFootprintsForGene}}
+#' @family FootprintFinder methods
 #'
 #' @examples
 #' db.address <- system.file(package="TReNA", "extdata")

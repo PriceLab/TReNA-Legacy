@@ -34,8 +34,6 @@ TReNA currently supports 9 solver strings (default = "lasso"):
 An object of the TReNA class
 }
 \description{
-Class TReNA
-
 Class \code{TReNA} defines a TReNA object and contains an assay matrix, which contains expression data over a set of
 samples for a group of genes, and a string representing the name of a chosen solver.
 }

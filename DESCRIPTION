@@ -20,7 +20,7 @@ Imports:
     DBI,
     GenomicRanges
 Depends:
-    R (>= 3.4.0),
+    R (>= 3.3.0),
     utils,
     glmnet (>= 2.0.3),
 Suggests:
