@@ -20,3 +20,14 @@ Create a Solver class object using the Bayes Spike Solver
 \examples{
 solver <- BayesSpikeSolver()
 }
+\seealso{
+\code{\link{solve.BayesSpike}}, \code{\link{getAssayData}}
+
+Other Solver class objects: \code{\link{EnsembleSolver}},
+  \code{\link{LassoPVSolver}}, \code{\link{LassoSolver}},
+  \code{\link{PearsonSolver}},
+  \code{\link{RandomForestSolver}},
+  \code{\link{RidgeSolver}}, \code{\link{Solver-class}},
+  \code{\link{SpearmanSolver}},
+  \code{\link{SqrtLassoSolver}}
+}

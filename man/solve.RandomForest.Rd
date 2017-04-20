@@ -25,7 +25,10 @@
 A list containing various parameters of the Random Forest fit.
 }
 \description{
-Run the Random Forest Solver
+Given a TReNA object with RandomForest as the solver, use the \code{\link{randomForest}} function
+to estimate coefficients for each transcription factor as a predictor of the target gene's
+expression level.
+This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 }
 \examples{
 # Load included Alzheimer's data, create a TReNA object with Random Forest as solver, and solve
@@ -36,7 +39,7 @@ tfs <- setdiff(rownames(mtx.sub), target.gene)
 tbl <- solve(trena, target.gene, tfs)
 }
 \seealso{
-\code{\link{randomForest}}
+\code{\link{randomForest}}, \code{\link{RandomForestSolver}}
 
 Other solver methods: \code{\link{run,BayesSpikeSolver-method}},
   \code{\link{run,EnsembleSolver-method}},
@@ -45,5 +48,6 @@ Other solver methods: \code{\link{run,BayesSpikeSolver-method}},
   \code{\link{run,PearsonSolver-method}},
   \code{\link{run,RidgeSolver-method}},
   \code{\link{run,SpearmanSolver-method}},
-  \code{\link{run,SqrtLassoSolver-method}}
+  \code{\link{run,SqrtLassoSolver-method}},
+  \code{\link{solve,TReNA-method}}
 }

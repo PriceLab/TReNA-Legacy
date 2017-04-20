@@ -13,8 +13,13 @@
 #'
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the solver should print output
+#'
 #' @return A Solver class object with LASSO as the solver
 #'
+#' @seealso  \code{\link{solve.Lasso}}, \code{\link{getAssayData}}
+#'
+#' @family Solver class objects
+#' 
 #' @export
 #' 
 #' @examples
@@ -33,8 +38,10 @@ LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @rdname solve.Lasso
 #' @aliases run.LassoSolver solve.Lasso
 #' 
-#' @description Given a TReNA object with LASSO as the solver, use the \code{\link{glmnet}} function to estimate coefficients
-#' for each transcription factor as a predictor of the target gene's expression level. 
+#' @description Given a TReNA object with LASSO as the solver, use the \code{\link{glmnet}} function
+#' to estimate coefficients for each transcription factor as a predictor of the target gene's
+#' expression level. This method should be called using the \code{\link{solve}} method on an
+#' appropriate TReNA object.
 #'
 #' @param obj An object of class Solver with "lasso" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
@@ -44,7 +51,7 @@ LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #'
 #' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
 #'
-#' @seealso \code{\link{glmnet}}
+#' @seealso \code{\link{glmnet}},, \code{\link{LassoSolver}}
 #'
 #' @family solver methods
 #'

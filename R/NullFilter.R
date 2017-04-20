@@ -26,7 +26,7 @@ printf <- function(...) print(noquote(sprintf(...)))
 #'
 #' @export
 #' 
-#' @seealso \code{\link{getCandidates-NullFilter}}
+#' @seealso \code{\link{getCandidates-NullFilter}}, \code{\link{getFilterAssayData}}
 #'
 #' @return An object of the NullFilter class
 #' 

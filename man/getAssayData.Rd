@@ -15,3 +15,10 @@ The assay matrix of gene expression data associated with a Solver object
 \description{
 Retrieve the assay matrix of gene expression data from a Solver object
 }
+\examples{
+# Create a Solver object using the included Alzheimer's data and retrieve the matrix
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+solver <- Solver(mtx.sub)
+mtx <- getAssayData(solver)
+
+}

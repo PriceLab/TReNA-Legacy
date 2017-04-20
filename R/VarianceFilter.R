@@ -28,7 +28,7 @@ printf <- function(...) print(noquote(sprintf(...)))
 #'
 #' @export
 #' 
-#' @seealso \code{\link{getCandidates-VarianceFilter}}
+#' @seealso \code{\link{getCandidates-VarianceFilter}}, \code{\link{getFilterAssayData}}
 #'
 #' @return An object of the VarianceFilter class
 #' 

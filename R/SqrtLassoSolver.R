@@ -11,7 +11,7 @@
 #' @name SqrtLassoSolver-class
 
 .SqrtLassoSolver <- setClass ("SqrtLassoSolver", contains="Solver")
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #' Create a Solver class object using the Square Root LASSO solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
@@ -19,6 +19,10 @@
 #' 
 #' @return A Solver class object with Square Root LASSO as the solver
 #'
+#' @seealso  \code{\link{solve.SqrtLasso}}, \code{\link{getAssayData}}
+#'
+#' @family Solver class objects
+#' 
 #' @export
 #' 
 #' @examples
@@ -41,8 +45,10 @@ SqrtLassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @rdname solve.SqrtLasso
 #' @aliases run.SqrtLassoSolver solve.SqrtLasso
 #' 
-#' @description Given a TReNA object with Square Root LASSO as the solver, use the \code{\link{slim}} function to estimate coefficients
-#' for each transcription factor as a predictor of the target gene's expression level. 
+#' @description Given a TReNA object with Square Root LASSO as the solver,
+#' use the \code{\link{slim}} function to estimate coefficients
+#' for each transcription factor as a predictor of the target gene's expression level.
+#' This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 #' 
 #' @param obj An object of class Solver with "sqrtlasso" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
@@ -50,9 +56,10 @@ SqrtLassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
 #' @param extraArgs Modifiers to the Square Root LASSO solver
 #'
-#' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
+#' @return A data frame containing the coefficients relating the target gene to
+#' each transcription factor, plus other fit parameters.
 #'
-#' @seealso \code{\link{slim}}
+#' @seealso \code{\link{slim}}, \code{\link{SqrtLassoSolver}}
 #'
 #' @family solver methods
 #'

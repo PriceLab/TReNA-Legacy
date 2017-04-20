@@ -29,7 +29,7 @@ load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RD
 null.filter <- NullFilter(mtx.assay = mtx.sub)
 }
 \seealso{
-\code{\link{getCandidates-NullFilter}}
+\code{\link{getCandidates-NullFilter}}, \code{\link{getFilterAssayData}}
 
 Other Filtering Objects: \code{\link{FootprintFilter-class}},
   \code{\link{VarianceFilter-class}}

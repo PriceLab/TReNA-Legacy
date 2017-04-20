@@ -24,7 +24,7 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the filter should print output
 #'
-#' @seealso \code{\link{getCandidates-FootprintFilter}}
+#' @seealso \code{\link{getCandidates-FootprintFilter}}, \code{\link{getFilterAssayData}}
 #'
 #' @export
 #'
@@ -107,9 +107,7 @@ setMethod("getCandidates", "FootprintFilter",
                   return(list("tfs" = candidate.tfs,                              
                               "tbl" = tbl.out))}
               else{closeDatabaseConnections(fp)
-                  return(NULL)}
-                  
-                  
+                  return(NULL)}                                   
           }
           
 )

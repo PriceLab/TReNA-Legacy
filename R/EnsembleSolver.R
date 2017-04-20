@@ -12,8 +12,13 @@
 #'
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the solver should print output
+#'
 #' @return A Solver class object with Ensemble as the solver
 #'
+#' @seealso  \code{\link{solve.Ensemble}}, \code{\link{getAssayData}}
+#'
+#' @family Solver class objects
+#' 
 #' @export
 #' 
 #' @examples
@@ -37,7 +42,8 @@ EnsembleSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @description Given a TReNA object with Ensemble as the solver and a list of solvers
 #' (default = "default.solvers"), estimate coefficients for each transcription factor
 #' as a predictor of the target gene's expression level. The final scores for the ensemble
-#' method combine all specified solvers to create a composite score for each transcription factor. 
+#' method combine all specified solvers to create a composite score for each transcription factor.
+#' This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 #'
 #' @param obj An object of class Solver with "ensemble" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
@@ -53,6 +59,8 @@ EnsembleSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' "comp": a composite score created similarly to "extreme_score", but with each solver's
 #' score scaled using *atan(x)*. This score scales from 0-1
 #'
+#' @seealso \code{\link{EnsembleSolver}}
+#' 
 #' @family solver methods
 #' 
 #' @examples

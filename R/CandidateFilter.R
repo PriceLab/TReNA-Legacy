@@ -39,6 +39,12 @@ setGeneric("getCandidates", signature="obj", function(obj,extraArgs) standardGen
 #'
 #' @return The assay matrix of gene expression data associated with a CandidateFilter object
 #'
+#' @examples
+#'
+#' # Create a CandidateFilter object using the included Alzheimer's data and retrieve the matrix
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' my.filter <- CandidateFilter(mtx.sub)
+#' mtx <- getFilterAssayData(my.filter)
 
 #' @export
 setGeneric("getFilterAssayData",    signature="obj", function(obj) standardGeneric ("getFilterAssayData"))
@@ -56,6 +62,8 @@ setGeneric("getFilterAssayData",    signature="obj", function(obj) standardGener
 #'
 #' @return An object of the Candidate filter class
 #'
+#' @seealso \code{\link{getCandidates}}, \code{\link{getFilterAssayData}}
+#'
 #' @export
 #' 
 #' @examples
@@ -69,8 +77,6 @@ CandidateFilter <- function(mtx.assay = matrix(), quiet = TRUE)
 } # CandidateFilter, the constructor
 #----------------------------------------------------------------------------------------------------
 #' @describeIn CandidateFilter Retrieve the assay matrix of gene expression data
-#'
-#' @param obj An object of the CandidateFilter class
 #' 
 #' @examples
 #'

@@ -23,11 +23,14 @@
 number of random starts used by the solver}
 }
 \value{
-A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters
+A data frame containing the coefficients relating the target gene to each transcription factor,
+plus other fit parameters
 }
 \description{
-Given a TReNA object with Bayes Spike as the solver, use the \code{\link{vbsr}} function to estimate coefficients
-for each transcription factor as a predictor of the target gene's expression level.
+Given a TReNA object with Bayes Spike as the solver, use the \code{\link{vbsr}}
+function to estimate coefficients for each transcription factor as a predictor of the target
+gene's expression level. This method should be called using the \code{\link{solve}} method on an
+appropriate TReNA object.
 }
 \examples{
 # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
@@ -41,7 +44,7 @@ tbl <- solve(trena, target.gene, tfs)
 tbl <- solve(trena, target.gene, tfs, extraArgs = list("n_orderings" = 100))
 }
 \seealso{
-\code{\link{vbsr}}
+\code{\link{vbsr}}, \code{\link{BayesSpikeSolver}}
 
 Other solver methods: \code{\link{run,EnsembleSolver-method}},
   \code{\link{run,LassoPVSolver-method}},
@@ -50,5 +53,6 @@ Other solver methods: \code{\link{run,EnsembleSolver-method}},
   \code{\link{run,RandomForestSolver-method}},
   \code{\link{run,RidgeSolver-method}},
   \code{\link{run,SpearmanSolver-method}},
-  \code{\link{run,SqrtLassoSolver-method}}
+  \code{\link{run,SqrtLassoSolver-method}},
+  \code{\link{solve,TReNA-method}}
 }

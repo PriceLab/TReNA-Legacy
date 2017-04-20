@@ -15,3 +15,10 @@ The assay matrix of gene expression data associated with a CandidateFilter objec
 \description{
 Retrieve the assay matrix of gene expression data
 }
+\examples{
+
+# Create a CandidateFilter object using the included Alzheimer's data and retrieve the matrix
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+my.filter <- CandidateFilter(mtx.sub)
+mtx <- getFilterAssayData(my.filter)
+}

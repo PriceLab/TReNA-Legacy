@@ -17,8 +17,6 @@ CandidateFilter(mtx.assay = matrix(), quiet = TRUE)
 \item{mtx.assay}{An assay matrix of gene expression data}
 
 \item{quiet}{A logical denoting whether or not the CandidateFilter object should print output}
-
-\item{obj}{An object of the CandidateFilter class}
 }
 \value{
 An object of the Candidate filter class
@@ -48,4 +46,7 @@ candidate.filter <- CandidateFilter(mtx.assay = matrix(), quiet=TRUE)
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 my.filter <- CandidateFilter(mtx.sub)
 mtx <- getFilterAssayData(my.filter)
+}
+\seealso{
+\code{\link{getCandidates}}, \code{\link{getFilterAssayData}}
 }

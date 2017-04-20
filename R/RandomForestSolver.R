@@ -13,8 +13,13 @@
 #' 
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the solver should print output
+#'
 #' @return A Solver class object with Random Forest as the solver
 #'
+#' @seealso  \code{\link{solve.RandomForest}}, \code{\link{getAssayData}}
+#'
+#' @family Solver class objects
+#' 
 #' @export
 #' 
 #' @examples
@@ -38,6 +43,12 @@ RandomForestSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @rdname solve.RandomForest
 #' @aliases run.RandomForestSolver solve.RandomForest
 #'
+#' @description
+#' Given a TReNA object with RandomForest as the solver, use the \code{\link{randomForest}} function
+#' to estimate coefficients for each transcription factor as a predictor of the target gene's
+#' expression level.
+#' This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
+#'
 #' @param obj An object of class Solver with "randomForest" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
@@ -46,7 +57,7 @@ RandomForestSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #'
 #' @return A list containing various parameters of the Random Forest fit.
 #'
-#' @seealso \code{\link{randomForest}}
+#' @seealso \code{\link{randomForest}}, \code{\link{RandomForestSolver}}
 #' 
 #' @family solver methods
 #' 

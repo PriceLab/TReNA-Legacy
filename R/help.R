@@ -1,8 +1,48 @@
 #' Inferring Transcriptional Regulation with TReNA
 #'
 #' TReNA provides a framework for using gene expression data to infer relationships
-#' between a target gene and a set of transcription factors. 
+#' between a target gene and a set of transcription factors. It does so using a
+#' several classes and their associated methods, briefly documented below
 #'
+#' TReNA Class Objects
+#'
+#' The \code{\link{TReNA}} class is the central piece of the package. It houses
+#' the matrix of gene expression data as well as the details of the solver
+#' chosen for feature selection. Its main method is \code{\link{solve}}, which
+#' performs the feature selection and returns the resulting coefficients.
+#'
+#' Solver Class Objects 
+#'
+#'  The \code{\link{Solver}} class is a base class used within a
+#' \code{\link{TReNA}} object. A particular \code{\link{Solver}} object
+#' contains the name of the selected solver and dispatches the correct feature
+#' selection method when \code{\link{solve}} is called on the \code{\link{TReNA}}
+#' object. It is inherited by all the following subclasses, representing the
+#' different feature selection methods: \code{\link{BayesSpikeSolver}},
+#' \code{\link{EnsembleSolver}}, \code{\link{LassoPVSolver}},
+#' \code{\link{LassoSolver}}, \code{\link{PearsonSolver}},
+#' \code{\link{RandomForestSolver}}, \code{\link{RidgeSolver}},
+#' \code{\link{SpearmanSolver}}, \code{\link{SqrtLassoSolver}}.
+#' 
+#' CandidateFilter Class Objects
+#'
+#' The \code{\link{CandidateFilter}} class is separate from the aforementioned
+#' classes. It is a base class that contains a gene expression matrix and
+#' is used to filter the transcription factors in the matrix. Filtering method
+#' depends on the filter type chosen; there are currently the following
+#' subclasses: \code{\link{FootprintFilter}}, \code{\link{NullFilter}},
+#' \code{\link{VarianceFilter}}. The filters are applied using the
+#' \code{\link{getCandidates}} method on a given \code{\link{CandidateFilter}}
+#' object. 
+#'
+#' FootprintFinder Class Objects
+#'
+#' The  \code{\link{FootprintFinder}} class is designed to allow extraction
+#' of gene footprinting information from existing PostgreSQL or SQLite
+#' databases. In standard use of the TReNA package, it is used solely by
+#' the \code{\link{getCandidates}} method for a \code{\link{FootprintFilter}}
+#' object. However, a  \code{\link{FootprintFinder}} object has many more
+#' available methods that allow it to extract information more flexibly.
 #' 
 #' @name TReNA-package
 #' @aliases TReNA-package

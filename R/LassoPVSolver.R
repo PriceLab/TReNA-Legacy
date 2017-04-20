@@ -16,6 +16,10 @@
 #' 
 #' @return A Solver class object with LASSO P-Value as the solver
 #'
+#' @seealso  \code{\link{solve.LassoPV}}, \code{\link{getAssayData}}
+#'
+#' @family Solver class objects
+#' 
 #' @export
 #' 
 #' @examples
@@ -32,14 +36,16 @@ LassoPVSolver <- function(mtx.assay=matrix(), quiet=TRUE)
     obj
 
 } # LassoPVSolver, the constructor
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #' Run the LASSO P-Value Solver
 #'
 #' @rdname solve.LassoPV
 #' @aliases run.LassoPVSolver solve.LassoPV
 #' 
-#' @description Given a TReNA object with LASSO P-Value as the solver, use the \code{\link{lassopv}} function to estimate coefficients
-#' for each transcription factor as a predictor of the target gene's expression level. 
+#' @description Given a TReNA object with LASSO P-Value as the solver, use the \code{\link{lassopv}}
+#' function to estimate coefficients for each transcription factor as a predictor of the target
+#' gene's expression level. This method should be called using the \code{\link{solve}} method on an
+#' appropriate TReNA object.
 #' 
 #' @param obj An object of class Solver with "lassopv" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
@@ -50,7 +56,7 @@ LassoPVSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @return A data frame containing the p-values for each transcription factor pertaining to the target gene
 #' plus the Pearson correlations between each transcription factor and the target gene.
 #'
-#' @seealso \code{\link{lassopv}}
+#' @seealso \code{\link{lassopv}}, , \code{\link{LassoPVSolver}}
 #'
 #' @family solver methods
 #' 

@@ -16,6 +16,10 @@
 #' 
 #' @return A Solver class object with Pearson correlation coefficients as the solver
 #'
+#' @seealso  \code{\link{solve.Pearson}}, \code{\link{getAssayData}}
+#'
+#' @family Solver class objects
+#' 
 #' @export
 #' 
 #' @examples
@@ -39,8 +43,10 @@ PearsonSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 #' @rdname solve.Pearson
 #' @aliases run.PearsonSolver solve.Pearson
 #'
-#' @description Given a TReNA object with Pearson as the solver, use the \code{\link{cor}} function to
-#' estimate coefficients for each transcription factor as a perdictor of the target gene's expression level
+#' @description Given a TReNA object with Pearson as the solver, use the \code{\link{cor}} function
+#' to estimate coefficients for each transcription factor as a perdictor of the target gene's
+#' expression level. This method should be called using the \code{\link{solve}} method on an
+#' appropriate TReNA object.
 #'
 #' @param obj An object of class Solver with "pearson" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
@@ -50,7 +56,7 @@ PearsonSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 #'
 #' @return The set of Pearson Correlation Coefficients between each transcription factor and the target gene.
 #'
-#' @seealso \code{\link{cor}}
+#' @seealso \code{\link{cor}}, \code{\link{PearsonSolver}}
 #'
 #' @family solver methods
 #' 
