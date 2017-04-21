@@ -118,6 +118,16 @@ tfs <- getCandidates(footprint.filter, extraArgs = list("target.gene" = target.g
 str(tfs)
 ```
 
+The FootprintFilter makes use of another class in the package, the FootprintFinder. This class provides an interface to PostgreSQL and SQLite databases of a specific 2-table schema and has a family of methods for accessing footprint data. To demonstrate some of this functionality, we will use the FootprintFinder to extract footprints from a particular region. In the previous example, we used an SQLite database included in the package; essentially a small snapshot of a larger dataset. More usefully, there are now publically available databases of footprints for use at [bddsrds.globusgenomics.org](). Currently, the sole project database is of brain tissue using the HINT alignment method; this database will remain in perpetuity and will be joined by other methods, issues, and alignments. We can access this information as follows:
+
+```{r}
+genome.db.uri    <- "postgres://bddsrds.globusgenomics.org/hg38"  # has gtf and motifsgenes tables
+footprint.db.uri <- "postgres://bddsrds.globusgenomics.org/brain_hint"  # has hits and regions tables
+fpf <- FootprintFinder(genome.db.uri, footprint.db.uri, quiet=FALSE)
+tbl.fp <- getFootprintsInRegion(fpf, "chr5", 88822685, 89011824)
+str(tbl.fp)
+```
+
 ## Solving a TReNA Object
 
 Each of solvers has its own strengths and weaknesses that we will not delve into here, but that are generally detailed within their own packages. To begin with, we will look at the LASSO solver, which is the default solver for a TReNA object. 
