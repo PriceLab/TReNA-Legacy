@@ -343,9 +343,7 @@ test_mef2cPromoter.normalUse <- function()
 {
    printf("--- test_mef2cPromoter.normalUse")
 
-   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-   checkTrue(exists("mtx.sub"))
-   hdcf <- HumanDHSFilter("hg38", mtx.sub)
+   hdcf <- HumanDHSFilter("hg38")
 
 
     # chr5:88,813,245-88,832,344: has just a few high scoring clusters
@@ -353,12 +351,12 @@ test_mef2cPromoter.normalUse <- function()
    start <- 88824500
    end   <- 88832344
 
-   args <- list(chrom=chrom, start=start, end=end,
-                region.score.threshold=700,
-                motif.min.match.percentage=95,
-                tableName="wgEncodeRegDnaseClustered")
+   filter.args <- list(chrom=chrom, start=start, end=end,
+                       region.score.threshold=700,
+                       motif.min.match.percentage=95,
+                       tableName="wgEncodeRegDnaseClustered")
 
-   x <- getCandidates(hdcf, args)
+   x <- getCandidates(hdcf, filter.args)
    checkEquals(sort(names(x)), c("tbl", "tfs"))
    checkTrue(all(c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount", "motif", "match",
                    "motif.start", "motif.end", "motif.width", "motif.score", "strand", "tf") %in% colnames(x$tbl)))
@@ -367,6 +365,60 @@ test_mef2cPromoter.normalUse <- function()
    checkEquals(length(which(duplicated(x$tfs))), 0)
 
 } # test_mef2cPromoter.normalUse
+#----------------------------------------------------------------------------------------------------
+# a gene possibly involved in alzheimer's disease
+test_bin1 <- function()
+{
+   print("--- test_bin1")
+   target.gene <- "BIN1"
+   chrom <- "chr2"
+   start <- 127107280
+   end   <- 127107319
+   start <- 127107538
+   end   <- 127108337
+
+   start <- 127107783
+   end   <- 127107856
+
+
+   dhs.args <- list(chrom=chrom,
+                    start=start,
+                    end=end,
+                    region.score.threshold=0,
+                    motif.min.match.percentage=85,
+                    encode.table.name="wgEncodeRegDnaseClustered")
+
+   dhsFilter <- HumanDHSFilter("hg38")
+   dhs.out <- getCandidates(dhsFilter, dhs.args)
+
+   genome.db.uri    <- "postgres://whovian/hg38"             # has gtf and motifsgenes tables
+   footprint.db.uri <- "postgres://whovian/brain_hint"       # has hits and regions tables
+
+   fpf.args <- list(mode = "byRegion",
+                    genome.db.uri = genome.db.uri,
+                    regions.db.uri = footprint.db.uri,
+                    chrom=chrom,
+                    start = start,
+                    end   = end)
+
+   fpFilter <- FootprintFilter()
+   fpf.out <- getCandidates(fpFilter, fpf.args)
+
+      # the footprint finder, using fimo, finds more motifs than the dhsFilter, using Biostrings
+      # explore.  first identify the motifs NOT found by the dhsFilter
+   motifsNotFound <- setdiff(fpf.out$tbl$motifName, dhs.out$tbl$motif)
+   tbl.notFound  <- subset(fpf.out$tbl, motifName %in% motifsNotFound)
+   tbl.notFound$sequence <- getSequence(dhsFilter,
+
+    with(tbl.notFound, data.frame(chrom=chrom, chromStart=start, chromEnd=end)))
+
+    library(FimoClient)
+    FIMO_HOST <- "whovian"
+    FIMO_PORT <- 5558
+    fc <<- FimoClient(FIMO_HOST, FIMO_PORT, quiet=TRUE)
+    requestMatch(fc, list(x="GGGGCGCGCGC"))
+
+} # test_bin1
 #----------------------------------------------------------------------------------------------------
 # one of the igap gwas alzheimer's snps, hand-verified to fall within a motif in a dhs region
 test_rs34423320 <- function()

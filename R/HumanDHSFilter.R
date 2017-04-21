@@ -11,11 +11,11 @@ printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
 setGeneric('getEncodeRegulatoryTableNames', signature='obj', function(obj) standardGeneric ('getEncodeRegulatoryTableNames'))
 setGeneric('getRegulatoryRegions', signature='obj',
-           function(obj, tableName, chromosome, start, end, score.threshold=200, quiet=TRUE)
+           function(obj, encode.table.name, chromosome, start, end, score.threshold=200, quiet=TRUE)
                standardGeneric ('getRegulatoryRegions'))
 setGeneric('getSequence', signature='obj', function(obj, tbl.regions) standardGeneric ('getSequence'))
 #----------------------------------------------------------------------------------------------------
-HumanDHSFilter <- function(genomeName, mtx.assay=matrix(), quiet=TRUE)
+HumanDHSFilter <- function(genomeName,  quiet=TRUE)
 {
     uri <- "http://jaspar.genereg.net/html/DOWNLOAD/JASPAR_CORE/pfm/nonredundant/pfm_vertebrates.txt"
     x <- .readRawJasparMatrices(uri)
@@ -36,7 +36,7 @@ HumanDHSFilter <- function(genomeName, mtx.assay=matrix(), quiet=TRUE)
        }
 
 
-    .HumanDHSFilter(CandidateFilter(mtx.assay = mtx.assay, quiet = quiet), genomeName=genomeName,
+    .HumanDHSFilter(CandidateFilter(quiet = quiet), genomeName=genomeName,
                     genome=reference.genome, pfms=pfms, quiet=quiet)
 
 } # HumanDHSFilter, the constructor
@@ -66,20 +66,26 @@ setMethod("getEncodeRegulatoryTableNames", "HumanDHSFilter",
 #----------------------------------------------------------------------------------------------------
 setMethod("getCandidates", "HumanDHSFilter",
 
-    function(obj, extraArgs){
+    function(obj, argsList){
 
-          # Collect arguments from extraArgs
-        stopifnot(all(c("chrom", "start", "end", "region.score.threshold", "motif.min.match.percentage",
-                        "tableName") %in% names(extraArgs)))
+          # Collect arguments from argsList
+        expected.args <- c("chrom", "start", "end", "region.score.threshold",
+                           "motif.min.match.percentage", "encode.table.name")
+        missing.args <- setdiff(names(argsList), expected.args)
+        if(length(missing.args) > 0){
+            printf("HumanDHSFilter::getCandidates, missing fields in argsList: %s",
+                   paste(missing.args, collapse=","))
+            stop()
+            }
 
-        chrom <- extraArgs[["chrom"]]
-        start <- extraArgs[["start"]]
-        end <- extraArgs[["end"]]
-        tableName <- extraArgs[["tableName"]]
-        region.score.threshold <- extraArgs$region.score.threshold
-        motif.min.match.percentage <- extraArgs$motif.min.match.percentage
+        chrom <- argsList[["chrom"]]
+        start <- argsList[["start"]]
+        end <- argsList[["end"]]
+        encode.table.name <- argsList[["encode.table.name"]]
+        region.score.threshold <- argsList[["region.score.threshold"]]
+        motif.min.match.percentage <- argsList[["motif.min.match.percentage"]]
 
-        tbl.regions <- getRegulatoryRegions(obj, tableName, chrom, start, end)
+        tbl.regions <- getRegulatoryRegions(obj, encode.table.name, chrom, start, end)
         tbl.regions <- subset(tbl.regions, score >= region.score.threshold)
         seqs <- getSequence(obj, tbl.regions)
         tbl.motifs <- .getScoredMotifs(seqs, motif.min.match.percentage, obj@quiet)
@@ -97,12 +103,14 @@ setMethod("getCandidates", "HumanDHSFilter",
                                       "strand", "chrom", "regionStart", "regionEnd", "regionScore", "sourceCount")
            tbl.summary <- tbl.summary[, c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount", "motif",
                                       "match", "motif.start", "motif.end", "motif.width", "motif.score", "strand")]
-           tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE,
-                                header=TRUE)
+           tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE, header=TRUE)
            tfs.by.motif <- lapply(tbl.summary$motif, function(m) subset(tbl.mg, motif==m)$tf.gene)
            all.tfs <- sort(unique(unlist(tfs.by.motif)))
            tfs.by.motif.joined <- unlist(lapply(tfs.by.motif, function(m) paste(m, collapse=";")))
            tbl.summary$tf <- tfs.by.motif.joined
+           #browser()
+           tbl.summary$motif.start <- -1 + tbl.summary$regionStart + tbl.summary$motif.start
+           tbl.summary$motif.end   <- -1 + tbl.summary$regionStart + tbl.summary$motif.end
            }
         list(tbl=tbl.summary,tfs=all.tfs)
 	}) # getCandidates
@@ -110,7 +118,7 @@ setMethod("getCandidates", "HumanDHSFilter",
 #----------------------------------------------------------------------------------------------------
 setMethod("getRegulatoryRegions", "HumanDHSFilter",
 
-    function(obj, tableName, chromosome, start, end, score.threshold=200) {
+    function(obj, encode.table.name, chromosome, start, end, score.threshold=200) {
 
        driver <- RMySQL::MySQL()
        host <- "genome-mysql.cse.ucsc.edu"
@@ -128,8 +136,7 @@ setMethod("getRegulatoryRegions", "HumanDHSFilter",
        #   return(data.frame())
        #   }
 
-       #main.clause <- sprintf("select chrom, chromStart, chromEnd, score, sourceCount from %s where", tableName);
-       main.clause <- sprintf("select * from %s where", tableName);
+       main.clause <- sprintf("select * from %s where", encode.table.name);
 
       # Pull out the regions corresponding to the region in ENCODE
        query <- paste(main.clause,
@@ -181,7 +188,9 @@ setMethod("getRegulatoryRegions", "HumanDHSFilter",
    lapply(dbListConnections(driver), dbDisconnect)
 
    tbl.regions$chrom <- as.character(tbl.regions$chrom)
-   invisible(tbl.regions[, c("chrom", "chromStart", "chromEnd", "name", "score")])
+   #tbl.regions$motif.start <- -1 + tbl.regions$regionStart + motif.start
+   #tbl.regions$motif.end <- -1 + tbl.regions$regionEnd + motif.end
+   invisible(tbl.regions[, c("chrom", "chromStart", "chromEnd",  "name", "score")])
 
    }) # getRegulatoryRegions
 
@@ -200,21 +209,30 @@ setMethod("getSequence", "HumanDHSFilter",
    min.match.as.string <- sprintf("%02d%%", min.match.percentage)
 
    hits.fwd <- matchPWM(pfm, sequence, with.score=TRUE, min.score=min.match.as.string)
-   seq.revcomp <- as.character(reverseComplement(DNAString(sequence)))
-   hits.rev <- matchPWM(pfm, seq.revcomp, with.score=TRUE, min.score=min.match.as.string)
+   hits.rev <- matchPWM(reverseComplement(pfm), sequence, with.score=TRUE, min.score=min.match.as.string)
 
+   max.score <-  maxScore(pfm)
    tbl <- data.frame()
    if(length(hits.fwd) > 0){
       if(!quiet) printf("%d +", length(hits.fwd))
       match <- substring(as.character(subject(hits.fwd)), start(ranges(hits.fwd)), end(ranges(hits.fwd)))
-      tbl <- data.frame(ranges(hits.fwd), score=mcols(hits.fwd)$score, motif=motifName, match=match, strand="+",
+      actual.score <- mcols(hits.fwd)$score
+      relative.score <- actual.score/max.score
+      tbl <- data.frame(ranges(hits.fwd),
+                        score=mcols(hits.fwd)$score, maxScore=max.score,relativeScore=relative.score,
+                        motif=motifName, match=match, strand="+",
                         stringsAsFactors=FALSE)
-      }
+      } # hits.fwd
 
    if(length(hits.rev) > 0){
       if(!quiet) printf("%d -", length(hits.rev))
       match <- substring(as.character(subject(hits.rev)), start(ranges(hits.rev)), end(ranges(hits.rev)))
-      tbl.rev <- data.frame(ranges(hits.rev), score=mcols(hits.rev)$score, motif=motifName, match=match, strand="-",
+      actual.score <- mcols(hits.rev)$score
+      relative.score <- actual.score/max.score
+      browser()
+      tbl.rev <- data.frame(ranges(hits.rev),
+                            score=mcols(hits.rev)$score, maxScore=max.score, relativeScore=relative.score,
+                            motif=motifName, match=match, strand="-",
                             stringsAsFactors=FALSE)
          # transform the start/end so that they are forward-strand relative
       true.start <- 1 + nchar(sequence) - tbl.rev$end
@@ -253,7 +271,10 @@ setMethod("getSequence", "HumanDHSFilter",
        }
 
     count <- length(pfms)
-    xx <- lapply(1:count, function(i) .matchForwardAndReverse(sequence, pfms[[i]], names(pfms)[i], min.match.percentage, quiet))
+   xx <- lapply(1:count, function(i) {
+       .matchForwardAndReverse(sequence, pfms[[i]], names(pfms)[i], min.match.percentage, quiet)
+       })
+
     tbl.result <- do.call("rbind", xx)
     if(nrow(tbl.result) == 0){
       return(data.frame())

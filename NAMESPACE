@@ -1,9 +1,9 @@
 exportClasses(
-    TReNA,
-    NullFilter,
-    VarianceFilter,
-    FootprintFilter,
-    HumanDHSFilter)
+   TReNA,
+   VarianceFilter,
+   FootprintFilter,
+   HumanDHSFilter,
+   GeneOntologyFilter)
 
 export(
     TReNA,
@@ -19,10 +19,11 @@ export(
     SqrtLassoSolver,
     CandidateFilter,
     FootprintFilter,
-    NullFilter,
     HumanDHSFilter,
     VarianceFilter,
+    GeneOntologyFilter,
     FootprintFinder
+
 )
 
 exportMethods(
@@ -55,11 +56,12 @@ import(
     methods,
     randomForest,
     vbsr,
-    GenomicRanges
+    GenomicRanges,
+    BSgenome.Hsapiens.UCSC.hg38,
+    BSgenome.Hsapiens.UCSC.hg19
 )
 
 importFrom(RSQLite, SQLite)
 importFrom(RPostgreSQL, PostgreSQL)
 importFrom(RMySQL, MySQL)
-# importFrom(GenomicRanges, makeGRangesFromDataFrame)
 importFrom(utils, head)

@@ -4,18 +4,18 @@
 #' The FootprintFinder class is designed to query 2 supplied footprint databases (a genome database
 #' and a project database) for supplied genes or regions. Within the TReNA package, the
 #' FootprintFinder class is mainly used by the FootprintFilter class, but the FootprintFinder class
-#' offers more flexibility in constructing queries. 
+#' offers more flexibility in constructing queries.
 #'
 #' @import methods
-#' 
+#'
 #' @name FootprintFinder-class
 #' @rdname FootprintFinder-class
 #' @aliases FootprintFinder
-#' 
+#'
 #' @slot genome.db The address of a genome database for use in filtering
 #' @slot project.db The address of a project database for use in filtering
 #' @slot quiet A logical argument denoting whether the FootprintFinder object should behave quietly
-#' 
+#'
 #' @return An object of the FootprintFinder class that can reduce a list of genes to a subset prior
 #' to forming a TReNA object
 #'
@@ -38,7 +38,7 @@ printf <- function(...) print(noquote(sprintf(...)))
 #   Homo_sapiens.GRCh38.84.chr.gtf
 #   2) a footprint table, the output from cory's pipeline
 #   3) a motif/TF map, with scores & etc
-#			    
+#
 #----------------------------------------------------------------------------------------------------
 #' @export
 setGeneric("getChromLoc", signature="obj",
@@ -188,9 +188,9 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
 #'
 #' This method takes a FootprintFinder object and closes connections to the footprint databases
 #' if they are currently open.
-#' 
+#'
 #' @rdname FootprintFinder-class
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #'
 #' @return Closes the specified database connection
@@ -212,11 +212,11 @@ setMethod("closeDatabaseConnections", "FootprintFinder",
 #'
 #' @rdname getGtfGeneBioTypes
 #' @aliases getGtfGeneBioTypes
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #'
 #' @export
-#' 
+#'
 #' @return A sorted list of the types of biological units contained in the gtf table of the genome
 #' database.
 
@@ -234,7 +234,7 @@ setMethod("getGtfGeneBioTypes", "FootprintFinder",
 #'
 #' @rdname getGtfMoleculeTypes
 #' @aliases getGtfMoleculeTypes
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #'
 #' @export
@@ -256,7 +256,7 @@ setMethod("getGtfMoleculeTypes", "FootprintFinder",
 #'
 #' @rdname getChromLoc
 #' @aliases getChromLoc
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #' @param name A gene name or ID
 #' @param biotype A type of biological unit (default="protein_coding")
@@ -287,7 +287,7 @@ setMethod("getChromLoc", "FootprintFinder",
 #'
 #' @rdname getGenePromoterRegion
 #' @aliases getGenePromoterRegion
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #' @param gene A gene name of ID
 #' @param size.upstream An integer denoting the distance upstream of the target gene to look for footprints
@@ -339,7 +339,7 @@ setMethod("getGenePromoterRegion", "FootprintFinder",
 #'
 #' @rdname getFootprintsForGene
 #' @aliases getFootprintsForGene
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #' @param gene A gene name of ID
 #' @param size.upstream An integer denoting the distance upstream of the target gene to look for footprints
@@ -352,7 +352,7 @@ setMethod("getGenePromoterRegion", "FootprintFinder",
 #' @return A dataframe containing all footprints for the specified gene and accompanying parameters
 #'
 #' @export
-#' 
+#'
 #' @seealso \code{\link{getGenePromoterRegion}}, \code{\link{getFootprintsInRegion}}
 
 setMethod("getFootprintsForGene", "FootprintFinder",
@@ -371,17 +371,17 @@ setMethod("getFootprintsForGene", "FootprintFinder",
 #' Using the regions and hits tables inside the project database specified by the FootprintFinder
 #' object, return the location, chromasome, starting position, and ending positions of all footprints
 #' for the specified region.
-#' 
+#'
 #' @rdname getFootprintsInRegion
 #' @aliases getFootprintsInRegion
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #' @param chromosome The name of the chromosome of interest
 #' @param start An integer denoting the start of the desired region
 #' @param end An integer denoting the end of the desired region
 #'
 #' @export
-#' 
+#'
 #' @return A dataframe containing all footprints for the specified region
 
 setMethod("getFootprintsInRegion", "FootprintFinder",
@@ -414,11 +414,11 @@ setMethod("getFootprintsInRegion", "FootprintFinder",
 #' Get Promoter Regions for All Genes
 #'
 #' Using the gtf table inside the genome database specified by the FootprintFinder object, return the
-#' promoter regions for every protein-coding gene in the database. 
-#' 
+#' promoter regions for every protein-coding gene in the database.
+#'
 #' @rdname getPromoterRegionsAllGenes
 #' @aliases getPromoterRegionsAllGenes
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #' @param size.upstream An integer denoting the distance upstream of each gene's transcription start
 #' site to include in the promoter region (default = 1000)
@@ -477,20 +477,20 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 #'
 #' Using the motifsgenes table inside the genome database specified by the FootprintFinder object,
 #' return a table mapping each motif to transcription factors
-#' 
+#'
 #' @rdname mapMotifsToTFsMergeIntoTable
 #' @aliases mapMotifsToTFsMergeIntoTable
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #' @param tbl A dataframe of footprints, generally obtained using \code{\link{getFootprintsInRegion}}
-#' or \code{\link{getFootprintsForGene}} 
+#' or \code{\link{getFootprintsForGene}}
 #'
 #' @return A data frame containing the motifs from the supplied footprints table and the transcription
 #' factors they map to
 #'
 #' @export
-#' 
-#' @seealso \code{\link{getFootprintsInRegion}}, \code{\link{getFootprintsForGene}} 
+#'
+#' @seealso \code{\link{getFootprintsInRegion}}, \code{\link{getFootprintsForGene}}
 
 
 setMethod("mapMotifsToTFsMergeIntoTable", "FootprintFinder",
@@ -502,8 +502,15 @@ setMethod("mapMotifsToTFsMergeIntoTable", "FootprintFinder",
       collected.motifs <- sprintf("('%s')", paste(motifs, collapse="','"))
       query.string <- sprintf("select * from motifsgenes where motif in %s", collected.motifs)
       tbl.mtf <- DBI::dbGetQuery(obj@genome.db, query.string)
-      tbl.out <- merge(tbl, tbl.mtf, by.x='name', by.y='motif')
-      tbl.out
+      tfsCollapsed <- unlist(lapply(tbl$name, function(name) paste(subset(tbl.mtf, motif==name)$tf, collapse=";")))
+      tbl$tf <- tfsCollapsed
+      tbl <- tbl[, c("chrom", "start", "endpos", "name", "length", "strand", "score1", "score2", "score3", "tf")]
+      colnames(tbl) <- c("chrom", "start", "end", "motifName", "length", "strand", "score1", "score2", "score3", "tf")
+      signature <- with(tbl, sprintf("%s:%d-%d-%s-%s-%d", chrom, start, end, motifName, strand, length))
+      deleters <- which(duplicated(signature))
+      if(length(deleters) > 0)
+         tbl <- tbl[-deleters,]
+      invisible(tbl)
       })
 
 #----------------------------------------------------------------------------------------------------
