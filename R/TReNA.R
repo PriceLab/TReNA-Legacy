@@ -147,6 +147,8 @@ setMethod("solve", "TReNA",
 #----------------------------------------------------------------------------------------------------
 #' @describeIn TReNA Retrieve the name of the solver specified in a TReNA object
 #'
+#' @param obj An object of class TReNA
+#' 
 #' @examples
 #'
 #' # Create a LassoSolver object using the included Alzheimer's data and retrieve the solver name
@@ -163,7 +165,7 @@ setMethod("getSolverName", "TReNA",
 
 #----------------------------------------------------------------------------------------------------
 #' @describeIn TReNA Retrieve the Solver object contained in a TReNA object
-#' 
+#'
 #' @examples
 #'
 #' # Create a LassoSolver object using the included Alzheimer's data and retrieve the solver object

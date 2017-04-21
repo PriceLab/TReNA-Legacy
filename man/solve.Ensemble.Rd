@@ -25,10 +25,12 @@ arguments denoting extraArgs that correspond to a given solver (e.g. "lasso")}
 \value{
 A data frame containing the scores for all solvers and two composite scores
 relating the target gene to each transcription factor. The two new scores are:
-"extr": a composite score created using the root mean square of the principal
-components of the individual solver scores
-"comp": a composite score created similarly to "extreme_score", but with each solver's
-score scaled using *atan(x)*. This score scales from 0-1
+\itemize{
+\item{"concordance": a composite score created similarly to "extreme_score", but with each solver's
+score scaled using *atan(x)*. This score scales from 0-1}
+\item{"pcaMax": a composite score created using the root mean square of the principal
+components of the individual solver scores}
+}
 }
 \description{
 Given a TReNA object with Ensemble as the solver and a list of solvers

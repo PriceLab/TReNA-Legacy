@@ -35,6 +35,8 @@ TReNA currently supports 9 solver strings (default = "lasso"):
 }}
 
 \item{quiet}{A logical denoting whether or not the TReNA object should print output}
+
+\item{obj}{An object of class TReNA}
 }
 \value{
 An object of the TReNA class

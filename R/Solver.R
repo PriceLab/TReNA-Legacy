@@ -80,6 +80,8 @@ Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 } # Solver, the constructor
 #----------------------------------------------------------------------------------------------------
 #' @describeIn Solver Retrieve the assay matrix of gene expression data
+#'
+#' @param obj An object of class Solver
 #' 
 #' @examples
 #'

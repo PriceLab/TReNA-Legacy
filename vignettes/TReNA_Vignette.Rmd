@@ -13,13 +13,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Overview of TReNA
 
-TReNA is a package for inferring relationships between target genes and their transcription factors. By using TReNA, we can generate hypotheses for relationships between genes and enable the construction of gene network models. In the most basic sense, TReNA accepts a matrix of gene expression data and provides two functions using the data: 1) It filters genes in the dataset based on user-specified criteria; 2) Given a target gene response and list of transcription factors as predictors, it uses a user-specified solver to perform feature selection. Thus, the standard TReNA workflow is the following:
+TReNA is a package for inferring relationships between target genes and their transcription factors. By using TReNA, we can generate hypotheses aroung regulation of gene expression and enable the construction of gene network models. In the most basic sense, TReNA accepts a matrix of gene expression data (that must include the expression levels of transcription factors) and provides two operations using the data. First, it filters putitive transcriptional regulators based on user-specified criteria, such as presence of motifs or footprints. Second, given a target gene and list of transcription factors as predictors, it uses a user-specified solver to perform feature selection. Thus, the standard TReNA workflow is the following:
 
-1. Create a TReNA object using an assay matrix and a desired solver.
-2. (optional) Filter the list of candidate transcription factors using a filter. 
-3. Solve the TReNA object for a supplied target gene and list of transcription factors to obtain the inferred relationships between target gene and transcription factors. 
+1. Create a TReNA object using an expression matrix (RNA-seq or microarray) and a desired solver.
+2. (optional) Select candidate transcription factors from either motifs or footprints. 
+3. Perform feature selection to identify putative transcriptional regulators for the target gene.
 
-The filtering step, while optional, can greatly simplify the ensuing solving step by reducing the number of predictors supplied to the solver. Rather than supplying hundreds of transcription factors that can confound meaningful relationships between genes, filters allow the user to effectively screen out less important genes, leaving only the most likely affectors. 
+The filtering step, while optional, can constrain the solution space and reduce computational time by reducing the number of predictors supplied to the solver. Rather than supplying hundreds of transcription factors that can obscure meaningful relationships between genes, filters allow the user to screen out less likely candidates, leaving only the most likely affectors. 
 
 Starting off, we'll load the TReNA library.
 
@@ -29,7 +29,7 @@ suppressMessages(library(TReNA))
 
 ## Creating a TReNA Object
 
-Running TReNA requires an assay matrix of gene expression data; there are several data sets of this nature included with the TReNA package that can serve as examples. In this case, we will load data from a study on Alzheimer's disease, in which 278 samples were obtained for 154 transcription factors.
+Running TReNA requires a matrix of gene expression data; there are several example data sets included with the TReNA package. In this case, we will load data from a study on Alzheimer's disease (Nat Sci Data, doi:10.1038/sdata.2016.89), in which 278 samples were obtained for 154 transcription factors.
 
 ```{r}
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
@@ -76,13 +76,13 @@ We have now created an object of the TReNA class, which contains our solver and 
 
 ## Using Filtering to Reduce Predictor Number
 
-TReNA currently supports 3 different filters:
+TReNA currently supports 3 different candidate transcription factor inputs:
 
-1. FootprintFilter: using a PostgreSQL or SQLite database of footprint data, returns transcription factors with footprints for a given target gene
+1. FootprintFilter: using a PostgreSQL or SQLite database of footprint data, returns transcription factors with footprints for a given target gene for a specified genomic range
 2. VarianceFilter: returns transcription factors with expression variance within a certain range of the target gene's expression variance
 3. NullFilter: returns all transcription factors supplied in the matrix
 
-In order to get a list of gene candidates using a filter, you must construct the appropriate filter object by supplying an assay matrix, then call the *getCandidates* function on the filter. Depending on the filter, this method may require other parameters. The simplest filter is the NullFilter, which can return candidates with no additional input; however, as the name suggests, this just returns all transcription factors, not including the target gene.
+In order to get a list of transcription factor candidates, you must construct the appropriate object by supplying an assay matrix, then call the *getCandidates* function on the candidate inputs. Depending on the input, this method may require other parameters. The simplest input is the NullFilter, which can return candidates with no additional parameters; however, as the name suggests, this just returns all transcription factors, not including the target gene.
 
 ```{r}
 
@@ -92,7 +92,7 @@ str(tfs)
 
 ```
 
-The VarianceFilter is slightly more complex; it requires the specification of a target gene and also allows you to specify a variance size range. The filter finds the variance of all genes in the assay matrix, then returns all transcription factors with variance within the variance size range of the target gene. For instance, we can create a VarianceFilter and use it to find all transcription factors with variance within 50% of the target gene's variance. This will return both the names of the transcription factors and their variances in a named list. 
+The VarianceFilter requires the specification of a target gene and also allows you to specify a variance size range. It finds the variance of all genes in the assay matrix, then returns all transcription factors with variance within the variance size range of the target gene. For instance, we can create a VarianceFilter and use it to find all transcription factors with variance within 50% of the target gene's variance. This will return both the names of the transcription factors and their variances in a named list. 
 
 ```{r}
 
@@ -102,7 +102,7 @@ str(tf.list)
 
 ```
 
-The most complex filter is the FootprintFilter, which leverages information from footprint databases in either SQLite or PostgreSQL. The filter requires connection to 2 databases: 1) A genome database, which contains information on the location and function of genes; 2) A project database, which contains footprint regions from a specific project. As an illustration of the format and utility of these databases, we have included in *extdata* two SQLite databases demonstrating the required tables and information needed to use the FootprintFilter. Our databases are subsets of larger databases, corresponding to the *MEF2C* gene and a footprinting project in the brain using the Wellington method for determining footprints. The FootprintFilter method for getting candidates also allows for specification of the distance upstream and downstream of a transcription start site to look for footprints; in this case, we'll use 1000 bases for each, the default distance. As with the VarianceFilter, we return a named list, with the names of the canidate transcription factors, plus a table of other information about them taken from the project and genome databases. 
+The most complex filter is the FootprintFilter, which leverages information from footprint databases in either SQLite or PostgreSQL. This input requires connection to 2 databases: 1) A genome database, which contains information on the location and function of genes; 2) A project database, which contains footprint regions from a specific project. As an illustration of the format and utility of these databases, we have included in *extdata* two SQLite databases demonstrating the required tables and information needed to use the FootprintFilter. Our databases are subsets of larger databases, corresponding to the *MEF2C* gene and a footprinting project in the brain using the Wellington method for determining footprints. The FootprintFilter method for getting candidates also allows for specification of the distance upstream and downstream of a transcription start site to look for footprints; in this case, we'll use 1000 bases for each, the default distance. As with the VarianceFilter, we return a named list, with the names of the canidate transcription factors, plus a table of other information about them taken from the project and genome databases. 
 
 ```{r}
 footprint.filter <- FootprintFilter(mtx.assay = mtx.voom)
@@ -140,7 +140,7 @@ Each solver will necessarily give a different result, neccessitating some amount
 
 ## Using an Ensemble Solver Approach
 
-In addition to the individual solvers, TReNA includes an ensemble approach as a solver option. The ensemble solver allows the user to specify a vector of multiple TReNA solvers as part of the *extraArgs* list argument (e.g. *extraArgs = list(solver.list = c("lasso","ridge")))*. Alternatively, the user can specify *solver.list = "default.solvers"* to run all solvers but Bayes Spike and square root LASSO (the most sensitive to outliers and the slowest, respectively). In addition to computing and returning the individual scores of each solver, the ensemble solver generates an "extreme" score (*extr*) based on all solvers and a "composite" score (*comp*). These new scores differ in that the extreme score tends to give more weight to extreme outlying scores from a particular solver and generally scales from 0 to 15, whereas the composite score attempts to use more of a "voting" system of which solves consider a feature significant and ranges from 0-1. As an example, we can run the ensemble solver on the same problem we just solved using LASSO. 
+In addition to the individual solvers, TReNA includes an ensemble approach as a solver option. The ensemble solver allows the user to specify a vector of multiple TReNA solvers as part of the *extraArgs* list argument (e.g. *extraArgs = list(solver.list = c("lasso","ridge")))*. Alternatively, the user can specify *solver.list = "default.solvers"* to run all solvers but Bayes Spike and square root LASSO (the most sensitive to outliers and the computationally intensive, respectively). In addition to computing and returning the individual scores of each solver, the ensemble solver generates an "extreme" score (*extr*) based on all solvers and a "composite" score (*comp*). These new scores differ in that the extreme score tends to give more weight to extreme outlying scores from a particular solver and generally scales from 0 to 15, whereas the composite score attempts to use more of a "voting" system of which solves consider a feature significant and ranges from 0-1. As an example, we can run the ensemble solver on the same problem we just solved using LASSO. 
 
 ```{r}
 trena <- TReNA(mtx.assay = mtx.voom, solver = "ensemble")
@@ -156,6 +156,8 @@ The ensemble approach is an attractive option for a couple of reasons:
 1. Solver choice can be a non-trivial task for a TReNA user, as it requires some working knowledge of the pros and cons of the different methods. The ensemble method alleviates the need to choose one solver. 
 
 2. Different solvers will give different predictions for important transcription factors; the ensemble method provides a way to create a composite score that accounts for all included solvers and can thus be seen as something of an overall metric. 
+
+3. The relationship between transcription factors and target genes is a young area of active investigation. How this relates to the various solvers is an open question. TReNA was born out of a desire to explore these relationships. 
 
 We can optionally pass solver-specific parameters as well using named arguments in the *extraArgs* list argument. For instance, we may want to specify the number of cores to use for the square root LASSO solver and include it in our solver list. The following *solve* command will accomplish that, setting the number of cores to dedicate to square root LASSO as 4:
 

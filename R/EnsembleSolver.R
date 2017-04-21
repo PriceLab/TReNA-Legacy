@@ -54,10 +54,13 @@ EnsembleSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #'
 #' @return A data frame containing the scores for all solvers and two composite scores
 #' relating the target gene to each transcription factor. The two new scores are:
-#' "extr": a composite score created using the root mean square of the principal
-#' components of the individual solver scores
-#' "comp": a composite score created similarly to "extreme_score", but with each solver's
-#' score scaled using *atan(x)*. This score scales from 0-1
+#' \itemize{
+#' \item{"concordance": a composite score created similarly to "extreme_score", but with each solver's
+#' score scaled using *atan(x)*. This score scales from 0-1}
+#' \item{"pcaMax": a composite score created using the root mean square of the principal
+#' components of the individual solver scores}
+#' }
+#' 
 #'
 #' @seealso \code{\link{EnsembleSolver}}
 #' 
@@ -290,22 +293,24 @@ setMethod("run", "EnsembleSolver",
                
                rownames(tbl.scale) <- tbl.all$gene
 
-               # Transform via PCA and compute the ensemble score
+               # Compute the scaled "concordance score"
                pca <- stats::prcomp(tbl.scale, center=FALSE, scale.=FALSE)
-               extr <- apply(pca$x[,pca$sdev > 0.1],1, function(x) {sqrt(mean(x*x))})
-               extr <- as.data.frame(extr)
-               extr$gene <- rownames(extr)
-               rownames(extr) <- NULL
-               tbl.all <- merge(tbl.all, extr, by = "gene", all = TRUE)
-
-               # Compute the scaled "composite score"
-               comp <- apply(pca$x[, pca$sdev > 0.1], 1,
+               concordance <- apply(pca$x[, pca$sdev > 0.1], 1,
                              function(x) {sqrt(mean((2*atan(x)/pi)^2))})
-               comp <- as.data.frame(comp)
-               comp$gene <- rownames(comp)
-               rownames(comp) <- NULL
-               tbl.all <- merge(tbl.all, comp, by = "gene", all = TRUE)               
-               tbl.all <- tbl.all[order(tbl.all$comp, decreasing = TRUE),]
+               concordance <- as.data.frame(concordance)
+               concordance$gene <- rownames(concordance)
+               rownames(concordance) <- NULL
+               tbl.all <- merge(tbl.all, concordance, by = "gene", all = TRUE)
+               
+               # Transform via PCA and compute the pcaMax score
+               pcaMax <- apply(pca$x[,pca$sdev > 0.1],1, function(x) {sqrt(mean(x*x))})
+               pcaMax <- as.data.frame(pcaMax)
+               pcaMax$gene <- rownames(pcaMax)
+               rownames(pcaMax) <- NULL
+               tbl.all <- merge(tbl.all, pcaMax, by = "gene", all = TRUE)
+
+               # Sort by pcaMax
+               tbl.all <- tbl.all[order(tbl.all$pcaMax, decreasing = TRUE),]
 
                return(tbl.all)
            })

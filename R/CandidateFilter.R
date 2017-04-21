@@ -77,6 +77,8 @@ CandidateFilter <- function(mtx.assay = matrix(), quiet = TRUE)
 } # CandidateFilter, the constructor
 #----------------------------------------------------------------------------------------------------
 #' @describeIn CandidateFilter Retrieve the assay matrix of gene expression data
+#'
+#' @param obj An object of a CandidateFilter class
 #' 
 #' @examples
 #'

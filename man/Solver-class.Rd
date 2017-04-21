@@ -17,6 +17,8 @@ Solver(mtx.assay = matrix(), quiet = TRUE)
 \item{mtx.assay}{An assay matrix of gene expression data}
 
 \item{quiet}{A logical indicating whether or not the Solver object should print output}
+
+\item{obj}{An object of class Solver}
 }
 \value{
 An object of the Solver class

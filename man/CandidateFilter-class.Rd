@@ -17,6 +17,8 @@ CandidateFilter(mtx.assay = matrix(), quiet = TRUE)
 \item{mtx.assay}{An assay matrix of gene expression data}
 
 \item{quiet}{A logical denoting whether or not the CandidateFilter object should print output}
+
+\item{obj}{An object of a CandidateFilter class}
 }
 \value{
 An object of the Candidate filter class
