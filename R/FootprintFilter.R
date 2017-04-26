@@ -14,7 +14,12 @@
 #' @aliases FootprintFilter
 
 #----------------------------------------------------------------------------------------------------
-.FootprintFilter <- setClass("FootprintFilter", contains = "CandidateFilter")
+.FootprintFilter <- setClass("FootprintFilter", contains = "CandidateFilter",
+                             slots=list(genomeDB="character",
+                                        footprintDB="character",
+                                        regions="character",
+                                        footprintFinder="FootprintFinder")
+                             )
 
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
@@ -33,9 +38,28 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 #' footprint.filter <- FootprintFilter()
 
-FootprintFilter <- function(quiet=TRUE)
+FootprintFilter <- function(genomeDB, footprintDB, geneCenteredSpec=list(),
+                            regionsSpec=list(), quiet=TRUE)
 {
-    .FootprintFilter(CandidateFilter(quiet = quiet))
+   fpFinder <- FootprintFinder(genomeDB, footprintDB, quiet=quiet)
+
+
+   regions <- c();   # one or more chromLoc strings: "chr5:88903257-88905257"
+
+   if(length(geneCenteredSpec) == 3){
+      new.region <- with (geneCenteredSpec, getGenePromoterRegion(fpFinder, targetGene, tssUpstream, tssDownstream))
+      new.region.chromLocString <- with(new.region, sprintf("%s:%d-%d", chr, start, end))
+      regions <- c(regions, new.region.chromLocString)
+      }
+
+   if(length(regionsSpec) > 0)
+      regions <- c(regions, regionsSpec)
+
+   .FootprintFilter(CandidateFilter(quiet = quiet),
+                    genomeDB=genomeDB,
+                    footprintDB=footprintDB,
+                    regions=regions,
+                    footprintFinder=fpFinder)
 
 } # FootprintFilter, the constructor
 #----------------------------------------------------------------------------------------------------
@@ -78,34 +102,44 @@ FootprintFilter <- function(quiet=TRUE)
 
 setMethod("getCandidates", "FootprintFilter",
 
-          function(obj, argsList){
+     function(obj){
 
-              mode <- argsList[["mode"]]
-              stopifnot(mode %in% c("byRegion"))  #, "byGene"))
-              if(mode == "byRegion"){
-                stopifnot(all(c("genome.db.uri", "regions.db.uri", "chrom", "start", "end") %in%
-                              names(argsList)))
-                genome.db.uri <- argsList[["genome.db.uri"]]
-                regions.db.uri <- argsList[["regions.db.uri"]]
-                chrom = argsList[["chrom"]]
-                start <- argsList[["start"]]
-                end <- argsList[["end"]]
-                   # Create a FootprintFinder object and find the footprints
-                fp <- FootprintFinder(genome.db.uri, regions.db.uri, quiet=TRUE)
-                tbl.fp <- try(getFootprintsInRegion(fp, chrom, start, end))
-                if(!(class(tbl.fp) == "try-error")){
-                   tbl.out <- mapMotifsToTFsMergeIntoTable(fp, tbl.fp)
-                   closeDatabaseConnections(fp)
-                        # Intersect the footprints with the rows in the matrix
-                    candidate.tfs <- sort(unique(unlist(strsplit(tbl.out$tf, ";"))))
-                     # Return the TFs
-                   return(list("tfs" = candidate.tfs, "tbl" = tbl.out))
-                   } # if
-                else{
-                  closeDatabaseConnections(fp)
-                  return(NULL)
-                  }
-             } # byRegion
-          }) # getCandidates
+              # Create a FootprintFinder object and find the footprints
+        fp <- FootprintFinder(obj@genomeDB, obj@footprintDB, quiet=TRUE)
+        tbl.out <- data.frame()
+
+        for(region in obj@regions){
+           chromLoc <- .parseChromLocString(region)
+           tbl.fp <- try(with(chromLoc, getFootprintsInRegion(fp, chrom, start, end)))
+           if(!(class(tbl.fp) == "try-error")){
+              tbl.out <- rbind(tbl.out, mapMotifsToTFsMergeIntoTable(fp, tbl.fp))
+              }
+           else{
+             warning("FootprintFinder error with region %s", region)
+             closeDatabaseConnections(fp)
+             return(NULL)
+              }
+           } # for region
+
+        closeDatabaseConnections(fp)
+                # Intersect the footprints with the rows in the matrix
+        candidate.tfs <- sort(unique(unlist(strsplit(tbl.out$tf, ";"))))
+        return(list("tfs" = candidate.tfs, "tbl" = tbl.out))
+        }) # getCandidates
 
 #----------------------------------------------------------------------------------------------------
+.parseChromLocString <- function(chromLocString)
+{
+   tokens.0 <- strsplit(chromLocString, ":", fixed=TRUE)[[1]]
+   stopifnot(length(tokens.0) == 2)
+   chrom <- tokens.0[1]
+
+   tokens.1 <- strsplit(tokens.0[2], "-")[[1]]
+   stopifnot(length(tokens.1) == 2)
+   start <- as.integer(tokens.1[1])
+   end <- as.integer(tokens.1[2])
+
+   return(list(chrom=chrom, start=start, end=end))
+
+} # parseChromLocString
+#------------------------------------------------------------------------------------------------------------------------

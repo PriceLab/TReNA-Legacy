@@ -7,6 +7,7 @@ runTests <- function()
 {
    test_EnsembleSolverConstructor()
    test_ampAD.mef2c.154tfs.278samples.ensemble()
+   test_selectedSolversOnly()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -34,7 +35,7 @@ test_ampAD.mef2c.154tfs.278samples.ensemble <- function()
    target.gene <- "MEF2C"
    mtx.asinh <- asinh(mtx.sub)
    #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
-   
+
    trena <- TReNA(mtx.assay=mtx.asinh, solver="ensemble", quiet=FALSE)
    tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
    tbl <- solve(trena, target.gene, tfs)
@@ -45,5 +46,30 @@ test_ampAD.mef2c.154tfs.278samples.ensemble <- function()
    checkTrue(c("HLF") %in% tbl$gene)
 
 } # test_ampAD.mef2c.154tfs.278samples.ensemble
+#----------------------------------------------------------------------------------------------------
+test_selectedSolversOnly <- function()
+{
+   printf("--- test_selectedSolversOnly")
+
+   set.seed(122113)
+   # Load matrix and transform via arcsinh
+   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+   target.gene <- "MEF2C"
+   mtx.asinh <- asinh(mtx.sub)
+   #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
+
+      # solvers <- c("lasso", "ridge", "randomForest",  "lassopv", "pearson", "spearman") # "sqrtlasso",
+
+   solver <- "ensemble:lasso;ridge;randomForest"
+   trena <- TReNA(mtx.assay=mtx.asinh, solver=solver, quiet=FALSE)
+   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
+   tbl <- solve(trena, target.gene, tfs)
+
+   # Check for empirical values
+   checkTrue(min(tbl$extr) > 1.2)
+   checkTrue(max(tbl$extr) < 5.0)
+   checkTrue(c("HLF") %in% tbl$gene)
+
+} # test_selectedSolversOnly
 #----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()

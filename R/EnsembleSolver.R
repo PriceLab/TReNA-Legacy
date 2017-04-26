@@ -3,7 +3,7 @@
 #'
 #' @include Solver.R
 #' @import methods
-#' 
+#'
 #' @name EnsembleSolver-class
 #'
 .EnsembleSolver <- setClass("EnsembleSolver", contains="Solver")
@@ -15,12 +15,12 @@
 #' @return A Solver class object with Ensemble as the solver
 #'
 #' @export
-#' 
+#'
 #' @examples
 #' solver <- EnsembleSolver()
 
 
-EnsembleSolver <- function(mtx.assay=matrix(), quiet=TRUE)
+EnsembleSolver <- function(mtx.assay=matrix(), solverName, quiet=TRUE)
 {
     obj <- .EnsembleSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
 
@@ -33,8 +33,8 @@ EnsembleSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @name run,EnsembleSolver-method
 #' @rdname solve.Ensemble
 #' @aliases run.EnsembleSolver solve.Ensemble
-#' 
-#' @description Given a TReNA object with Ensemble as the solver and a list of solvers (default = "all.solvers"), estimate coefficients for each transcription factor as a predictor of the target gene's expression level. The final scores for the ensemble method combine all specified solvers to create a composite score for each transcription factor. 
+#'
+#' @description Given a TReNA object with Ensemble as the solver and a list of solvers (default = "all.solvers"), estimate coefficients for each transcription factor as a predictor of the target gene's expression level. The final scores for the ensemble method combine all specified solvers to create a composite score for each transcription factor.
 #'
 #' @param obj An object of class TReNA with "ensemble" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
@@ -46,7 +46,7 @@ EnsembleSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @return A data frame containing the scores for all solvers and a composite score relating the target gene to each transcription factor
 #'
 #' @family solver methods
-#' 
+#'
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with LASSO as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
@@ -66,15 +66,15 @@ setMethod("run", "EnsembleSolver",
 
            function(obj, target.gene, tfs, tf.weights = rep(1, length(tfs)), extraArgs = list()){
 
-               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning               
-               if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                   
-                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")                  
-               }               
-               
+               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
+               if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){
+                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
+               }
+
                # Specify defaults for gene cutoff and solver list
                gene.cutoff <- 0.1
                solver.list <- "all.solvers"
-               
+
                # Check for the gene cutoff and solvers, then and set them if they're not there
                if("gene.cutoff" %in% names(extraArgs))
                    gene.cutoff <- extraArgs[["gene.cutoff"]]
@@ -84,12 +84,12 @@ setMethod("run", "EnsembleSolver",
 
                # Convert the "all" solvers argument
                if(solver.list[1] == "all.solvers"){
-                   solver.list <- c("lasso",                                    
-                                    "randomForest",                                    
-#                                    "bayesSpike",                                    
-                                    "pearson",                                    
-                                    "spearman",                                    
-#                                    "sqrtlasso",                                    
+                   solver.list <- c("lasso",
+                                    "randomForest",
+#                                    "bayesSpike",
+                                    "pearson",
+                                    "spearman",
+#                                    "sqrtlasso",
                                     "lassopv",
                                     "ridge")
                }
@@ -100,28 +100,28 @@ setMethod("run", "EnsembleSolver",
                    trena <- TReNA(obj@mtx.assay, solver = solver.list[[i]] )
 
                    # if there's extraArgs, pass them
-                   if(solver.list[[i]] %in% names(extraArgs)){                       
-                       extraParams <- extraArgs[[solver.list[[i]]]]}                   
+                   if(solver.list[[i]] %in% names(extraArgs)){
+                       extraParams <- extraArgs[[solver.list[[i]]]]}
                    else{ extraParams <- list()}
-                   
-                      
+
+
                    out.list[[i]] <- solve(trena, target.gene, tfs, tf.weights, extraArgs = extraParams)
                    names(out.list)[i] <- paste("out",solver.list[[i]],sep=".")
                }
 
                # Output lasso with beta
                if("lasso" %in% solver.list){
-                   out.list$out.lasso$gene <- rownames(out.list$out.lasso)                   
-                   out.list$out.lasso <- out.list$out.lasso[, c("beta","gene")]                   
+                   out.list$out.lasso$gene <- rownames(out.list$out.lasso)
+                   out.list$out.lasso <- out.list$out.lasso[, c("beta","gene")]
                    rownames(out.list$out.lasso) <- NULL
                    names(out.list$out.lasso) <- c("beta.lasso", "gene")
                    lasso.med <- stats::median(out.list$out.lasso$beta.lasso)
                    lasso.scale <- stats::mad(out.list$out.lasso$beta.lasso)
-               }               
+               }
 
                # Output randomForest IncNodePurity
                if("randomForest" %in% solver.list){
-                   out.list$out.randomForest <- out.list$out.randomForest$edges                   
+                   out.list$out.randomForest <- out.list$out.randomForest$edges
                    out.list$out.randomForest$gene <- rownames(out.list$out.randomForest)
                    out.list$out.randomForest <- out.list$out.randomForest[, c("IncNodePurity","gene")]
                    rownames(out.list$out.randomForest) <- NULL
@@ -143,13 +143,13 @@ setMethod("run", "EnsembleSolver",
 
                # Pearson
                if("pearson" %in% solver.list){
-                   out.list$out.pearson$gene <- rownames(out.list$out.pearson)                   
+                   out.list$out.pearson$gene <- rownames(out.list$out.pearson)
                    rownames(out.list$out.pearson) <- NULL
                    names(out.list$out.pearson) <- c("pearson.coeff","gene")
                    pearson.med <- stats::median(out.list$out.pearson$pearson.coeff)
                    pearson.scale <- stats::mad(out.list$out.pearson$pearson.coeff)
                }
-               
+
                #Spearman
                if("spearman" %in% solver.list){
                    out.list$out.spearman$gene <- rownames(out.list$out.spearman)
@@ -158,7 +158,7 @@ setMethod("run", "EnsembleSolver",
                    spearman.med <- stats::median(out.list$out.spearman$spearman.coeff)
                    spearman.scale <- stats::mad(out.list$out.spearman$spearman.coeff)
                }
-               
+
                #LassoPV
                if("lassopv" %in% solver.list){
                    out.list$out.lassopv$gene <- rownames(out.list$out.lassopv)
@@ -179,7 +179,7 @@ setMethod("run", "EnsembleSolver",
                    sqrtlasso.med <- stats::median(out.list$out.sqrtlasso$beta.sqrtlasso)
                    sqrtlasso.scale <- stats::mad(out.list$out.sqrtlasso$beta.sqrtlasso)
                }
-               
+
                #Ridge
                if("ridge" %in% solver.list){
                    out.list$out.ridge$gene <- rownames(out.list$out.ridge)
@@ -188,19 +188,19 @@ setMethod("run", "EnsembleSolver",
                    names(out.list$out.ridge) <- c("beta.ridge", "gene")
                    ridge.med <- stats::median(out.list$out.ridge$beta.ridge)
                    ridge.scale <- stats::mad(out.list$out.ridge$beta.ridge)
-               }               
+               }
 
                # Grab all genes for each solver to start with
                how.many <- length(tfs)
                top.list <- lapply(out.list, function(x) head(x$gene, how.many))
                all.genes <- unique(as.character(unlist(top.list)))
-               
-               # Run same thing in a while loop until the cutoff or 10 is reached    
+
+               # Run same thing in a while loop until the cutoff or 10 is reached
                while(length(all.genes) > gene.cutoff * length(tfs) & length(all.genes) > 10){
 
                    how.many <- round(0.75*how.many)
                    top.list <- lapply(out.list, function(x) utils::head(x$gene, how.many))
-                   all.genes <- unique(as.character(unlist(top.list)))                                                         
+                   all.genes <- unique(as.character(unlist(top.list)))
                }
 
                # Pull out the specified genes
@@ -209,21 +209,21 @@ setMethod("run", "EnsembleSolver",
 
                    sub.list[[i]] <- subset(out.list[[i]], out.list[[i]]$gene %in% all.genes)
                }
-               
+
                # Merge the tables
                tbl.all <- merge(sub.list[[1]], sub.list[[2]], by = "gene", all = TRUE)
                if(length(sub.list) > 2){
-                   for(i in 3:(length(sub.list))){                  
+                   for(i in 3:(length(sub.list))){
                        tbl.all <- merge(tbl.all, sub.list[[i]], by = "gene", all = TRUE)
                    }
                }
-               
+
                # Replace missing values and scale the data
                # Use the *.med and *.scale values to center/scale everything
                tbl.all[is.na(tbl.all)] <- 0
                tbl.scale <- tbl.all[,-1]
 
-               if("lasso.p.value" %in% names(tbl.scale)){                  
+               if("lasso.p.value" %in% names(tbl.scale)){
                    tbl.scale$lasso.p.value <- -log10(tbl.scale$lasso.p.value)
                    tbl.scale$lasso.p.value <- scale(tbl.scale$lasso.p.value,
                                                     center = lassopv.med,
@@ -235,13 +235,13 @@ setMethod("run", "EnsembleSolver",
                                                  center = lasso.med,
                                                  scale = lasso.scale)
                }
-               
+
                if("beta.ridge" %in% names(tbl.scale)){
                    tbl.scale$beta.ridge <- scale(tbl.scale$beta.ridge,
                                                  center = ridge.med,
                                                  scale = ridge.scale)
                }
-               
+
                if("pearson.coeff" %in% names(tbl.scale)){
                    tbl.scale$pearson.coeff <- scale(tbl.scale$pearson.coeff,
                                                     center = pearson.med,
@@ -271,7 +271,7 @@ setMethod("run", "EnsembleSolver",
                                                center = randomForest.med,
                                                scale = randomForest.scale)
                }
-               
+
                rownames(tbl.scale) <- tbl.all$gene
 
                # Transform via PCA and compute the ensemble score
@@ -288,7 +288,7 @@ setMethod("run", "EnsembleSolver",
                comp <- as.data.frame(comp)
                comp$gene <- rownames(comp)
                rownames(comp) <- NULL
-               tbl.all <- merge(tbl.all, comp, by = "gene", all = TRUE)               
+               tbl.all <- merge(tbl.all, comp, by = "gene", all = TRUE)
                tbl.all <- tbl.all[order(tbl.all$comp, decreasing = TRUE),]
 
                return(tbl.all)
