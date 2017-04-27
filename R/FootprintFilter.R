@@ -110,6 +110,7 @@ setMethod("getCandidates", "FootprintFilter",
 
         for(region in obj@regions){
            chromLoc <- .parseChromLocString(region)
+           if(!obj@quiet) printf(" FootprintFilter::getCandidates, getFootprintsInRegion %s", region)
            tbl.fp <- try(with(chromLoc, getFootprintsInRegion(fp, chrom, start, end)))
            if(!(class(tbl.fp) == "try-error")){
               tbl.out <- rbind(tbl.out, mapMotifsToTFsMergeIntoTable(fp, tbl.fp))

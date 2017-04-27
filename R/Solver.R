@@ -5,13 +5,13 @@
 #' @rdname Solver-class
 #'
 #' @import methods
-#' 
+#'
 #' @description
 #' The Solver class is a generic class that governs the different solvers available in TReNA. A
 #' Solver class object is constructed during creation of a TReNA object and resides within the
 #' TReNA object. It is rarely called by itself; rather, interaction with a particular solver object
-#' is achieved using the \code{\link{solve}} method on a TReNA object. 
-#' 
+#' is achieved using the \code{\link{solve}} method on a TReNA object.
+#'
 #' @slot mtx.assay An assay matrix of gene expression data
 #' @slot quiet A logical element indicating whether the Solver object should print output
 
@@ -35,12 +35,12 @@ setGeneric("rescalePredictorWeights",
 #' Define an object of class Solver
 #'
 #' @rdname Solver-class
-#' 
+#'
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical indicating whether or not the Solver object should print output
 #'
 #' @export
-#' 
+#'
 #' @return An object of the Solver class
 #'
 #' @examples
@@ -52,13 +52,13 @@ setGeneric("rescalePredictorWeights",
 Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
     # If a matrix is supplied, check the distribution to see if it's too big
-    if(!is.na(max(mtx.assay))){        
-        mtx.ratio <- (max(mtx.assay) - stats::quantile(mtx.assay,0.75))/(stats::quantile(mtx.assay,0.75) - stats::median(mtx.assay))        
-        if(mtx.ratio > 1000){                    
+    if(!is.na(max(mtx.assay))){
+        mtx.ratio <- (max(mtx.assay) - stats::quantile(mtx.assay,0.75))/(stats::quantile(mtx.assay,0.75) - stats::median(mtx.assay))
+        if(mtx.ratio > 1000){
             warning("Assay matrix may contain highly skewed data; consider transforming your matrix.")
             }
     }
-    
+
     env <- new.env(parent=emptyenv())
    .Solver(mtx.assay=mtx.assay, quiet=quiet, state=env)
 
@@ -67,14 +67,14 @@ Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' Get Assay Data from Solver
 #'
 #' Retrieve the assay matrix of gene expression data from a Solver object
-#' 
+#'
 #' @rdname getAssayData
 #' @aliases getAssayData
-#' 
+#'
 #' @param obj An object of class Solver
 #'
 #' @export
-#' 
+#'
 #' @return The assay matrix of gene expression data associated with a Solver object
 #'
 #' @examples
@@ -94,7 +94,7 @@ setMethod("getAssayData", "Solver",
 #'
 #' Solvers such as LASSO penalize predictors on a scale of 1 (full weight) to infinity (zero weight).
 #' With the \code{rescalePredictorWeights} method, incoming raw values can be scaled between a possibly
-#' theoretical minimum and maximum value. 
+#' theoretical minimum and maximum value.
 #'
 #' @rdname rescalePredictorWeights
 #' @aliases rescalePredictorWeights
@@ -113,12 +113,12 @@ setMethod("getAssayData", "Solver",
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 #' solver <- LassoSolver(mtx.sub)
 #' raw.values <- c(241, 4739, 9854, 22215, 658334)
-#' cooked.values <- rescalePredictorWeights(solver, 
+#' cooked.values <- rescalePredictorWeights(solver,
 #' mtx <- rescalePredictorWeights(solver, rawValue.min = min(mtx.sub),
 #' rawValue.max = max(mtx.sub), rawValues = mtx.sub)
 setMethod("rescalePredictorWeights", "Solver",
 
           function(obj, rawValue.min, rawValue.max, rawValues){
-              1 - ((rawValues-rawValue.min)/(rawValue.max-rawValue.min))           
+              1 - ((rawValues-rawValue.min)/(rawValue.max-rawValue.min))
           })
 #----------------------------------------------------------------------------------------------------

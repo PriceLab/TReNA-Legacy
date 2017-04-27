@@ -2,18 +2,25 @@ library(TReNA)
 library(RUnit)
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
+if(!exists("mtx")){
+   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+   mtx <- asinh(mtx.sub)
+   }
+
+candidate.tfs <- c("ATF7", "NR3C2", "MAFB", "PRRX1", "E2F8", "XBP1"); # from gtex skin data(!)
 #----------------------------------------------------------------------------------------------------
 runTests <- function()
 {
    test_RandomForestSolverConstructor()
    test_ampAD.mef2c.154tfs.278samples.randomForest()
-   
+
 } # runTests
 #----------------------------------------------------------------------------------------------------
 test_RandomForestSolverConstructor <- function()
 {
    printf("--- test_RandomForestSolverConstructor")
-   #solver <- RandomForestSolver()
+   solver <- RandomForestSolver(mtx, targetGene="MEF2C", candidateRegulators=candidate.tfs)
+
    solver <- TReNA(matrix(), solver = "randomForest")
    checkEquals(getSolverName(solver), "RandomForestSolver")
    #checkTrue(all(c("RandomForestSolver", "Solver") %in% is(solver)))
@@ -24,7 +31,6 @@ test_ampAD.mef2c.154tfs.278samples.randomForest <- function()
 {
    printf("--- test_ampAD.mef2c.154tfs.278samples.randomForest")
 
-   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
    target.gene <- "MEF2C"
    mtx.asinh <- asinh(mtx.sub)
    #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
@@ -46,7 +52,7 @@ test_ampAD.mef2c.154tfs.278samples.randomForest <- function()
    printf("actual: %s", paste(actual.genes.reported, collapse=","))
    checkEquals(actual.genes.reported, expected.genes)
 
-   
+
 } # test_ampAD.mef2c.154tfs.278samples.randomForest
 #----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()
