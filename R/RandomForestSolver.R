@@ -72,7 +72,7 @@ setMethod('show', 'RandomForestSolver',
 #' @aliases run.RandomForestSolver solve.RandomForest
 #'
 #' @param obj An object of class TReNA with "randomForest" as the solver string
-#' @param target.gene A designated target gene that should be part of the mtx.assay data
+#' @param targetGene A designated target gene that should be part of the mtx.assay data
 #' @param candidateRegulators The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(candidateRegulators)))
 #' @param extraArgs Modifiers to the Random Forest solver
@@ -87,31 +87,31 @@ setMethod('show', 'RandomForestSolver',
 #' # Load included Alzheimer's data, create a TReNA object with Random Forest as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 #' trena <- TReNA(mtx.assay = mtx.sub, solver = "randomForest")
-#' target.gene <- "MEF2C"
-#' candidateRegulators <- setdiff(rownames(mtx.sub), target.gene)
-#' tbl <- solve(trena, target.gene, candidateRegulators)
+#' targetGene <- "MEF2C"
+#' candidateRegulators <- setdiff(rownames(mtx.sub), targetGene)
+#' tbl <- solve(trena, targetGene, candidateRegulators)
 
 
 setMethod("run", "RandomForestSolver",
 
   function (obj){
 
-      # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
-      if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){
+      # Check if targetGene is in the bottom 10% in mean expression; if so, send a warning
+      if(rowMeans(obj@mtx.assay)[obj@targetGene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){
           warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
       }
 
      mtx <- obj@mtx.assay
      if(length(obj@candidateRegulators)==0) return(NULL)
 
-     x = t(mtx[candidateRegulators,,drop=F])
-     y = as.vector(t(mtx[target.gene,])) # Change y to a vector to avoid RF warning
+     x = t(mtx[obj@candidateRegulators,,drop=F])
+     y = as.vector(t(mtx[obj@targetGene,])) # Change y to a vector to avoid RF warning
 
      fit <- randomForest( x = x, y = y )
      edges = as.data.frame(fit$importance)
      pred.values = stats::predict(fit)
-     r2 = stats::cor(pred.values , mtx[target.gene,])^2
-     gene.cor <- sapply(rownames(edges), function(tf) stats::cor(mtx[tf,], mtx[target.gene,]))
+     r2 = stats::cor(pred.values , mtx[obj@targetGene,])^2
+     gene.cor <- sapply(rownames(edges), function(tf) stats::cor(mtx[tf,], mtx[obj@targetGene,]))
      edges$gene.cor <- gene.cor
      edges <- edges[order(edges$IncNodePurity, decreasing=TRUE),]
      return(list(edges = edges , r2 = r2))

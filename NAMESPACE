@@ -3,7 +3,8 @@ exportClasses(
    VarianceFilter,
    FootprintFilter,
    HumanDHSFilter,
-   GeneOntologyFilter)
+   GeneOntologyFilter,
+   RandomForestSolver)
 
 export(
     TReNA,
@@ -22,9 +23,9 @@ export(
     HumanDHSFilter,
     VarianceFilter,
     GeneOntologyFilter,
-    FootprintFinder
-
-)
+    FootprintFinder,
+    run
+    )
 
 exportMethods(
     closeDatabaseConnections,
