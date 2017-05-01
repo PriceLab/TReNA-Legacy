@@ -238,8 +238,8 @@ test_getFootprintsInRegion <- function()
 #----------------------------------------------------------------------------------------------------
 test_mapMotifsToTFsMergeIntoTable <- function()
 {
-    printf("--- test_mapMotifsToTFsMergeIntoTable")
-    
+   printf("--- test_mapMotifsToTFsMergeIntoTable")
+
    genome.db.uri <- "postgres://whovian/hg38"
    project.db.uri <-  "postgres://whovian/brain_hint"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
@@ -250,11 +250,11 @@ test_mapMotifsToTFsMergeIntoTable <- function()
 
          # 3k up and downstream.  we expect more footprints upstream,  some downstream
    tbl <- getFootprintsInRegion(fp, chromosome, tss-1000, tss + 1000)
-   checkTrue(nrow(tbl) > 0)   # 11 
+   checkTrue(nrow(tbl) > 0)   # 11
 
    tbl.withTFs <- mapMotifsToTFsMergeIntoTable(fp, tbl)
-   checkEquals(ncol(tbl.withTFs), 1 + ncol(tbl))
-   checkTrue(nrow(tbl.withTFs) > nrow(tbl))
+   checkEquals(ncol(tbl.withTFs), 10)
+   checkEquals(nrow(tbl.withTFs),nrow(tbl))
    closeDatabaseConnections(fp)
 
 } # test_getFootprintsInRegion
