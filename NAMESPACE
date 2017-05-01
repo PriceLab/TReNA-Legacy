@@ -4,7 +4,9 @@ exportClasses(
    FootprintFilter,
    HumanDHSFilter,
    GeneOntologyFilter,
-   RandomForestSolver)
+   RandomForestSolver,
+   Recipe,
+   Cook)
 
 export(
     TReNA,
@@ -24,6 +26,15 @@ export(
     VarianceFilter,
     GeneOntologyFilter,
     FootprintFinder,
+    Recipe,
+    getRecipeName,
+    getTargetGene,
+    getCandidateFilterSpec,
+    getSolverSpec,
+    getVariants,
+    getGenome,
+    getMinid,
+    Cook,
     run
     )
 
@@ -44,7 +55,8 @@ exportMethods(
     solve,
     getSequence,
     getEncodeRegulatoryTableNames,
-    getRegulatoryRegions
+    getRegulatoryRegions,
+    createModelsFromRecipes
 )
 
 import(
