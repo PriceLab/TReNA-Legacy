@@ -1,22 +1,48 @@
 #----------------------------------------------------------------------------------------------------
 .HumanDHSFilter <- setClass("HumanDHSFilter",
                             contains="CandidateFilter",
-                            representation (genomeName='character',
-                                            genome='BSgenome',
-                                            pfms='list',
-                                            quiet='logical'))
+                            slots=list(genomeName="character",
+                                       genome="BSgenome",
+                                       encodeTableName="character",
+                                       fimoDB="DBIConnection",
+                                       regions="character",
+                                       pfms="list",
+                                       quiet="logical"))
 
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
-setGeneric('getEncodeRegulatoryTableNames', signature='obj', function(obj) standardGeneric ('getEncodeRegulatoryTableNames'))
-setGeneric('getRegulatoryRegions', signature='obj',
+setGeneric("getEncodeRegulatoryTableNames", signature="obj", function(obj) standardGeneric ("getEncodeRegulatoryTableNames"))
+setGeneric("getRegulatoryRegions", signature="obj",
            function(obj, encode.table.name, chromosome, start, end, score.threshold=200, quiet=TRUE)
-               standardGeneric ('getRegulatoryRegions'))
-setGeneric('getSequence', signature='obj', function(obj, tbl.regions) standardGeneric ('getSequence'))
+               standardGeneric ("getRegulatoryRegions"))
+setGeneric("getSequence", signature="obj", function(obj, tbl.regions) standardGeneric ("getSequence"))
 #----------------------------------------------------------------------------------------------------
-HumanDHSFilter <- function(genomeName,  quiet=TRUE)
+HumanDHSFilter <- function(genomeName,  encodeTableName="wgEncodeRegDnaseClustered",
+                           fimoDatabase.uri,
+                           geneCenteredSpec=c(), regionsSpec=c(), quiet=TRUE)
 {
+   regions <- c();   # one or more chromLoc strings: "chr5:88903257-88905257"
+
+   if(length(geneCenteredSpec) == 3){
+      expected.fields <- c("targetGene", "tssUpstream", "tssDownstream")
+      stopifnot(all(expected.fields %in% names(geneCenteredSpec)))
+      db.gtf <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="gtf", host="whovian")
+      query <- sprintf("select * from hg38human where moleculetype='gene' and gene_biotype='protein_coding' and gene_name='%s'",
+                       geneCenteredSpec$targetGene)
+      tbl <- dbGetQuery(db.gtf, query);     # 19797 x 30
+      tss <- tbl$start[1];
+      chrom <- tbl$chr
+      start <- tss - geneCenteredSpec$tssUpstream
+      end   <- tss - geneCenteredSpec$tssDownstream
+      new.region.chromLocString <- sprintf("%s:%d-%d", chrom, start, end)
+      regions <- c(regions, new.region.chromLocString)
+      }
+
+    if(length(regionsSpec) > 0){
+       regions <- c(regions, regionsSpec)
+       }
+
     uri <- "http://jaspar.genereg.net/html/DOWNLOAD/JASPAR_CORE/pfm/nonredundant/pfm_vertebrates.txt"
     x <- .readRawJasparMatrices(uri)
          # normalize, so that a frequency sum of 1.0 is true across the 4 possible bases at each position
@@ -36,8 +62,26 @@ HumanDHSFilter <- function(genomeName,  quiet=TRUE)
        }
 
 
-    .HumanDHSFilter(CandidateFilter(quiet = quiet), genomeName=genomeName,
-                    genome=reference.genome, pfms=pfms, quiet=quiet)
+   fimo.db.info <- .parseDatabaseUri(fimoDatabase.uri)
+
+   stopifnot(fimo.db.info$brand %in% c("postgres"))
+   switch(fimo.db.info$brand,
+          postgres={
+             host <- fimo.db.info$host
+             dbname <- fimo.db.info$name
+             driver <- RPostgreSQL::PostgreSQL()
+             fimo.db <- DBI::dbConnect(driver, user= "trena", password="trena", dbname=dbname, host=host)
+             print(dbListTables(fimo.db))
+             },
+          printf("unrecognized fimo db protoocol '%s'", fimo.db.info$brand)
+          )
+   .HumanDHSFilter(CandidateFilter(quiet = quiet),
+                   genomeName=genomeName,
+                   fimoDB=fimo.db,
+                   genome=reference.genome,
+                   regions=regions,
+                   pfms=pfms,
+                   quiet=quiet)
 
 } # HumanDHSFilter, the constructor
 #----------------------------------------------------------------------------------------------------
@@ -64,55 +108,63 @@ setMethod("getEncodeRegulatoryTableNames", "HumanDHSFilter",
        })
 
 #----------------------------------------------------------------------------------------------------
+setMethod("show", "HumanDHSFilter",
+
+     function(object){
+        s <- sprintf("HumanDHSFilter...")
+        cat(s, sep="\n")
+        })
+#----------------------------------------------------------------------------------------------------
 setMethod("getCandidates", "HumanDHSFilter",
 
-    function(obj, argsList){
+    function(obj){
 
-          # Collect arguments from argsList
-        expected.args <- c("chrom", "start", "end", "region.score.threshold",
-                           "motif.min.match.percentage", "encode.table.name")
-        missing.args <- setdiff(names(argsList), expected.args)
-        if(length(missing.args) > 0){
-            printf("HumanDHSFilter::getCandidates, missing fields in argsList: %s",
-                   paste(missing.args, collapse=","))
-            stop()
-            }
+        tbl.out <- data.frame()
 
-        chrom <- argsList[["chrom"]]
-        start <- argsList[["start"]]
-        end <- argsList[["end"]]
-        encode.table.name <- argsList[["encode.table.name"]]
-        region.score.threshold <- argsList[["region.score.threshold"]]
-        motif.min.match.percentage <- argsList[["motif.min.match.percentage"]]
+        for(region in obj@regions){
+           browser()
+           chromLoc <- .parseChromLocString(region)
+           chrom <- chromLoc$chrom
+           start <- chromLoc$start
+           end   <- chromLoc$end
+           encode.table.name <- obj@encodeTableName
+           #region.score.threshold <- obj@region.score.threshold
+           #motif.min.match.percentage <- obj@motif.min.match.percentage
+           tbl.regions <- getRegulatoryRegions(obj, encode.table.name, chrom, start, end)
+           #tbl.regions <- subset(tbl.regions, score >= region.score.threshold)
+           seqs <- getSequence(obj, tbl.regions)
+           tbl.motifs <- .getScoredMotifs(seqs, 75, obj@quiet)
+           region.count <- length(seqs)
+           tbl.summary <- data.frame()
+           all.tfs <- c()
+           for(i in seq_len(region.count)){
+              #printf("HumanDHSFilter, line 100, combining tbl.motifs and tbl.regions into tbl.summary")
+              #browser();
+              if(nrow(tbl.motifs[[i]]) > 0)
+                 tbl.summary <- rbind(tbl.summary, cbind(tbl.motifs[[i]], tbl.regions[i,]))
+              } # for i
+           } # for region
 
-        tbl.regions <- getRegulatoryRegions(obj, encode.table.name, chrom, start, end)
-        tbl.regions <- subset(tbl.regions, score >= region.score.threshold)
-        seqs <- getSequence(obj, tbl.regions)
-        tbl.motifs <- .getScoredMotifs(seqs, motif.min.match.percentage, obj@quiet)
-        region.count <- length(seqs)
-        tbl.summary <- data.frame()
-        all.tfs <- c()
-        for(i in seq_len(region.count)){
-            #printf("HumanDHSFilter, line 100, combining tbl.motifs and tbl.regions into tbl.summary")
-            #browser();
-            if(nrow(tbl.motifs[[i]]) > 0)
-               tbl.summary <- rbind(tbl.summary, cbind(tbl.motifs[[i]], tbl.regions[i,]))
-            }
         if(nrow(tbl.summary) > 0){
-           colnames(tbl.summary) <- c("motif.start", "motif.end", "motif.width", "motif.score", "motif", "match",
-                                      "strand", "chrom", "regionStart", "regionEnd", "regionScore", "sourceCount")
-           tbl.summary <- tbl.summary[, c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount", "motif",
-                                      "match", "motif.start", "motif.end", "motif.width", "motif.score", "strand")]
+           colnames(tbl.summary) <- c("motif.start", "motif.end", "motif.width", "motif.score",
+                                      "motif.maxScore", "motif.relativeScore", "motif", "match",
+                                      "strand", "chrom", "regionStart", "regionEnd",  "sourceCount", "regionScore")
+
+           colnames.in.order <- c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount",
+                                          "motif", "match", "strand", "motif.start", "motif.end", "motif.width",
+                                          "motif.score", "motif.maxScore", "motif.relativeScore")
+           tbl.summary <- tbl.summary[, colnames.in.order]
            tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE, header=TRUE)
            tfs.by.motif <- lapply(tbl.summary$motif, function(m) subset(tbl.mg, motif==m)$tf.gene)
            all.tfs <- sort(unique(unlist(tfs.by.motif)))
            tfs.by.motif.joined <- unlist(lapply(tfs.by.motif, function(m) paste(m, collapse=";")))
            tbl.summary$tf <- tfs.by.motif.joined
-           #browser()
            tbl.summary$motif.start <- -1 + tbl.summary$regionStart + tbl.summary$motif.start
            tbl.summary$motif.end   <- -1 + tbl.summary$regionStart + tbl.summary$motif.end
            }
+
         list(tbl=tbl.summary,tfs=all.tfs)
+
 	}) # getCandidates
 
 #----------------------------------------------------------------------------------------------------
@@ -144,6 +196,8 @@ setMethod("getRegulatoryRegions", "HumanDHSFilter",
                       sprintf("and chromStart >= %d", start),
                       sprintf("and chromEnd <= %d", end),
                       collapse = " ")
+
+       printf("query: %s", query)
 
          # handle the usual case first: a start:end region many times larger than a typical DHS region
        suppressWarnings(  # MySQL returns unsigned integers.  hide these unproblematic conversion warnings
@@ -229,7 +283,6 @@ setMethod("getSequence", "HumanDHSFilter",
       match <- substring(as.character(subject(hits.rev)), start(ranges(hits.rev)), end(ranges(hits.rev)))
       actual.score <- mcols(hits.rev)$score
       relative.score <- actual.score/max.score
-      browser()
       tbl.rev <- data.frame(ranges(hits.rev),
                             score=mcols(hits.rev)$score, maxScore=max.score, relativeScore=relative.score,
                             motif=motifName, match=match, strand="-",
@@ -241,6 +294,9 @@ setMethod("getSequence", "HumanDHSFilter",
       tbl.rev$end   <- true.end
       tbl <- rbind(tbl, tbl.rev)
       }
+
+   #printf("returning match fwd/bwd tbl with %d rows", nrow(tbl))
+   #print(table(tbl$strand))
 
    tbl
 
@@ -349,16 +405,20 @@ setMethod("getSequence", "HumanDHSFilter",
 
 } # .getScoredMotifs
 #----------------------------------------------------------------------------------------------------
-.parseLine <- function(textOfLine) {
+.parseLine <- function(textOfLine)
+{
    # first delete the leading A, C, G or T.  then the square brackets.  then convert
    x <- substr(textOfLine, 2, nchar(textOfLine))
    x2 <- sub(" *\\[ *", "", x)
    x3 <- sub(" *\\] *", "", x2)
    counts <- as.integer(strsplit(x3, "\\s+", perl=TRUE)[[1]])
-   return(counts)
-   } # parseLine
 
- .parseJasparPwm = function (lines) {
+   return(counts)
+
+} # .parseLine
+#------------------------------------------------------------------------------------------------------------------------
+.parseJasparPwm = function (lines)
+{
    stopifnot(length(lines)==5) # title line, one line for each base
    motif.name.raw = strsplit(lines[1], "\t")[[1]][1]
    motif.name <- gsub(">", "", motif.name.raw, fixed=TRUE)
@@ -376,10 +436,13 @@ setMethod("getSequence", "HumanDHSFilter",
    mtx[2,] <- c.counts
    mtx[3,] <- g.counts
    mtx[4,] <- t.counts
-   return(list(title=motif.name, matrix=mtx))
-   } # parsePwm
 
-.readRawJasparMatrices = function (uri) {
+   return(list(title=motif.name, matrix=mtx))
+
+} # .parsePwm
+#------------------------------------------------------------------------------------------------------------------------
+.readRawJasparMatrices = function (uri)
+{
   all.lines <- scan(uri, what=character(0), sep='\n', quiet=TRUE)
   title.lines <- grep ('^>', all.lines)
   title.line.count <- length (title.lines)
@@ -391,7 +454,39 @@ setMethod("getSequence", "HumanDHSFilter",
     x <- .parseJasparPwm (all.lines [start.line:end.line])
     pwms[[i]] <- list(title=x$title, matrix=x$matrix)
     } # for i
+
   invisible (pwms)
-  } # readRawJasparMatrices
+
+} # .readRawJasparMatrices
+#------------------------------------------------------------------------------------------------------------------------
+# TODO: move this duplicated code to the base class, or to R/utils.R
+.parseChromLocString <- function(chromLocString)
+{
+   tokens.0 <- strsplit(chromLocString, ":", fixed=TRUE)[[1]]
+   stopifnot(length(tokens.0) == 2)
+   chrom <- tokens.0[1]
+
+   tokens.1 <- strsplit(tokens.0[2], "-")[[1]]
+   stopifnot(length(tokens.1) == 2)
+   start <- as.integer(tokens.1[1])
+   end <- as.integer(tokens.1[2])
+
+   return(list(chrom=chrom, start=start, end=end))
+
+} # .parseChromLocString
+#------------------------------------------------------------------------------------------------------------------------
+# TODO: move this duplicated code to the base class, or to R/utils.R
+.parseDatabaseUri <- function(database.uri)
+{
+   topLevel.tokens <- strsplit(database.uri, "://")[[1]]
+   database.brand <- topLevel.tokens[1]
+   secondLevel.tokens <- strsplit(topLevel.tokens[2], "/(?=[^/]+$)", perl = TRUE)[[1]]
+   host <- secondLevel.tokens[1]
+   database.name <- secondLevel.tokens[2]
+
+   list(brand=database.brand, host=host, name=database.name)
+
+} # .parseDatabaseUri
+#----------------------------------------------------------------------------------------------------
 
 

@@ -2,11 +2,15 @@ library(TReNA)
 library(MotifDb)
 library(RUnit)
 #----------------------------------------------------------------------------------------------------
+mef2c.tss <- 88904257
+mef2c.promoter.region <- list(chrom="chr5", start=mef2c.tss-100, end=mef2c.tss+100)
+mef2c.promoter.string <- with(mef2c.promoter.region, sprintf("%s:%d-%d", chrom, start, end))
+#----------------------------------------------------------------------------------------------------
 runTests <- function()
 {
    test_defaultConstructor()
    test_getEncodeRegulatoryTableNames()
-   test_checkAllTables()
+   test_checkAllEncodeTables()
    test_getRegulatoryRegions()
    test_getRegulatoryRegions_hardCase()
    test_getSequence()
@@ -18,33 +22,88 @@ runTests <- function()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
-test_defaultConstructor <- function()
+# reuse this in several tests
+create.mef2c.candidateFilterSpec <- function(geneCentered=TRUE, promoter.length=1000)
 {
-   printf("--- test_defaultConstructor")
+   target.gene <- "MEF2C"
+   genome <- "hg38"
+   chromosome <- "chr5"
+   tss <- 88904257
+   promoter.length <- 1000
 
-   hdf <- HumanDHSFilter("hg38");
-   hdf <- HumanDHSFilter("hg19");
-   checkException(hdf <- HumanDHSFilter("bogus32"), silent=TRUE)
+   candidateFilterSpec <- list(filterType="EncodeDNaseClusters",
+                               genomeName=genome,
+                               encodeTableName="wgEncodeRegDnaseClusteredV3",
+                               fimoDB="postgres://whovian/fimo",
+                               regionsSpec=list(),  # no explicit regions in this recipe
+                               geneCenteredSpec=list(targetGene=target.gene,
+                                                     tssUpstream=promoter.length,
+                                                     tssDownstream=promoter.length))
+   if(!geneCentered) {
+      candidateFilterSpec$geneCenteredSpec <- list()
+      candidateFilterSpec$regionsSpec=sprintf("%s:%d-%d", chromosome, tss-promoter.length, tss+promoter.length)
+      }
+
+   return(candidateFilterSpec)
+
+  # solverSpec <- list(solver="randomForest",
+  #                     matrixName="rosmap",
+  #                     targetGene=target.gene,
+  #                     candidateRegulators=NA_character_ # supplied by candidateFilter
+  #                     )
+
+  #  variants <- c("rs2710873", "rs7526076", "rs11584349", "rs4970401", "rs74048003")
+  # minid <- "minid.012345"
+
+  #  recipe <- Recipe(name=recipe.name,
+  #                  targetGene=targetGene,
+  #                  genome=genome,
+  #                  candidateFilter=candidateFilterSpec,
+  #                  solver=solverSpec,
+  #                  variants=variants,
+  #                  minid=minid)
+  # recipe
+
+} # create.mef2c.candidateFilterSpec
+#----------------------------------------------------------------------------------------------------
+test_mef2c <- function()
+{
+   printf("--- test_mef2c")
+
+   candidateFilterSpec <- create.mef2c.candidateFilterSpec()
+
+   hdf <- with(candidateFilterSpec,
+               HumanDHSFilter(genomeName,
+                              encodeTableName=encodeTableName,
+                              fimoDatabase.uri=fimoDB,
+                              geneCenteredSpec=geneCenteredSpec))
+
+   result <- getCandidates(hdf)
+   browser()
+
+   #checkException(hdf <- HumanDHSFilter("bogus32"), silent=TRUE)
 
 } # test_defaultConstructor
 #----------------------------------------------------------------------------------------------------
 test_getEncodeRegulatoryTableNames <- function()
 {
-    printf("--- test_getEncodeRegulatoryTableNames")
-    df <- HumanDHSFilter("hg38");
-    names <- getEncodeRegulatoryTableNames(df)
+   printf("--- test_getEncodeRegulatoryTableNames")
+
+   candidateFilterSpec <- create.mef2c.candidateFilterSpec()
+   hdf <- with(candidateFilterSpec,
+               HumanDHSFilter(genomeName,
+                              encodeTableName=encodeTableName,
+                              fimoDatabase.uri=fimoDB,
+                              geneCenteredSpec=geneCenteredSpec))
+
+    names <- getEncodeRegulatoryTableNames(hdf)
     checkTrue(length(names) > 90)   # 96 on (13 apr 2017)
-
-    df <- HumanDHSFilter("hg19");
-    names <- getEncodeRegulatoryTableNames(df)
-    checkTrue(length(names) == 1)   # no peak files, just "wgEncodeRegDnaseClusteredV3"
-
 
 } # test_getEncodeRegulatoryTableNames
 #----------------------------------------------------------------------------------------------------
-test_checkAllTables <- function(quiet=TRUE)
+test_checkAllEncodeTables <- function(quiet=TRUE)
 {
-   printf("--- test_checkAllTables")
+   printf("--- test_checkAllEncodeTables")
 
    df <- HumanDHSFilter("hg38");
    tableNames <- getEncodeRegulatoryTableNames(df)
@@ -60,7 +119,7 @@ test_checkAllTables <- function(quiet=TRUE)
       checkEquals(colnames(tbl), c("chrom", "chromStart", "chromEnd",  "name",  "score"))
       }
 
-} # test_checkAllTables
+} # test_checkAllEncodeTables
 #----------------------------------------------------------------------------------------------------
 # use this sample code to poke at the encode data offered by uscs
 # note that most of the tables here only serve to list, not regions, but
@@ -98,16 +157,23 @@ test_getRegulatoryRegions <- function()
 {
    printf("--- test_getRegulatoryRegions");
 
-   chrom <- "chr5"
-   start <- 88819630
-   end   <- 88835936
+   candidateFilterSpec <- create.mef2c.candidateFilterSpec(geneCentered=TRUE)
+   hdf <- with(candidateFilterSpec,
+               HumanDHSFilter(genomeName,
+                              encodeTableName=encodeTableName,
+                              fimoDatabase.uri=fimoDB,
+                              geneCenteredSpec=geneCenteredSpec,
+                              regionsSpec=regionsSpec))
 
-   dhsFilter <- HumanDHSFilter("hg38", quiet=TRUE);
-   tableNames <- getEncodeRegulatoryTableNames(dhsFilter)
+   tableNames <- getEncodeRegulatoryTableNames(hdf)
    table <- "wgEncodeRegDnaseClustered"
    checkTrue(table %in% tableNames)
 
-   tbl.regions <-getRegulatoryRegions(dhsFilter, table, chrom, start, end)
+   chrom <- candidateFilterSpec$geneCenteredSpec$chrom
+   start <- candidateFilterSpec$geneCenteredSpec$start
+   end  <- candidateFilterSpec$geneCenteredSpec$end
+
+   tbl.regions <-getRegulatoryRegions(hdf, table, chrom, start, end)
 
    checkTrue(nrow(tbl.regions) > 20)
    checkEquals(colnames(tbl.regions), c("chrom", "chromStart", "chromEnd", "name", "score"))
@@ -266,7 +332,7 @@ test_.matchForwardAndReverse <- function()
    motifName <- "MA0478.1"
    mtx <- query(MotifDb, motifName)[[1]];
 
-   tbl <- TReNA:::.matchForwardAndReverse(sequence, mtx, motifName, min.match.percentage=90, quiet=FALSE)
+   tbl <- TReNA:::.matchForwardAndReverse(sequence, mtx, motifName, min.match.percentage=90, quiet=TRUE)
       # fimo finds:
       #  X.pattern.name sequence.name start stop strand   score  p.value q.value matched.sequence
       #        MA0478.1        ma0478    58   68      - 14.5455 1.21e-05   0.006      GCATGACTCAG
@@ -281,9 +347,28 @@ test_.matchForwardAndReverse <- function()
       #         MA0478.1        ma0478    58   68      - 14.5455 1.21e-05   0.006      GCATGACTCAG
 
    checkEquals(nrow(tbl), 1)
-   tbl$score <- round(tbl$score, 2)  # for easy comparison
-   checkEquals(as.list(tbl), list(start=58, end=68, width=11, score=7.94, motif="MA0478.1",
-                                  match="GCATGACTCAG", strand="-"))
+      # for easy comparison, round off the scores
+   tbl$score         <- round(tbl$score, 2)
+   tbl$maxScore      <- round(tbl$maxScore, 2)
+   tbl$relativeScore <- round(tbl$relativeScore, 2)
+   checkEquals(as.list(tbl), list(start=204, end=214, width=11, score=7.94, maxScore=8.35,
+                                  relativeScore=0.95, motif="MA0478.1", match="CTGAGTCATGC",
+                                  strand="-"))
+
+        # now relax the score threshold
+   tbl <- TReNA:::.matchForwardAndReverse(sequence, mtx, motifName, min.match.percentage=80, quiet=TRUE)
+   tbl$score         <- round(tbl$score, 2)
+   tbl$maxScore      <- round(tbl$maxScore, 2)
+   tbl$relativeScore <- round(tbl$relativeScore, 2)
+   checkEquals(tbl$start, c(56, 204))
+   checkEquals(tbl$end,   c(66, 214))
+   checkEquals(tbl$score, c(7.31, 7.94))
+   checkEquals(tbl$maxScore, c(8.35, 8.35))
+   checkEquals(tbl$relativeScore, c(0.88, 0.95))
+   checkEquals(tbl$motif, c("MA0478.1", "MA0478.1"))
+   checkEquals(tbl$match, c("AGCTGAGTCAT", "CTGAGTCATGC"))
+   checkEquals(tbl$strand, c("+", "-"))
+
 
 } # test_.matchForwardAndReverse
 #----------------------------------------------------------------------------------------------------
@@ -335,7 +420,7 @@ test_mef2cPromoter.incrementally <- function()
    checkEquals(with(tbl.regions, 1 + chromEnd - chromStart), nchar(seqs))  #  231 391
 
    motifs <- TReNA:::.getScoredMotifs(seqs, min.match.percentage=95)
-   checkEquals(unlist(lapply(motifs, dim)), c(8,7,8,7))
+   checkEquals(unlist(lapply(motifs, dim)), c(8,9,8,9))   # both
 
 } # test_mef2cPromoter.incrementally
 #----------------------------------------------------------------------------------------------------
@@ -354,7 +439,7 @@ test_mef2cPromoter.normalUse <- function()
    filter.args <- list(chrom=chrom, start=start, end=end,
                        region.score.threshold=700,
                        motif.min.match.percentage=95,
-                       tableName="wgEncodeRegDnaseClustered")
+                       encode.table.name="wgEncodeRegDnaseClustered")
 
    x <- getCandidates(hdcf, filter.args)
    checkEquals(sort(names(x)), c("tbl", "tfs"))
@@ -369,7 +454,7 @@ test_mef2cPromoter.normalUse <- function()
 # a gene possibly involved in alzheimer's disease
 test_bin1 <- function()
 {
-   print("--- test_bin1")
+   printf("--- test_bin1")
    target.gene <- "BIN1"
    chrom <- "chr2"
    start <- 127107280
@@ -394,12 +479,21 @@ test_bin1 <- function()
    genome.db.uri    <- "postgres://whovian/hg38"             # has gtf and motifsgenes tables
    footprint.db.uri <- "postgres://whovian/brain_hint"       # has hits and regions tables
 
-   fpf.args <- list(mode = "byRegion",
-                    genome.db.uri = genome.db.uri,
-                    regions.db.uri = footprint.db.uri,
-                    chrom=chrom,
-                    start = start,
-                    end   = end)
+
+   region <- sprintf("%s:%d-%d", chrom, start, end)
+   recipe <- list(genomeDB=genome.db.uri,
+                  footprintDB=footprint.db.uri,
+                  geneCenteredSpec=list(),
+                  regionsSpec=list(region))
+
+   filter <- FootprintFilter(recipe$genomeDB,
+                             recipe$footprintDB,
+                             recipe$geneCenteredSpec,
+                             recipe$regionsSpec,
+                             quiet=TRUE)
+
+   list.out <- getCandidates(filter)
+
 
    fpFilter <- FootprintFilter()
    fpf.out <- getCandidates(fpFilter, fpf.args)

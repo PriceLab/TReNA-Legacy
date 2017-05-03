@@ -117,8 +117,8 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
       driver <- RPostgreSQL::PostgreSQL()
       genome.db <- DBI::dbConnect(driver, user= "trena", password="trena", dbname=dbname, host=host)
       existing.databases <- DBI::dbGetQuery(genome.db, "select datname from pg_database")[,1]
-      stopifnot(dbname %in% existing.databases)
       DBI::dbDisconnect(genome.db)
+      stopifnot(dbname %in% existing.databases)
       genome.db <- DBI::dbConnect(driver, user="trena", password="trena", dbname=dbname, host=host)
       expected.tables <- c("gtf", "motifsgenes")
       stopifnot(all(expected.tables %in% DBI::dbListTables(genome.db)))
