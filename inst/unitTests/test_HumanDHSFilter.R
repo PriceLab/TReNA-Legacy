@@ -12,7 +12,7 @@ runTests <- function()
    test_basicConstructor()
    test_geneSymbolToTSS()
    test_getEncodeRegulatoryTableNames()
-   test_checkAllEncodeTables()
+   test_checkAllEncodeTables(quiet=TRUE)
 
    test_getRegulatoryRegions()
    #test_getCandidates.vrk2()
@@ -55,15 +55,17 @@ create.vrk2.candidateFilterSpec <- function(geneCentered=TRUE, promoter.length=1
 } # create.vrk2.candidateFilterSpec
 #----------------------------------------------------------------------------------------------------
 #  rs13384219  A->G
+#  rs13384219 at chr2:57907073-57907573
 #  gtcagtagtggtggaaccagcatgc[A/G]aattagacaatgtgacttcatagcc
 #  Chromosome: 2:57907323
 #  vrk2 tss at chr2:57908651
 create.vrk2.rs13384219.neighborhood.candidateFilterSpec <- function(shoulder=10)
 {
    spec <- create.vrk2.candidateFilterSpec(geneCentered=FALSE)
-   rs12284219.loc <- 57907323
-   left.loc <- rs12284219.loc - shoulder
-   right.loc <- rs12284219.loc + shoulder
+
+   rs13384219.loc <- 57907323
+   left.loc <- rs13384219.loc - shoulder
+   right.loc <- rs13384219.loc + shoulder
    spec$regionsSpec <- sprintf("chr2:%d-%d", left.loc, right.loc)
 
    spec
@@ -151,7 +153,8 @@ test_checkAllEncodeTables <- function(quiet=TRUE)
 {
    printf("--- test_checkAllEncodeTables")
 
-   candidateFilterSpec <- create.vrk2.candidateFilterSpec()
+   #candidateFilterSpec <- create.vrk2.candidateFilterSpec()
+   candidateFilterSpec <- create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
 
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
@@ -168,11 +171,18 @@ test_checkAllEncodeTables <- function(quiet=TRUE)
    start <- 8800000
    end   <- 8850000
 
+   #  rs13384219 at chr2:57907073-57907573
+   chrom <- "chr2"
+   rs13384219.loc <- 57907323
+   start <- rs13384219.loc - 10
+   end <- rs13384219.loc + 10
+
    for(tableName in tableNames){
       tbl <-getRegulatoryRegions(hdf, tableName, chrom, start, end)
       if(!quiet) printf("--- %s: %d rows", tableName, nrow(tbl))
       checkTrue(nrow(tbl) >= 0)
       checkEquals(colnames(tbl), c("chrom", "chromStart", "chromEnd",  "count",  "score"))
+      #browser(); xyz <- 99
       }
 
 } # test_checkAllEncodeTables
@@ -526,7 +536,8 @@ test_getCandidates.vrk2.rs13384219.neighborhood <- function()
                               fimoDatabase.uri=fimoDB,
                               geneInfoDatabase.uri=geneInfoDB,
                               regionsSpec=regionsSpec,
-                              geneCenteredSpec=geneCenteredSpec))
+                              geneCenteredSpec=geneCenteredSpec,
+                              quiet=TRUE))
    x <- getCandidates(hdf)
    checkTrue(length(x$tfs) > 50 & length(x$tfs) < 60)
    checkEquals(dim(x$tbl), c(13, 15))

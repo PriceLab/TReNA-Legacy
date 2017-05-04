@@ -159,7 +159,7 @@ setMethod("getCandidates", "HumanDHSFilter",
            #motif.min.match.percentage <- obj@motif.min.match.percentage
            tbl.regions <- rbind(tbl.regions, getRegulatoryRegions(obj, encode.table.name, chrom, start, end))
 
-           #browser()
+           #browser(); xyz <- 99
            ##tbl.regions <- subset(tbl.regions, score >= region.score.threshold)
            #seqs <- getSequence(obj, tbl.regions)
            #tbl.motifs <- .getScoredMotifs(seqs, 75, obj@quiet)
@@ -244,12 +244,13 @@ setMethod("getRegulatoryRegions", "HumanDHSFilter",
                       sprintf("and chromEnd <= %d", end),
                       collapse = " ")
 
-       printf("query: %s", query)
+       if(!obj@quiet)
+          printf("query: %s", query)
 
          # handle the usual case first: a start:end region many times larger than a typical DHS region
        suppressWarnings(  # MySQL returns unsigned integers.  hide these unproblematic conversion warnings
          tbl.regions <- dbGetQuery(db, query)
-          )
+         )
 
        if(!obj@quiet)
            printf("%d DHS regions reported in %d bases, start:end unmodified", nrow(tbl.regions), 1 + end - start)
@@ -265,7 +266,9 @@ setMethod("getRegulatoryRegions", "HumanDHSFilter",
                          sprintf("and chromStart >= %d", start - extension),
                          sprintf("and chromEnd   <= %d", end + extension),
                          collapse = " ")
-           suppressWarnings(  # MySQL returns unsigned integers.  hide these unproblematic conversion warnings
+          if(!obj@quiet)
+             printf("query with extension: %s", query)
+          suppressWarnings(  # MySQL returns unsigned integers.  hide these unproblematic conversion warnings
               tbl.regionsExtended <- dbGetQuery(db, query)
               )
          if(!obj@quiet) printf("query with extended region, %d rows", nrow(tbl.regionsExtended))
