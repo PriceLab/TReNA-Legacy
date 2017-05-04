@@ -8,34 +8,40 @@ mef2c.promoter.string <- with(mef2c.promoter.region, sprintf("%s:%d-%d", chrom, 
 #----------------------------------------------------------------------------------------------------
 runTests <- function()
 {
-   test_defaultConstructor()
+   test_create.vrk2.candidateFilterSpec()
+   test_basicConstructor()
+   test_geneSymbolToTSS()
    test_getEncodeRegulatoryTableNames()
    test_checkAllEncodeTables()
-   test_getRegulatoryRegions()
-   test_getRegulatoryRegions_hardCase()
-   test_getSequence()
-   test_.matchForwardAndReverse()
-   test_.getScoredMotifs()
-   test_mef2cPromoter.incrementally()
 
-   test_mef2cPromoter.normalUse()
+   test_getRegulatoryRegions()
+   #test_getCandidates.vrk2()
+   test_getCandidates.vrk2.rs13384219.neighborhood()
+
+   #test_getRegulatoryRegions_hardCase()
+   #test_getSequence()
+   #test_.matchForwardAndReverse()
+   #test_.getScoredMotifs()
+   #test_mef2cPromoter.incrementally()
+   #test_mef2cPromoter.normalUse()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
 # reuse this in several tests
-create.mef2c.candidateFilterSpec <- function(geneCentered=TRUE, promoter.length=1000)
+create.vrk2.candidateFilterSpec <- function(geneCentered=TRUE, promoter.length=1000)
 {
-   target.gene <- "MEF2C"
+   target.gene <- "VRK2"
    genome <- "hg38"
-   chromosome <- "chr5"
-   tss <- 88904257
+   chromosome <- "chr2"
+   tss <- 57907651
    promoter.length <- 1000
 
    candidateFilterSpec <- list(filterType="EncodeDNaseClusters",
                                genomeName=genome,
-                               encodeTableName="wgEncodeRegDnaseClusteredV3",
+                               encodeTableName="wgEncodeRegDnaseClustered",
                                fimoDB="postgres://whovian/fimo",
-                               regionsSpec=list(),  # no explicit regions in this recipe
+                               geneInfoDB="postgres://whovian/gtf",
+                               regionsSpec=NA_character_,  # no explicit regions in this recipe
                                geneCenteredSpec=list(targetGene=target.gene,
                                                      tssUpstream=promoter.length,
                                                      tssDownstream=promoter.length))
@@ -46,54 +52,94 @@ create.mef2c.candidateFilterSpec <- function(geneCentered=TRUE, promoter.length=
 
    return(candidateFilterSpec)
 
-  # solverSpec <- list(solver="randomForest",
-  #                     matrixName="rosmap",
-  #                     targetGene=target.gene,
-  #                     candidateRegulators=NA_character_ # supplied by candidateFilter
-  #                     )
-
-  #  variants <- c("rs2710873", "rs7526076", "rs11584349", "rs4970401", "rs74048003")
-  # minid <- "minid.012345"
-
-  #  recipe <- Recipe(name=recipe.name,
-  #                  targetGene=targetGene,
-  #                  genome=genome,
-  #                  candidateFilter=candidateFilterSpec,
-  #                  solver=solverSpec,
-  #                  variants=variants,
-  #                  minid=minid)
-  # recipe
-
-} # create.mef2c.candidateFilterSpec
+} # create.vrk2.candidateFilterSpec
 #----------------------------------------------------------------------------------------------------
-test_mef2c <- function()
+#  rs13384219  A->G
+#  gtcagtagtggtggaaccagcatgc[A/G]aattagacaatgtgacttcatagcc
+#  Chromosome: 2:57907323
+#  vrk2 tss at chr2:57908651
+create.vrk2.rs13384219.neighborhood.candidateFilterSpec <- function(shoulder=10)
 {
-   printf("--- test_mef2c")
+   spec <- create.vrk2.candidateFilterSpec(geneCentered=FALSE)
+   rs12284219.loc <- 57907323
+   left.loc <- rs12284219.loc - shoulder
+   right.loc <- rs12284219.loc + shoulder
+   spec$regionsSpec <- sprintf("chr2:%d-%d", left.loc, right.loc)
 
-   candidateFilterSpec <- create.mef2c.candidateFilterSpec()
+   spec
+
+} # create.vrk2.rs13384219.neighborhood.candidateFilterSpec
+#----------------------------------------------------------------------------------------------------
+test_create.vrk2.candidateFilterSpec <- function()
+{
+   printf("--- test_create.vrk2.candidateFilterSpec")
+   spec.0 <- create.vrk2.candidateFilterSpec(geneCentered=TRUE, promoter.length=1000)
+   spec.1 <- create.vrk2.candidateFilterSpec(geneCentered=FALSE)
+
+   checkEquals(spec.0$filterType, "EncodeDNaseClusters")
+   checkEquals(spec.0$genomeName, "hg38")
+   checkEquals(spec.0$encodeTableName, "wgEncodeRegDnaseClustered")
+   checkEquals(spec.0$fimoDB, "postgres://whovian/fimo")
+   checkEquals(spec.0$geneInfoDB, "postgres://whovian/gtf")
+   checkTrue(is.na(spec.0$regionsSpec))
+   checkEquals(spec.0$geneCenteredSpec$targetGene, "VRK2")
+   checkEquals(spec.0$geneCenteredSpec$tssUpstream, 1000)
+   checkEquals(spec.0$geneCenteredSpec$tssDownstream, 1000)
+
+   checkEquals(spec.1$filterType, "EncodeDNaseClusters")
+   checkEquals(spec.1$genomeName, "hg38")
+   checkEquals(spec.1$encodeTableName, "wgEncodeRegDnaseClustered")
+   checkEquals(spec.1$fimoDB, "postgres://whovian/fimo")
+   checkEquals(spec.1$geneInfoDB, "postgres://whovian/gtf")
+   checkEquals(spec.1$regionsSpec, "chr2:57906651-57908651")
+   checkEquals(spec.1$geneCenteredSpec, list())
+
+} # test_create.vrk2.candidateFilterSpec
+#------------------------------------------------------------------------------------------------------------------------
+test_basicConstructor <- function(reuse=FALSE)
+{
+
+   if(!reuse)  printf("--- test_basicConstructor")
+
+   candidateFilterSpec <- create.vrk2.candidateFilterSpec()
 
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
                               fimoDatabase.uri=fimoDB,
+                              geneInfoDatabase.uri=geneInfoDB,
+                              regionsSpec=regionsSpec,
                               geneCenteredSpec=geneCenteredSpec))
 
-   result <- getCandidates(hdf)
-   browser()
+   checkTrue(all(c("HumanDHSFilter", "CandidateFilter") %in% is(hdf)))
 
-   #checkException(hdf <- HumanDHSFilter("bogus32"), silent=TRUE)
+      # make sure an unsupported genome triggers an error
+   candidateFilterSpec$genomeName <- "intentional error in genome name"
 
-} # test_defaultConstructor
+   if(!reuse)
+     checkException(hdf <- with(candidateFilterSpec,
+                           HumanDHSFilter(genomeName,
+                              encodeTableName=encodeTableName,
+                              fimoDatabase.uri=fimoDB,
+                              geneInfoDatabase.uri=geneInfoDB,
+                              regionsSpec=regionsSpec,
+                              geneCenteredSpec=geneCenteredSpec)))
+   if(reuse)
+      return(hdf)
+
+} # test_basicConstructor
 #----------------------------------------------------------------------------------------------------
 test_getEncodeRegulatoryTableNames <- function()
 {
    printf("--- test_getEncodeRegulatoryTableNames")
 
-   candidateFilterSpec <- create.mef2c.candidateFilterSpec()
+   candidateFilterSpec <- create.vrk2.candidateFilterSpec()
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
                               fimoDatabase.uri=fimoDB,
+                              geneInfoDatabase.uri=geneInfoDB,
+                              regionsSpec=regionsSpec,
                               geneCenteredSpec=geneCenteredSpec))
 
     names <- getEncodeRegulatoryTableNames(hdf)
@@ -105,18 +151,28 @@ test_checkAllEncodeTables <- function(quiet=TRUE)
 {
    printf("--- test_checkAllEncodeTables")
 
-   df <- HumanDHSFilter("hg38");
-   tableNames <- getEncodeRegulatoryTableNames(df)
+   candidateFilterSpec <- create.vrk2.candidateFilterSpec()
+
+   hdf <- with(candidateFilterSpec,
+               HumanDHSFilter(genomeName,
+                              encodeTableName=encodeTableName,
+                              fimoDatabase.uri=fimoDB,
+                              geneInfoDatabase.uri=geneInfoDB,
+                              regionsSpec=regionsSpec,
+                              geneCenteredSpec=geneCenteredSpec,
+                              quiet=TRUE))
+
+   tableNames <- getEncodeRegulatoryTableNames(hdf)
 
    chrom <- "chr5"
    start <- 8800000
    end   <- 8850000
 
    for(tableName in tableNames){
-      tbl <-getRegulatoryRegions(df, tableName, chrom, start, end)
+      tbl <-getRegulatoryRegions(hdf, tableName, chrom, start, end)
       if(!quiet) printf("--- %s: %d rows", tableName, nrow(tbl))
       checkTrue(nrow(tbl) >= 0)
-      checkEquals(colnames(tbl), c("chrom", "chromStart", "chromEnd",  "name",  "score"))
+      checkEquals(colnames(tbl), c("chrom", "chromStart", "chromEnd",  "count",  "score"))
       }
 
 } # test_checkAllEncodeTables
@@ -153,35 +209,50 @@ explore.ucsc.database <- function()
 
 } # explore.ucsc.database
 #----------------------------------------------------------------------------------------------------
-test_getRegulatoryRegions <- function()
+test_geneSymbolToTSS <- function()
 {
-   printf("--- test_getRegulatoryRegions");
-
-   candidateFilterSpec <- create.mef2c.candidateFilterSpec(geneCentered=TRUE)
+   printf("--- test_geneSymbolToTSS")
+   candidateFilterSpec <- create.vrk2.candidateFilterSpec(geneCentered=TRUE)
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
                               fimoDatabase.uri=fimoDB,
+                              geneInfoDatabase.uri=geneInfoDB,
+                              geneCenteredSpec=geneCenteredSpec,
+                              regionsSpec=regionsSpec))
+   x <- geneSymbolToTSS(hdf)
+   checkEquals(x$chrom, "chr2")
+   checkEquals(x$tss, 57907651)
+
+} # test_geneSymbolToTSS
+#----------------------------------------------------------------------------------------------------
+test_getRegulatoryRegions <- function()
+{
+   printf("--- test_getRegulatoryRegions");
+
+   candidateFilterSpec <- create.vrk2.candidateFilterSpec(geneCentered=FALSE)
+   hdf <- with(candidateFilterSpec,
+               HumanDHSFilter(genomeName,
+                              encodeTableName=encodeTableName,
+                              fimoDatabase.uri=fimoDB,
+                              geneInfoDatabase.uri=geneInfoDB,
                               geneCenteredSpec=geneCenteredSpec,
                               regionsSpec=regionsSpec))
 
    tableNames <- getEncodeRegulatoryTableNames(hdf)
    table <- "wgEncodeRegDnaseClustered"
    checkTrue(table %in% tableNames)
+   x <- TReNA:::.parseChromLocString(candidateFilterSpec$regionsSpec)
 
-   chrom <- candidateFilterSpec$geneCenteredSpec$chrom
-   start <- candidateFilterSpec$geneCenteredSpec$start
-   end  <- candidateFilterSpec$geneCenteredSpec$end
+   tbl.regions <-getRegulatoryRegions(hdf, table, x$chrom, x$start, x$end)
 
-   tbl.regions <-getRegulatoryRegions(hdf, table, chrom, start, end)
-
-   checkTrue(nrow(tbl.regions) > 20)
-   checkEquals(colnames(tbl.regions), c("chrom", "chromStart", "chromEnd", "name", "score"))
-   checkTrue(all(tbl.regions$chrom == chrom))
-   checkTrue(all(tbl.regions$chromStart >= start))
-   checkTrue(all(tbl.regions$chromStart <= end))
-   checkTrue(all(tbl.regions$chromEnd >= start))
-   checkTrue(all(tbl.regions$chromEnd <= end))
+   checkTrue(nrow(tbl.regions) >= 5)
+   checkEquals(colnames(tbl.regions), c("chrom", "chromStart", "chromEnd", "count", "score"))
+   checkTrue(all(tbl.regions$chrom == x$chrom))
+   checkTrue(all(tbl.regions$chromStart >= x$start))
+   checkTrue(all(tbl.regions$chromStart <= x$end))
+   checkTrue(all(tbl.regions$chromEnd >= x$start))
+   checkTrue(all(tbl.regions$chromEnd <= x$end))
 
       # some DHS regions, good for testing small region overlap handling
       #    chrom chromStart chromEnd score sourceCount
@@ -195,7 +266,7 @@ test_getRegulatoryRegions <- function()
    chrom = "chr1"
    start <-  88802520
    end   <-  88802530
-   tbl.regions <- getRegulatoryRegions(dhsFilter, table, chrom, start, end)
+   tbl.regions <- getRegulatoryRegions(hdf, table, chrom, start, end)
    checkEquals(nrow(tbl.regions), 1)
    checkEquals(tbl.regions$chromStart, start)
    checkEquals(tbl.regions$chromEnd, end)
@@ -204,7 +275,7 @@ test_getRegulatoryRegions <- function()
    chrom = "chr1"
    start <-  88802145
    end   <-  88802155
-   tbl.regions <- getRegulatoryRegions(dhsFilter, table, chrom, start, end)
+   tbl.regions <- getRegulatoryRegions(hdf, table, chrom, start, end)
    checkEquals(nrow(tbl.regions), 1)
    checkEquals(tbl.regions$chromStart, start)
    checkEquals(tbl.regions$chromEnd, 88802150)
@@ -213,7 +284,7 @@ test_getRegulatoryRegions <- function()
    chrom = "chr1"
    start <-  88801878
    end   <-  88801883
-   tbl.regions <- getRegulatoryRegions(dhsFilter, table, chrom, start, end)
+   tbl.regions <- getRegulatoryRegions(hdf, table, chrom, start, end)
    checkEquals(nrow(tbl.regions), 1)
    checkEquals(tbl.regions$chromStart, 88801880)
    checkEquals(tbl.regions$chromEnd, end)
@@ -222,53 +293,54 @@ test_getRegulatoryRegions <- function()
    chrom <- "chr1"
    start <- 167830160
    end   <- 167830180
-   tbl.regions <- getRegulatoryRegions(dhsFilter, table, chrom, start, end)
+   tbl.regions <- getRegulatoryRegions(hdf, table, chrom, start, end)
    checkEquals(nrow(tbl.regions), 1)
    checkEquals(tbl.regions$chromStart, start)
    checkEquals(tbl.regions$chromEnd, end)
+
 } # test_getRegulatoryRegions
 #----------------------------------------------------------------------------------------------------
-test_getRegulatoryRegions_hardCase <- function()
-{
-   printf("--- test_getRegulatoryRegions_hardCase")
-
-     # a hard case.  the requested region overlaps incompletely with two neighboring
-     # dhs regions.  we want to get those two partial intersecting regions,
-     # one shortened on the left, the other shortened on the right
-
-   dhsFilter <- HumanDHSFilter("hg38", quiet=TRUE);
-
-   chrom <- "chr2"
-   start <-  127107283
-   end   <-  127107637
-
-       # dhs region 1: chr2:127,107,061 - 470
-       # dhs region 2:              620 - 929
-       # we expect back:
-       #      107,283 - 470
-       #      107,620 - 637
-
-    tbl.reg <- getRegulatoryRegions(dhsFilter, "wgEncodeRegDnaseClustered", chrom, start, end)
-    checkEquals(dim(tbl.reg), c(2, 5))
-    checkEquals(tbl.reg$chrom, c(chrom, chrom))
-    checkEquals(tbl.reg$chromStart, c(start, 127107620))
-    checkEquals(tbl.reg$chromEnd, c(127107470, end))
-
-       # now skip the second partial dhs region, get only the first
-    end   <-  127107500
-    tbl.reg <- getRegulatoryRegions(dhsFilter, "wgEncodeRegDnaseClustered", chrom, start, end)
-    checkEquals(nrow(tbl.reg), 1)
-    checkEquals(tbl.reg$chromStart, start)
-    checkEquals(tbl.reg$chromEnd, 127107470)
-
-       # now place start and end BOTH within the dhs region
-    end <- 127107465
-    tbl.reg <- getRegulatoryRegions(dhsFilter, "wgEncodeRegDnaseClustered", chrom, start, end)
-    checkEquals(nrow(tbl.reg), 1)
-    checkEquals(tbl.reg$chromStart, start)
-    checkEquals(tbl.reg$chromEnd, end)
-
-} # test_getRegulatoryRegions_hardCase
+# test_getRegulatoryRegions_hardCase <- function()
+# {
+#    printf("--- test_getRegulatoryRegions_hardCase")
+#
+#      # a hard case.  the requested region overlaps incompletely with two neighboring
+#      # dhs regions.  we want to get those two partial intersecting regions,
+#      # one shortened on the left, the other shortened on the right
+#
+#    dhsFilter <- HumanDHSFilter("hg38", quiet=TRUE);
+#
+#    chrom <- "chr2"
+#    start <-  127107283
+#    end   <-  127107637
+#
+#        # dhs region 1: chr2:127,107,061 - 470
+#        # dhs region 2:              620 - 929
+#        # we expect back:
+#        #      107,283 - 470
+#        #      107,620 - 637
+#
+#     tbl.reg <- getRegulatoryRegions(dhsFilter, "wgEncodeRegDnaseClustered", chrom, start, end)
+#     checkEquals(dim(tbl.reg), c(2, 5))
+#     checkEquals(tbl.reg$chrom, c(chrom, chrom))
+#     checkEquals(tbl.reg$chromStart, c(start, 127107620))
+#     checkEquals(tbl.reg$chromEnd, c(127107470, end))
+#
+#        # now skip the second partial dhs region, get only the first
+#     end   <-  127107500
+#     tbl.reg <- getRegulatoryRegions(dhsFilter, "wgEncodeRegDnaseClustered", chrom, start, end)
+#     checkEquals(nrow(tbl.reg), 1)
+#     checkEquals(tbl.reg$chromStart, start)
+#     checkEquals(tbl.reg$chromEnd, 127107470)
+#
+#        # now place start and end BOTH within the dhs region
+#     end <- 127107465
+#     tbl.reg <- getRegulatoryRegions(dhsFilter, "wgEncodeRegDnaseClustered", chrom, start, end)
+#     checkEquals(nrow(tbl.reg), 1)
+#     checkEquals(tbl.reg$chromStart, start)
+#     checkEquals(tbl.reg$chromEnd, end)
+#
+# } # test_getRegulatoryRegions_hardCase
 #----------------------------------------------------------------------------------------------------
 test_getSequence <- function()
 {
@@ -396,9 +468,9 @@ test_.getScoredMotifs <- function()
 
 } # test_.getScoredMotifs
 #----------------------------------------------------------------------------------------------------
-test_mef2cPromoter.incrementally <- function()
+test_vrk2Promoter.incrementally <- function()
 {
-   printf("--- test_mef2cPromoter.incrementally")
+   printf("--- test_vrk2Promoter.incrementally")
 
     # chr5:88,813,245-88,832,344
    chrom <- "chr5"
@@ -422,39 +494,74 @@ test_mef2cPromoter.incrementally <- function()
    motifs <- TReNA:::.getScoredMotifs(seqs, min.match.percentage=95)
    checkEquals(unlist(lapply(motifs, dim)), c(8,9,8,9))   # both
 
-} # test_mef2cPromoter.incrementally
+} # test_vrk2Promoter.incrementally
 #----------------------------------------------------------------------------------------------------
-test_mef2cPromoter.normalUse <- function()
+test_getCandidates.vrk2 <- function()
+{
+   printf("--- test_getCandidates.vrk2")
+   hdf <- test_basicConstructor(reuse=TRUE)
+   x <- getCandidates(hdf)
+   checkEquals(ncol(x$tbl), 15)
+   checkTrue(nrow(x$tbl) > 3000)   # [1] 3195   15
+   checkTrue(length(x$tfs) > 600)
+
+} # test_getCandidates.vrk2
+#----------------------------------------------------------------------------------------------------
+#  rs13384219  A->G
+#  gtcagtagtggtggaaccagcatgc[A/G]aattagacaatgtgacttcatagcc
+#  Chromosome: 2:57907323
+#  vrk2 tss at chr2:57908651
+#  from wgEncodeRegDnaseClustered:
+#   chrom chromStart chromEnd count score
+# 9  chr2   57907313 57907333     1    98
+
+test_getCandidates.vrk2.rs13384219.neighborhood <- function()
+{
+   printf("--- test_getCandidates.vrk2.rs13384219.neighborhood")
+   candidateFilterSpec <- create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
+
+   hdf <- with(candidateFilterSpec,
+               HumanDHSFilter(genomeName,
+                              encodeTableName=encodeTableName,
+                              fimoDatabase.uri=fimoDB,
+                              geneInfoDatabase.uri=geneInfoDB,
+                              regionsSpec=regionsSpec,
+                              geneCenteredSpec=geneCenteredSpec))
+   x <- getCandidates(hdf)
+   checkTrue(length(x$tfs) > 50 & length(x$tfs) < 60)
+   checkEquals(dim(x$tbl), c(13, 15))
+
+} # test_getCandidates.vrk2.rs13384219.neighborhood
+#------------------------------------------------------------------------------------------------------------------------
+test_vrk2Promoter.normalUse <- function()
 {
    printf("--- test_mef2cPromoter.normalUse")
 
-   hdcf <- HumanDHSFilter("hg38")
+#   hdcf <- HumanDHSFilter("hg38")
+#    # chr5:88,813,245-88,832,344: has just a few high scoring clusters
+#   chrom <- "chr5"
+#   start <- 88824500
+#   end   <- 88832344
+#
+#   filter.args <- list(chrom=chrom, start=start, end=end,
+#                       region.score.threshold=700,
+#                       motif.min.match.percentage=95,
+#                       encode.table.name="wgEncodeRegDnaseClustered")
+#
+#   x <- getCandidates(hdcf, filter.args)
+#   checkEquals(sort(names(x)), c("tbl", "tfs"))
+#   checkTrue(all(c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount", "motif", "match",
+#                   "motif.start", "motif.end", "motif.width", "motif.score", "strand", "tf") %in% colnames(x$tbl)))
+#   checkTrue(nrow(x$tbl) > 15)     # 16 on (29 mar 2017)
+#   checkTrue(length(x$tfs) > 200)  # 217 on (29 mar 2017)
+#   checkEquals(length(which(duplicated(x$tfs))), 0)
 
-
-    # chr5:88,813,245-88,832,344: has just a few high scoring clusters
-   chrom <- "chr5"
-   start <- 88824500
-   end   <- 88832344
-
-   filter.args <- list(chrom=chrom, start=start, end=end,
-                       region.score.threshold=700,
-                       motif.min.match.percentage=95,
-                       encode.table.name="wgEncodeRegDnaseClustered")
-
-   x <- getCandidates(hdcf, filter.args)
-   checkEquals(sort(names(x)), c("tbl", "tfs"))
-   checkTrue(all(c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount", "motif", "match",
-                   "motif.start", "motif.end", "motif.width", "motif.score", "strand", "tf") %in% colnames(x$tbl)))
-   checkTrue(nrow(x$tbl) > 15)     # 16 on (29 mar 2017)
-   checkTrue(length(x$tfs) > 200)  # 217 on (29 mar 2017)
-   checkEquals(length(which(duplicated(x$tfs))), 0)
-
-} # test_mef2cPromoter.normalUse
+} # test_vrk2Promoter.normalUse
 #----------------------------------------------------------------------------------------------------
 # a gene possibly involved in alzheimer's disease
-test_bin1 <- function()
+notest_bin1 <- function()
 {
-   printf("--- test_bin1")
+   printf("--- notest_bin1")
    target.gene <- "BIN1"
    chrom <- "chr2"
    start <- 127107280
@@ -512,7 +619,7 @@ test_bin1 <- function()
     fc <<- FimoClient(FIMO_HOST, FIMO_PORT, quiet=TRUE)
     requestMatch(fc, list(x="GGGGCGCGCGC"))
 
-} # test_bin1
+} # notest_bin1
 #----------------------------------------------------------------------------------------------------
 # one of the igap gwas alzheimer's snps, hand-verified to fall within a motif in a dhs region
 test_rs34423320 <- function()

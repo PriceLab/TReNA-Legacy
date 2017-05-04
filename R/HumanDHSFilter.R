@@ -5,7 +5,9 @@
                                        genome="BSgenome",
                                        encodeTableName="character",
                                        fimoDB="DBIConnection",
-                                       regions="character",
+                                       geneInfoDatabase.uri="character",   # access to gtf database
+                                       geneCenteredSpec="list",
+                                       regionsSpec="character",
                                        pfms="list",
                                        quiet="logical"))
 
@@ -17,31 +19,18 @@ setGeneric("getRegulatoryRegions", signature="obj",
            function(obj, encode.table.name, chromosome, start, end, score.threshold=200, quiet=TRUE)
                standardGeneric ("getRegulatoryRegions"))
 setGeneric("getSequence", signature="obj", function(obj, tbl.regions) standardGeneric ("getSequence"))
+setGeneric("geneSymbolToTSS", signature="obj", function(obj, geneSymbol) standardGeneric("geneSymbolToTSS"))
 #----------------------------------------------------------------------------------------------------
-HumanDHSFilter <- function(genomeName,  encodeTableName="wgEncodeRegDnaseClustered",
+HumanDHSFilter <- function(genomeName,
+                           encodeTableName="wgEncodeRegDnaseClustered",
                            fimoDatabase.uri,
-                           geneCenteredSpec=c(), regionsSpec=c(), quiet=TRUE)
+                           geneInfoDatabase.uri,
+                           geneCenteredSpec=c(),
+                           regionsSpec=c(),
+                           quiet=TRUE)
 {
    regions <- c();   # one or more chromLoc strings: "chr5:88903257-88905257"
 
-   if(length(geneCenteredSpec) == 3){
-      expected.fields <- c("targetGene", "tssUpstream", "tssDownstream")
-      stopifnot(all(expected.fields %in% names(geneCenteredSpec)))
-      db.gtf <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="gtf", host="whovian")
-      query <- sprintf("select * from hg38human where moleculetype='gene' and gene_biotype='protein_coding' and gene_name='%s'",
-                       geneCenteredSpec$targetGene)
-      tbl <- dbGetQuery(db.gtf, query);     # 19797 x 30
-      tss <- tbl$start[1];
-      chrom <- tbl$chr
-      start <- tss - geneCenteredSpec$tssUpstream
-      end   <- tss - geneCenteredSpec$tssDownstream
-      new.region.chromLocString <- sprintf("%s:%d-%d", chrom, start, end)
-      regions <- c(regions, new.region.chromLocString)
-      }
-
-    if(length(regionsSpec) > 0){
-       regions <- c(regions, regionsSpec)
-       }
 
     uri <- "http://jaspar.genereg.net/html/DOWNLOAD/JASPAR_CORE/pfm/nonredundant/pfm_vertebrates.txt"
     x <- .readRawJasparMatrices(uri)
@@ -78,8 +67,11 @@ HumanDHSFilter <- function(genomeName,  encodeTableName="wgEncodeRegDnaseCluster
    .HumanDHSFilter(CandidateFilter(quiet = quiet),
                    genomeName=genomeName,
                    fimoDB=fimo.db,
+                   encodeTableName=encodeTableName,
+                   geneInfoDatabase.uri=geneInfoDatabase.uri,
                    genome=reference.genome,
-                   regions=regions,
+                   geneCenteredSpec=geneCenteredSpec,
+                   regionsSpec=regionsSpec,
                    pfms=pfms,
                    quiet=quiet)
 
@@ -115,14 +107,49 @@ setMethod("show", "HumanDHSFilter",
         cat(s, sep="\n")
         })
 #----------------------------------------------------------------------------------------------------
+setMethod("geneSymbolToTSS", "HumanDHSFilter",
+
+     function(obj, geneSymbol){
+        geneInfo.db.info <- .parseDatabaseUri(obj@geneInfoDatabase.uri)
+        host <- geneInfo.db.info$host
+        dbname <- geneInfo.db.info$name
+        driver <- RPostgreSQL::PostgreSQL()
+        db.geneInfo <- DBI::dbConnect(driver, user= "trena", password="trena", dbname=dbname, host=host)
+        print(dbListTables(db.geneInfo))
+        #db.gtf <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="gtf", host="whovian")
+        query <- sprintf("select * from hg38human where moleculetype='gene' and gene_biotype='protein_coding' and gene_name='%s'",
+                         obj@geneCenteredSpec$targetGene)
+        tbl <- dbGetQuery(db.geneInfo, query);
+        tss <- tbl$start[1];
+        chrom <- tbl$chr
+        DBI::dbDisconnect(db.geneInfo)
+        list(chrom=chrom, tss=tss)
+        })
+
+#----------------------------------------------------------------------------------------------------
 setMethod("getCandidates", "HumanDHSFilter",
 
     function(obj){
 
-        tbl.out <- data.frame()
+       regions <- c();   # one or more chromLoc strings: "chr5:88903257-88905257"
 
-        for(region in obj@regions){
-           browser()
+       if(length(obj@geneCenteredSpec) == 3){
+          expected.fields <- c("targetGene", "tssUpstream", "tssDownstream")
+          stopifnot(all(expected.fields %in% names(obj@geneCenteredSpec)))
+          x <- geneSymbolToTSS(obj)
+          start <- x$tss - obj@geneCenteredSpec$tssUpstream
+          end <- x$tss + obj@geneCenteredSpec$tssDownstream
+          new.region.chromLocString <- sprintf("%s:%d-%d", x$chrom, start, end)
+          regions <- c(regions, new.region.chromLocString)
+          }
+
+       if(!(all(is.na(obj@regionsSpec)))){
+          regions <- c(regions, obj@regionsSpec)
+          }
+
+       tbl.regions <- data.frame()
+
+       for(region in regions){
            chromLoc <- .parseChromLocString(region)
            chrom <- chromLoc$chrom
            start <- chromLoc$start
@@ -130,40 +157,60 @@ setMethod("getCandidates", "HumanDHSFilter",
            encode.table.name <- obj@encodeTableName
            #region.score.threshold <- obj@region.score.threshold
            #motif.min.match.percentage <- obj@motif.min.match.percentage
-           tbl.regions <- getRegulatoryRegions(obj, encode.table.name, chrom, start, end)
-           #tbl.regions <- subset(tbl.regions, score >= region.score.threshold)
-           seqs <- getSequence(obj, tbl.regions)
-           tbl.motifs <- .getScoredMotifs(seqs, 75, obj@quiet)
-           region.count <- length(seqs)
-           tbl.summary <- data.frame()
-           all.tfs <- c()
-           for(i in seq_len(region.count)){
-              #printf("HumanDHSFilter, line 100, combining tbl.motifs and tbl.regions into tbl.summary")
-              #browser();
-              if(nrow(tbl.motifs[[i]]) > 0)
-                 tbl.summary <- rbind(tbl.summary, cbind(tbl.motifs[[i]], tbl.regions[i,]))
-              } # for i
+           tbl.regions <- rbind(tbl.regions, getRegulatoryRegions(obj, encode.table.name, chrom, start, end))
+
+           #browser()
+           ##tbl.regions <- subset(tbl.regions, score >= region.score.threshold)
+           #seqs <- getSequence(obj, tbl.regions)
+           #tbl.motifs <- .getScoredMotifs(seqs, 75, obj@quiet)
+           #region.count <- length(seqs)
+           #tbl.summary <- data.frame()
+           #all.tfs <- c()
+           #for(i in seq_len(region.count)){
+           #   #printf("HumanDHSFilter, line 100, combining tbl.motifs and tbl.regions into tbl.summary")
+           #   #browser();
+           #   if(nrow(tbl.motifs[[i]]) > 0)
+           #      tbl.summary <- rbind(tbl.summary, cbind(tbl.motifs[[i]], tbl.regions[i,]))
+           #   } # for i
            } # for region
 
-        if(nrow(tbl.summary) > 0){
-           colnames(tbl.summary) <- c("motif.start", "motif.end", "motif.width", "motif.score",
-                                      "motif.maxScore", "motif.relativeScore", "motif", "match",
-                                      "strand", "chrom", "regionStart", "regionEnd",  "sourceCount", "regionScore")
+         if(nrow(tbl.regions) > 0){
+            start.pos <- min(tbl.regions$chromStart) - 100
+            end.pos   <- max(tbl.regions$chromEnd) + 100
+            fimo.chrom <- sub("chr", "", unique(tbl.regions$chrom))
+            query <- sprintf("select * from fimo_hg38 where chrom='%s' and start >= %d and endpos <= %d",
+                             fimo.chrom, start.pos, end.pos)
+            tbl.fimo <- dbGetQuery(obj@fimoDB, query)
+            gr.fimo <- GRanges(seqnames=paste("chr", tbl.fimo$chrom, sep=""), IRanges(start=tbl.fimo$start, end=tbl.fimo$endpos))
+            gr.regions <- GRanges(seqnames=tbl.regions$chrom, IRanges(start=tbl.regions$chromStart, end=tbl.regions$chromEnd))
+            tbl.ov <- as.data.frame(findOverlaps(gr.fimo, gr.regions))
+            tbl.out <- cbind(tbl.fimo[tbl.ov$queryHits,], tbl.regions[tbl.ov$subjectHits,])
+            tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE, header=TRUE)
+            tfs.by.motif <- lapply(tbl.out$motifname, function(m) subset(tbl.mg, motif==m)$tf.gene)
+            all.tfs <- sort(unique(unlist(tfs.by.motif)))
+            tfs.by.motif.joined <- unlist(lapply(tfs.by.motif, function(m) paste(m, collapse=";")))
+            tbl.out$tf <- tfs.by.motif.joined
+            }
 
-           colnames.in.order <- c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount",
-                                          "motif", "match", "strand", "motif.start", "motif.end", "motif.width",
-                                          "motif.score", "motif.maxScore", "motif.relativeScore")
-           tbl.summary <- tbl.summary[, colnames.in.order]
-           tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE, header=TRUE)
-           tfs.by.motif <- lapply(tbl.summary$motif, function(m) subset(tbl.mg, motif==m)$tf.gene)
-           all.tfs <- sort(unique(unlist(tfs.by.motif)))
-           tfs.by.motif.joined <- unlist(lapply(tfs.by.motif, function(m) paste(m, collapse=";")))
-           tbl.summary$tf <- tfs.by.motif.joined
-           tbl.summary$motif.start <- -1 + tbl.summary$regionStart + tbl.summary$motif.start
-           tbl.summary$motif.end   <- -1 + tbl.summary$regionStart + tbl.summary$motif.end
-           }
+         # if(nrow(tbl.summary) > 0){
+         #  colnames(tbl.summary) <- c("motif.start", "motif.end", "motif.width", "motif.score",
+         #                             "motif.maxScore", "motif.relativeScore", "motif", "match",
+         #                             "strand", "chrom", "regionStart", "regionEnd",  "sourceCount", "regionScore")
+#
+#           colnames.in.order <- c("chrom", "regionStart", "regionEnd", "regionScore", "sourceCount",
+#                                          "motif", "match", "strand", "motif.start", "motif.end", "motif.width",
+#                                          "motif.score", "motif.maxScore", "motif.relativeScore")
+#           tbl.summary <- tbl.summary[, colnames.in.order]
+#           tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE, header=TRUE)
+#           tfs.by.motif <- lapply(tbl.summary$motif, function(m) subset(tbl.mg, motif==m)$tf.gene)
+#           all.tfs <- sort(unique(unlist(tfs.by.motif)))
+#           tfs.by.motif.joined <- unlist(lapply(tfs.by.motif, function(m) paste(m, collapse=";")))
+#           tbl.summary$tf <- tfs.by.motif.joined
+#           tbl.summary$motif.start <- -1 + tbl.summary$regionStart + tbl.summary$motif.start
+#           tbl.summary$motif.end   <- -1 + tbl.summary$regionStart + tbl.summary$motif.end
+#           }
 
-        list(tbl=tbl.summary,tfs=all.tfs)
+        list(tbl=tbl.out,tfs=all.tfs)
 
 	}) # getCandidates
 
@@ -242,9 +289,15 @@ setMethod("getRegulatoryRegions", "HumanDHSFilter",
    lapply(dbListConnections(driver), dbDisconnect)
 
    tbl.regions$chrom <- as.character(tbl.regions$chrom)
+
+       # the ucsc database call the  itemCount columns "name".  fix that
+   if("name" %in% colnames(tbl.regions)){
+      colnames(tbl.regions)[match("name", colnames(tbl.regions))] <- "count"
+      }
+
    #tbl.regions$motif.start <- -1 + tbl.regions$regionStart + motif.start
    #tbl.regions$motif.end <- -1 + tbl.regions$regionEnd + motif.end
-   invisible(tbl.regions[, c("chrom", "chromStart", "chromEnd",  "name", "score")])
+   invisible(tbl.regions[, c("chrom", "chromStart", "chromEnd",  "count", "score")])
 
    }) # getRegulatoryRegions
 
@@ -488,5 +541,4 @@ setMethod("getSequence", "HumanDHSFilter",
 
 } # .parseDatabaseUri
 #----------------------------------------------------------------------------------------------------
-
-
+geneSymbolToTSS
