@@ -34,4 +34,4 @@ they introduce the package to the user and developer.
 Thus [test_TReNA.R](https://github.com/PriceLab/TReNA/blob/master/inst/unitTests/test_TReNA.R)
 is one entry point into this project.
 
-(Jupyter Notebook)[http://nbviewer.jupyter.org/github/PriceLab/TReNA/blob/master/inst/demos/Assess_Distributions.ipynb]
+[Jupyter Notebook](http://nbviewer.jupyter.org/github/PriceLab/TReNA/blob/master/inst/demos/Assess_Distributions.ipynb)
