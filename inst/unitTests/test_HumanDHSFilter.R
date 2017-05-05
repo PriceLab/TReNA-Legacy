@@ -17,9 +17,11 @@ runTests <- function()
    test_getRegulatoryRegions()
    #test_getCandidates.vrk2()
    test_getCandidates.vrk2.rs13384219.neighborhood()
+   test_getSequence()
+   test_.matchForwardAndReverse()
+   test_.getScoredMotifs()
 
    #test_getRegulatoryRegions_hardCase()
-   #test_getSequence()
    #test_.matchForwardAndReverse()
    #test_.getScoredMotifs()
    #test_mef2cPromoter.incrementally()
@@ -355,32 +357,27 @@ test_getRegulatoryRegions <- function()
 test_getSequence <- function()
 {
    printf("--- test_getSequence")
+   candidateFilterSpec <- create.vrk2.candidateFilterSpec(geneCentered=FALSE)
+   hdf <- with(candidateFilterSpec,
+               HumanDHSFilter(genomeName,
+                              encodeTableName=encodeTableName,
+                              fimoDatabase.uri=fimoDB,
+                              geneInfoDatabase.uri=geneInfoDB,
+                              geneCenteredSpec=geneCenteredSpec,
+                              regionsSpec=regionsSpec))
+
+
+
    chroms <- rep("chr5", 3)
    starts <- c(88819700, 88820700, 88820980)
    ends   <- c(88819910, 88820850, 88821130)
 
    tbl.regions <- data.frame(chrom=chroms, chromStart=starts, chromEnd=ends, stringsAsFactors=FALSE)
-
-   if(exists("reference.genome", envir=.GlobalEnv))
-      rm(reference.genome, envir=.GlobalEnv)
-
-   hdf.38 <- HumanDHSFilter("hg38")
-   seqs.hg38 <- getSequence(hdf.38, tbl.regions)
+   seqs <- getSequence(hdf, tbl.regions)
 
    expected.lengths <- 1 + ends - starts
-   checkEquals(unlist(lapply(seqs.hg38, nchar)), expected.lengths)
-
-   if(exists("reference.genome", envir=.GlobalEnv))
-      rm(reference.genome, envir=.GlobalEnv)
-
-   hdf.19 <- HumanDHSFilter("hg19")
-   seqs.hg19 <- getSequence(hdf.19, tbl.regions)
-   checkEquals(unlist(lapply(seqs.hg19, nchar)), expected.lengths)
-
-      # minimal test:  the sequences should differ
-   checkTrue(substr(seqs.hg38[1], 1, 10) != substr(seqs.hg19[1], 1, 10))
-
-   invisible(seqs.hg38)
+   checkEquals(unlist(lapply(seqs, nchar)), expected.lengths)
+   invisible(seqs)
 
 } # test_getSequence
 #----------------------------------------------------------------------------------------------------
@@ -388,7 +385,14 @@ test_.matchForwardAndReverse <- function()
 {
    printf("--- test_.matchForwardAndReverse")
 
-   df <- HumanDHSFilter("hg38");
+   candidateFilterSpec <- create.vrk2.candidateFilterSpec(geneCentered=FALSE)
+   hdf <- with(candidateFilterSpec,
+               HumanDHSFilter(genomeName,
+                              encodeTableName=encodeTableName,
+                              fimoDatabase.uri=fimoDB,
+                              geneInfoDatabase.uri=geneInfoDB,
+                              geneCenteredSpec=geneCenteredSpec,
+                              regionsSpec=regionsSpec))
 
    chrom <- "chr1"
    start <- 167829960
@@ -398,7 +402,7 @@ test_.matchForwardAndReverse <- function()
    mtx <- query(MotifDb, motifName)[[1]];
 
    tbl.regions <- data.frame(chrom=chrom, chromStart=start, chromEnd=end, stringsAsFactors=FALSE)
-   sequence <- getSequence(df, tbl.regions)
+   sequence <- getSequence(hdf, tbl.regions)
 
    tbl <- TReNA:::.matchForwardAndReverse(sequence, mtx, motifName, min.match.percentage=90, quiet=TRUE)
 
@@ -539,7 +543,9 @@ test_getCandidates.vrk2.rs13384219.neighborhood <- function()
                               geneCenteredSpec=geneCenteredSpec,
                               quiet=TRUE))
    x <- getCandidates(hdf)
-   checkTrue(length(x$tfs) > 50 & length(x$tfs) < 60)
+   browser()
+   checkEquals(sort(names(x)), c("tbl.bioc", "tbl.fimo", "tfs.bioc", "tfs.fimo"))
+   checkTrue(length(x$tfs.fimo) > 50 & length(x$tfs.fimo) < 60)
    checkEquals(dim(x$tbl), c(13, 15))
 
 } # test_getCandidates.vrk2.rs13384219.neighborhood
