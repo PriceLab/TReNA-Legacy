@@ -5,6 +5,7 @@
                                        genome="BSgenome",
                                        encodeTableName="character",
                                        fimoDB="DBIConnection",
+                                       pwmMatchPercentageThreshold="integer",
                                        geneInfoDatabase.uri="character",   # access to gtf database
                                        geneCenteredSpec="list",
                                        regionsSpec="character",
@@ -24,6 +25,7 @@ setGeneric("geneSymbolToTSS", signature="obj", function(obj, geneSymbol) standar
 HumanDHSFilter <- function(genomeName,
                            encodeTableName="wgEncodeRegDnaseClustered",
                            fimoDatabase.uri,
+                           pwmMatchPercentageThreshold,
                            geneInfoDatabase.uri,
                            geneCenteredSpec=c(),
                            regionsSpec=c(),
@@ -67,6 +69,7 @@ HumanDHSFilter <- function(genomeName,
    .HumanDHSFilter(CandidateFilter(quiet = quiet),
                    genomeName=genomeName,
                    fimoDB=fimo.db,
+                   pwmMatchPercentageThreshold=pwmMatchPercentageThreshold,
                    encodeTableName=encodeTableName,
                    geneInfoDatabase.uri=geneInfoDatabase.uri,
                    genome=reference.genome,
@@ -161,16 +164,19 @@ setMethod("getCandidates", "HumanDHSFilter",
           tbl.regions <- rbind(tbl.regions, getRegulatoryRegions(obj, encode.table.name, chrom, start, end))
           } # for region
 
+          # get all the fimo hits that are in or near the dhs regulatory regions
+          # keep just the ones which fall entirely within the regulatory regions
+          # create a data.frame with these intersections.
+
        if(nrow(tbl.regions) > 0){
           start.pos <- min(tbl.regions$chromStart) - 100
           end.pos   <- max(tbl.regions$chromEnd) + 100
           fimo.chrom <- sub("chr", "", unique(tbl.regions$chrom))
-          query <- sprintf("select * from fimo_hg38 where chrom='%s' and start >= %d and endpos <= %d",
-                           fimo.chrom, start.pos, end.pos)
+          query <- sprintf("select * from fimo_hg38 where chrom='%s' and start >= %d and endpos <= %d", fimo.chrom, start.pos, end.pos)
           tbl.fimo <- dbGetQuery(obj@fimoDB, query)
           gr.fimo <- GRanges(seqnames=paste("chr", tbl.fimo$chrom, sep=""), IRanges(start=tbl.fimo$start, end=tbl.fimo$endpos))
           gr.regions <- GRanges(seqnames=tbl.regions$chrom, IRanges(start=tbl.regions$chromStart, end=tbl.regions$chromEnd))
-          tbl.ov <- as.data.frame(findOverlaps(gr.fimo, gr.regions))
+          tbl.ov <- as.data.frame(findOverlaps(gr.fimo, gr.regions, type="within"))
           tbl.fimo <- cbind(tbl.fimo[tbl.ov$queryHits,], tbl.regions[tbl.ov$subjectHits,])
           tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE, header=TRUE)
           tfs.by.motif <- lapply(tbl.fimo$motifname, function(m) subset(tbl.mg, motif==m)$tf.gene)
@@ -189,9 +195,14 @@ setMethod("getCandidates", "HumanDHSFilter",
           tbl.fimo <- tbl.fimo[order(tbl.fimo$motifscore, decreasing=TRUE),]
           } # if nrow(tbl.regions) > 0
 
+           # use bioconductor native packages to
+           #   - get all the DNA sequence in the regulatory regions
+           #   - identify all of the PWMs which fall within those sequences
+           #   - combine regions and motifs and their cognate tfs into a data.frame
+
        if(nrow(tbl.regions) > 0){
           seqs <- getSequence(obj, tbl.regions)
-          tbl.motifs <- .getScoredMotifs(seqs, 75, obj@quiet)
+          tbl.motifs <- .getScoredMotifs(seqs, obj@pwmMatchPercentageThreshold, obj@quiet)
           region.count <- length(seqs)
           tbl.bioc <- data.frame()
           all.bioc.tfs <- c()
@@ -202,7 +213,6 @@ setMethod("getCandidates", "HumanDHSFilter",
           tbl.bioc$start <- tbl.bioc$start + tbl.bioc$chromStart - 1;
           tbl.bioc$end <- tbl.bioc$end  + tbl.bioc$chromStart - 1;
              # change some column names
-          browser()
           colnames(tbl.bioc)[4] <- "motifscore"
           colnames(tbl.bioc)[2] <- "endpos"
           colnames(tbl.bioc)[7] <- "motifname"
@@ -215,6 +225,9 @@ setMethod("getCandidates", "HumanDHSFilter",
           all.bioc.tfs <- sort(unique(unlist(tfs.by.motif)))
           tfs.by.motif.joined <- unlist(lapply(tfs.by.motif, function(m) paste(m, collapse=";")))
           tbl.bioc$tf <- tfs.by.motif.joined
+             # tentative, empirically obtained cutoff
+          upper.quartile.threshold <- fivenum(tbl.bioc$motifscore)[4]
+          tbl.bioc <- subset(tbl.bioc, motifscore >= upper.quartile.threshold)
           } # if nrow(tbl.regions) > 0
 
        list(tbl.fimo=tbl.fimo,

@@ -42,6 +42,7 @@ create.vrk2.candidateFilterSpec <- function(geneCentered=TRUE, promoter.length=1
                                genomeName=genome,
                                encodeTableName="wgEncodeRegDnaseClustered",
                                fimoDB="postgres://whovian/fimo",
+                               pwmMatchPercentageThreshold=85L,
                                geneInfoDB="postgres://whovian/gtf",
                                regionsSpec=NA_character_,  # no explicit regions in this recipe
                                geneCenteredSpec=list(targetGene=target.gene,
@@ -111,6 +112,7 @@ test_basicConstructor <- function(reuse=FALSE)
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
                               fimoDatabase.uri=fimoDB,
+                              pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               regionsSpec=regionsSpec,
                               geneCenteredSpec=geneCenteredSpec))
@@ -125,6 +127,7 @@ test_basicConstructor <- function(reuse=FALSE)
                            HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
                               fimoDatabase.uri=fimoDB,
+                              pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               regionsSpec=regionsSpec,
                               geneCenteredSpec=geneCenteredSpec)))
@@ -142,6 +145,7 @@ test_getEncodeRegulatoryTableNames <- function()
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
                               fimoDatabase.uri=fimoDB,
+                              pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               regionsSpec=regionsSpec,
                               geneCenteredSpec=geneCenteredSpec))
@@ -162,6 +166,7 @@ test_checkAllEncodeTables <- function(quiet=TRUE)
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
                               fimoDatabase.uri=fimoDB,
+                              pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               regionsSpec=regionsSpec,
                               geneCenteredSpec=geneCenteredSpec,
@@ -229,6 +234,7 @@ test_geneSymbolToTSS <- function()
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
                               fimoDatabase.uri=fimoDB,
+                              pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               geneCenteredSpec=geneCenteredSpec,
                               regionsSpec=regionsSpec))
@@ -247,6 +253,7 @@ test_getRegulatoryRegions <- function()
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
                               fimoDatabase.uri=fimoDB,
+                              pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               geneCenteredSpec=geneCenteredSpec,
                               regionsSpec=regionsSpec))
@@ -362,6 +369,7 @@ test_getSequence <- function()
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
                               fimoDatabase.uri=fimoDB,
+                              pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               geneCenteredSpec=geneCenteredSpec,
                               regionsSpec=regionsSpec))
@@ -390,6 +398,7 @@ test_.matchForwardAndReverse <- function()
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
                               fimoDatabase.uri=fimoDB,
+                              pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               geneCenteredSpec=geneCenteredSpec,
                               regionsSpec=regionsSpec))
@@ -538,15 +547,26 @@ test_getCandidates.vrk2.rs13384219.neighborhood <- function()
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
                               fimoDatabase.uri=fimoDB,
+                              pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               regionsSpec=regionsSpec,
                               geneCenteredSpec=geneCenteredSpec,
                               quiet=TRUE))
    x <- getCandidates(hdf)
-   browser()
    checkEquals(sort(names(x)), c("tbl.bioc", "tbl.fimo", "tfs.bioc", "tfs.fimo"))
-   checkTrue(length(x$tfs.fimo) > 50 & length(x$tfs.fimo) < 60)
-   checkEquals(dim(x$tbl), c(13, 15))
+   motifs.bioc <- unique(x$tbl.bioc$motifname)
+   motifs.fimo <- unique(x$tbl.fimo$motifname)
+   tfs.bioc <- x$tfs.bioc
+   tfs.fimo <- x$tfs.fimo
+   tbl.bioc <- x$tbl.bioc
+   tbl.fimo <- x$tbl.fimo
+
+      # make sure that cutoff of tbl.bioc by motifscore, top quartile only, hard-coded for
+      # now, captures all of the motifs found by fimo
+   checkEquals(length(setdiff(tbl.fimo$motifname, tbl.bioc$motifname)), 0)
+   checkTrue(all(tfs.fimo %in% tfs.bioc))
+   checkEquals(length(tfs.bioc), 162)
+   checkEquals(length(tfs.fimo), 18)
 
 } # test_getCandidates.vrk2.rs13384219.neighborhood
 #------------------------------------------------------------------------------------------------------------------------
