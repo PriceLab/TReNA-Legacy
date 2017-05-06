@@ -38,6 +38,7 @@ Collate:
     'BayesSpikeSolver.R'
     'CandidateFilter.R'
     'EnsembleSolver.R'
+    'MotifMatcher.R'
     'FootprintFinder.R'
     'FootprintFilter.R'
     'HumanDHSFilter.R'

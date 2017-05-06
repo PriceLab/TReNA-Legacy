@@ -50,18 +50,18 @@ RandomForestSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulato
 #----------------------------------------------------------------------------------------------------
 setMethod('show', 'RandomForestSolver',
 
-    function(obj) {
-       regulator.count <- length(obj@candidateRegulators)
+    function(object) {
+       regulator.count <- length(object@candidateRegulators)
        if(regulator.count > 10){
-          regulatorString <- paste(obj@candidateRegulators[1:10], collapse=",")
+          regulatorString <- paste(object@candidateRegulators[1:10], collapse=",")
           regulatorString <- sprintf("%s...", regulatorString);
           }
        else
-          regulatorString <- paste(obj@candidateRegulators, collapse=",")
+          regulatorString <- paste(object@candidateRegulators, collapse=",")
 
        msg = sprintf("RandomForestSolver with mtx.assay (%d, %d), targetGene %s, %d candidate regulators %s",
-                     nrow(obj@mtx.assay), ncol(obj@mtx.assay),
-                     obj@targetGene, regulator.count, regulatorString)
+                     nrow(object@mtx.assay), ncol(object@mtx.assay),
+                     object@targetGene, regulator.count, regulatorString)
        cat (msg, '\n', sep='')
        })
 

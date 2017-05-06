@@ -1,6 +1,7 @@
 exportClasses(
    TReNA,
    VarianceFilter,
+   MotifMatcher,
    FootprintFilter,
    HumanDHSFilter,
    GeneOntologyFilter,
@@ -21,6 +22,7 @@ export(
     SpearmanSolver,
     SqrtLassoSolver,
     CandidateFilter,
+    MotifMatcher,
     FootprintFilter,
     HumanDHSFilter,
     VarianceFilter,
@@ -57,7 +59,9 @@ exportMethods(
     getEncodeRegulatoryTableNames,
     getRegulatoryRegions,
     createModelsFromRecipes,
-    geneSymbolToTSS
+    geneSymbolToTSS,
+    getPfms,
+    findMatches
 )
 
 import(

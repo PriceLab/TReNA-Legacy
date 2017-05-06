@@ -566,4 +566,3 @@ setMethod("getSequence", "HumanDHSFilter",
 
 } # .parseDatabaseUri
 #----------------------------------------------------------------------------------------------------
-geneSymbolToTSS
