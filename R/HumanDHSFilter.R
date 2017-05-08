@@ -4,7 +4,7 @@
                             slots=list(genomeName="character",
                                        genome="BSgenome",
                                        encodeTableName="character",
-                                       fimoDB="DBIConnection",
+                                       #fimoDB="DBIConnection",
                                        pwmMatchPercentageThreshold="integer",
                                        geneInfoDatabase.uri="character",   # access to gtf database
                                        geneCenteredSpec="list",
@@ -24,7 +24,7 @@ setGeneric("geneSymbolToTSS", signature="obj", function(obj, geneSymbol) standar
 #----------------------------------------------------------------------------------------------------
 HumanDHSFilter <- function(genomeName,
                            encodeTableName="wgEncodeRegDnaseClustered",
-                           fimoDatabase.uri,
+                           #fimoDatabase.uri,
                            pwmMatchPercentageThreshold,
                            geneInfoDatabase.uri,
                            geneCenteredSpec=c(),
@@ -53,22 +53,22 @@ HumanDHSFilter <- function(genomeName,
        }
 
 
-   fimo.db.info <- .parseDatabaseUri(fimoDatabase.uri)
+   #fimo.db.info <- .parseDatabaseUri(fimoDatabase.uri)
 
-   stopifnot(fimo.db.info$brand %in% c("postgres"))
-   switch(fimo.db.info$brand,
-          postgres={
-             host <- fimo.db.info$host
-             dbname <- fimo.db.info$name
-             driver <- RPostgreSQL::PostgreSQL()
-             fimo.db <- DBI::dbConnect(driver, user= "trena", password="trena", dbname=dbname, host=host)
-             #print(dbListTables(fimo.db))
-             },
-          printf("unrecognized fimo db protoocol '%s'", fimo.db.info$brand)
-          )
+   #stopifnot(fimo.db.info$brand %in% c("postgres"))
+   #switch(fimo.db.info$brand,
+   #       postgres={
+   #          host <- fimo.db.info$host
+   #          dbname <- fimo.db.info$name
+   #          driver <- RPostgreSQL::PostgreSQL()
+   #          fimo.db <- DBI::dbConnect(driver, user= "trena", password="trena", dbname=dbname, host=host)
+   #          #print(dbListTables(fimo.db))
+   #          },
+   #       printf("unrecognized fimo db protoocol '%s'", fimo.db.info$brand)
+   #       )
    .HumanDHSFilter(CandidateFilter(quiet = quiet),
                    genomeName=genomeName,
-                   fimoDB=fimo.db,
+                   #fimoDB=fimo.db,
                    pwmMatchPercentageThreshold=pwmMatchPercentageThreshold,
                    encodeTableName=encodeTableName,
                    geneInfoDatabase.uri=geneInfoDatabase.uri,
@@ -157,10 +157,23 @@ setMethod("getCandidates", "HumanDHSFilter",
        tbl.regions$chrom <- as.character(tbl.regions$chrom)
        tbl.regions$start <- as.integer(tbl.regions$start)
        tbl.regions$end <- as.integer(tbl.regions$end)
-       #browser();
+       tbl.reg <- data.frame()
+       for(r in 1:nrow(tbl.regions)){
+          tbl.new <- getRegulatoryRegions(obj, obj@encodeTableName, tbl.regions$chrom[r], tbl.regions$start[r], tbl.regions$end[r])
+          tbl.reg <- rbind(tbl.reg, tbl.new)
+          }
+       if(!obj@quiet)
+          printf("found %d regulatory regions in %d requested regions", nrow(tbl.regions), nrow(tbl.reg))
+
+       colnames(tbl.reg) <- c("chrom", "start", "end", "count", "score")
        mm <- MotifMatcher(name="rs13384219.neighborhood", genomeName=obj@genomeName)
        x <- findMatchesByChromosomalRegion(mm, tbl.regions,
                                            pwmMatchMinimumAsPercentage=obj@pwmMatchPercentageThreshold)
+       if(!obj@quiet)
+          printf(" and %d motifs", nrow(x$tbl))
+
+       colnames(x$tbl) <- c("motifName", "chrom", "motifStart", "motifEnd", "strand", "motifScore", "motifRelativeScore",
+                            "match", "regulatoryRegionStart", "regualtoryRegionEnd", "tfs")
        x
     }) # getCandidates
 

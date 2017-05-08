@@ -9,10 +9,10 @@ sequence <- "ACCAGCATGCAAATTAGACAA"
 runTests <- function()
 {
    test_basicConstructor()
-   test_.matchPwmForwardAndReverse()
    test_getSequence()
+   test_.matchPwmForwardAndReverse()
    test_.getScoredMotifs()
-   test_findMatches()
+   test_findMatchesByChromosomalRegion()
 
 } # runTests
 #------------------------------------------------------------------------------------------------------------------------
@@ -81,9 +81,9 @@ test_getSequence <- function(indirect=FALSE)
 
 } # test_getSequence
 #----------------------------------------------------------------------------------------------------
-test_findMatches <- function()
+test_findMatchesByChromosomalRegion <- function()
 {
-   printf("--- test_findMatches")
+   printf("--- test_findMatchesByChromosomalRegion")
      # the vrk2 promoter snp,  chr2:57907313-57907333
    mm <- MotifMatcher(name="rs13384219.neighborhood",
                       genomeName="hg38")
@@ -94,5 +94,5 @@ test_findMatches <- function()
    checkEquals(dim(x$tbl), c(20, 11))
    checkTrue(length(x$tfs) > 150)
 
-} # test_findMatches
+} # test_findMatchesByChromosomalRegion
 #----------------------------------------------------------------------------------------------------
