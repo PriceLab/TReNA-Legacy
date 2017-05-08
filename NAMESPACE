@@ -61,7 +61,7 @@ exportMethods(
     createModelsFromRecipes,
     geneSymbolToTSS,
     getPfms,
-    findMatches
+    findMatchesByChromosomalRegion
 )
 
 import(
