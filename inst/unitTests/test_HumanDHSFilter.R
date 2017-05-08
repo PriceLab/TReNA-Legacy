@@ -11,15 +11,15 @@ runTests <- function()
    test_create.vrk2.candidateFilterSpec()
    test_basicConstructor()
    test_geneSymbolToTSS()
-   #test_getEncodeRegulatoryTableNames()
-   #test_checkAllEncodeTables(quiet=FALSE)
+   test_getEncodeRegulatoryTableNames()
+   test_checkAllEncodeTables(quiet=FALSE)
 
    test_getRegulatoryRegions()
-   #test_getCandidates.vrk2()
+   test_getCandidates.vrk2()
    test_getCandidates.vrk2.rs13384219.neighborhood()
    #test_getSequence()
-   test_.matchForwardAndReverse()
-   test_.getScoredMotifs()
+   #test_.matchForwardAndReverse()
+   #test_.getScoredMotifs()
 
    #test_getRegulatoryRegions_hardCase()
    #test_.matchForwardAndReverse()
@@ -41,7 +41,6 @@ create.vrk2.candidateFilterSpec <- function(geneCentered=TRUE, promoter.length=1
    candidateFilterSpec <- list(filterType="EncodeDNaseClusters",
                                genomeName=genome,
                                encodeTableName="wgEncodeRegDnaseClustered",
-                               fimoDB="postgres://whovian/fimo",
                                pwmMatchPercentageThreshold=85L,
                                geneInfoDB="postgres://whovian/gtf",
                                regionsSpec=NA_character_,  # no explicit regions in this recipe
@@ -54,6 +53,28 @@ create.vrk2.candidateFilterSpec <- function(geneCentered=TRUE, promoter.length=1
       }
 
    return(candidateFilterSpec)
+
+} # create.vrk2.candidateFilterSpec
+#----------------------------------------------------------------------------------------------------
+# reuse this in several tests
+create.vrk2.candidateFilterSpec.twoRegions <- function()
+{
+   target.gene <- "VRK2"
+   genome <- "hg38"
+   chromosome <- "chr2"
+   tss <- 57907651
+   promoter.length <- 1000
+
+   cfSpec <- list(filterType="EncodeDNaseClusters",
+                  genomeName=genome,
+                  encodeTableName="wgEncodeRegDnaseClustered",
+                  pwmMatchPercentageThreshold=85L,
+                  geneInfoDB="postgres://whovian/gtf",
+                        # 2 dhs regions found by inspection
+                  regionsSpec=c("chr2:57906700-57906870",
+                                "chr2:57907740-57908150"),
+                  geneCenteredSpec=list())
+   return(cfSpec)
 
 } # create.vrk2.candidateFilterSpec
 #----------------------------------------------------------------------------------------------------
@@ -84,7 +105,7 @@ test_create.vrk2.candidateFilterSpec <- function()
    checkEquals(spec.0$filterType, "EncodeDNaseClusters")
    checkEquals(spec.0$genomeName, "hg38")
    checkEquals(spec.0$encodeTableName, "wgEncodeRegDnaseClustered")
-   checkEquals(spec.0$fimoDB, "postgres://whovian/fimo")
+   #checkEquals(spec.0$fimoDB, "postgres://whovian/fimo")
    checkEquals(spec.0$geneInfoDB, "postgres://whovian/gtf")
    checkTrue(is.na(spec.0$regionsSpec))
    checkEquals(spec.0$geneCenteredSpec$targetGene, "VRK2")
@@ -94,7 +115,7 @@ test_create.vrk2.candidateFilterSpec <- function()
    checkEquals(spec.1$filterType, "EncodeDNaseClusters")
    checkEquals(spec.1$genomeName, "hg38")
    checkEquals(spec.1$encodeTableName, "wgEncodeRegDnaseClustered")
-   checkEquals(spec.1$fimoDB, "postgres://whovian/fimo")
+   #checkEquals(spec.1$fimoDB, "postgres://whovian/fimo")
    checkEquals(spec.1$geneInfoDB, "postgres://whovian/gtf")
    checkEquals(spec.1$regionsSpec, "chr2:57906651-57908651")
    checkEquals(spec.1$geneCenteredSpec, list())
@@ -107,11 +128,15 @@ test_basicConstructor <- function(reuse=FALSE)
    if(!reuse)  printf("--- test_basicConstructor")
 
    candidateFilterSpec <- create.vrk2.candidateFilterSpec()
+   checkEquals(candidateFilterSpec$geneCenteredSpec$targetGene, "VRK2")
+   checkEquals(candidateFilterSpec$geneCenteredSpec$tssUpstream, 1000)
+   checkEquals(candidateFilterSpec$geneCenteredSpec$tssDownstream, 1000)
+   checkTrue(is.na(candidateFilterSpec$regionsSpec))
 
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
-                              fimoDatabase.uri=fimoDB,
+                              #fimoDatabase.uri=fimoDB,
                               pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               regionsSpec=regionsSpec,
@@ -126,7 +151,6 @@ test_basicConstructor <- function(reuse=FALSE)
      checkException(hdf <- with(candidateFilterSpec,
                            HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
-                              fimoDatabase.uri=fimoDB,
                               pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               regionsSpec=regionsSpec,
@@ -144,7 +168,7 @@ test_getEncodeRegulatoryTableNames <- function()
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
-                              fimoDatabase.uri=fimoDB,
+                              #fimoDatabase.uri=fimoDB,
                               pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               regionsSpec=regionsSpec,
@@ -159,13 +183,13 @@ test_checkAllEncodeTables <- function(quiet=TRUE)
 {
    printf("--- test_checkAllEncodeTables")
 
-   #candidateFilterSpec <- create.vrk2.candidateFilterSpec()
-   candidateFilterSpec <- create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
+   candidateFilterSpec <- create.vrk2.candidateFilterSpec()
+   #candidateFilterSpec <- create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
 
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
-                              fimoDatabase.uri=fimoDB,
+                              #fimoDatabase.uri=fimoDB,
                               pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               regionsSpec=regionsSpec,
@@ -233,7 +257,7 @@ test_geneSymbolToTSS <- function()
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
-                              fimoDatabase.uri=fimoDB,
+                              #fimoDatabase.uri=fimoDB,
                               pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               geneCenteredSpec=geneCenteredSpec,
@@ -252,7 +276,6 @@ test_getRegulatoryRegions <- function()
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
-                              fimoDatabase.uri=fimoDB,
                               pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               geneCenteredSpec=geneCenteredSpec,
@@ -368,7 +391,7 @@ test_getSequence <- function()
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
-                              fimoDatabase.uri=fimoDB,
+                              #fimoDatabase.uri=fimoDB,
                               pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               geneCenteredSpec=geneCenteredSpec,
@@ -397,7 +420,7 @@ test_.matchForwardAndReverse <- function()
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
-                              fimoDatabase.uri=fimoDB,
+                              #fimoDatabase.uri=fimoDB,
                               pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               geneCenteredSpec=geneCenteredSpec,
@@ -467,11 +490,6 @@ test_.matchForwardAndReverse <- function()
 
 } # test_.matchForwardAndReverse
 #----------------------------------------------------------------------------------------------------
-checkFimo <- function()
-{
-
-} # checkFimo
-#----------------------------------------------------------------------------------------------------
 test_.findMofits <- function()
 {
    printf("--- test_.findMotifs")
@@ -519,16 +537,26 @@ test_vrk2Promoter.incrementally <- function()
 
 } # test_vrk2Promoter.incrementally
 #----------------------------------------------------------------------------------------------------
-test_getCandidates.vrk2 <- function()
+test_getCandidates.vrk2.twoRegions <- function()
 {
-   printf("--- test_getCandidates.vrk2")
-   hdf <- test_basicConstructor(reuse=TRUE)
-   x <- getCandidates(hdf)
-   checkEquals(ncol(x$tbl), 15)
-   checkTrue(nrow(x$tbl) > 3000)   # [1] 3195   15
-   checkTrue(length(x$tfs) > 600)
+   printf("--- test_getCandidates.vrk2.twoRegions")
 
-} # test_getCandidates.vrk2
+   cfSpec <- create.vrk2.candidateFilterSpec.twoRegions()
+   hdf <- with(cfSpec, HumanDHSFilter(genomeName,
+                                      encodeTableName=encodeTableName,
+                                      pwmMatchPercentageThreshold=85L,
+                                      geneInfoDatabase.uri=geneInfoDB,
+                                      regionsSpec=regionsSpec,
+                                      geneCenteredSpec=geneCenteredSpec,
+                                      quiet=FALSE))
+
+   x <- getCandidates(hdf)
+   checkEquals(sort(names(x)), c("tbl", "tfs"))
+   checkEquals(ncol(x$tbl), 11)
+   checkTrue(nrow(x$tbl) > 150)    # 153 x 11
+   checkTrue(length(x$tfs) > 400)  # 422
+
+} # test_getCandidates.vrk2.twoRegions
 #----------------------------------------------------------------------------------------------------
 #  rs13384219  A->G
 #  gtcagtagtggtggaaccagcatgc[A/G]aattagacaatgtgacttcatagcc
@@ -546,7 +574,7 @@ test_getCandidates.vrk2.rs13384219.neighborhood <- function()
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
-                              fimoDatabase.uri=fimoDB,
+                              #fimoDatabase.uri=fimoDB,
                               pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               regionsSpec=regionsSpec,
@@ -639,11 +667,11 @@ notest_bin1 <- function()
 
     with(tbl.notFound, data.frame(chrom=chrom, chromStart=start, chromEnd=end)))
 
-    library(FimoClient)
-    FIMO_HOST <- "whovian"
-    FIMO_PORT <- 5558
-    fc <<- FimoClient(FIMO_HOST, FIMO_PORT, quiet=TRUE)
-    requestMatch(fc, list(x="GGGGCGCGCGC"))
+    #library(FimoClient)
+    #FIMO_HOST <- "whovian"
+    #FIMO_PORT <- 5558
+    #fc <<- FimoClient(FIMO_HOST, FIMO_PORT, quiet=TRUE)
+    #requestMatch(fc, list(x="GGGGCGCGCGC"))
 
 } # notest_bin1
 #----------------------------------------------------------------------------------------------------
