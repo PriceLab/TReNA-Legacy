@@ -19,7 +19,7 @@ setGeneric("getEncodeRegulatoryTableNames", signature="obj", function(obj) stand
 setGeneric("getRegulatoryRegions", signature="obj",
            function(obj, encode.table.name, chromosome, start, end, score.threshold=200, quiet=TRUE)
                standardGeneric ("getRegulatoryRegions"))
-setGeneric("getSequence", signature="obj", function(obj, tbl.regions) standardGeneric ("getSequence"))
+setGeneric("getSequence_tmp", signature="obj", function(obj, tbl.regions) standardGeneric ("getSequence_tmp"))
 setGeneric("geneSymbolToTSS", signature="obj", function(obj, geneSymbol) standardGeneric("geneSymbolToTSS"))
 #----------------------------------------------------------------------------------------------------
 HumanDHSFilter <- function(genomeName,
@@ -152,89 +152,17 @@ setMethod("getCandidates", "HumanDHSFilter",
           regions <- c(regions, obj@regionsSpec)
           }
 
-       tbl.regions <- data.frame()
-
-         # cycle through the regions, grabbing all the DHS regulatory regions in them
-       for(region in regions){
-          chromLoc <- .parseChromLocString(region)
-          chrom <- chromLoc$chrom
-          start <- chromLoc$start
-          end   <- chromLoc$end
-          encode.table.name <- obj@encodeTableName
-          tbl.regions <- rbind(tbl.regions, getRegulatoryRegions(obj, encode.table.name, chrom, start, end))
-          } # for region
-
-          # get all the fimo hits that are in or near the dhs regulatory regions
-          # keep just the ones which fall entirely within the regulatory regions
-          # create a data.frame with these intersections.
-
-       if(nrow(tbl.regions) > 0){
-          start.pos <- min(tbl.regions$chromStart) - 100
-          end.pos   <- max(tbl.regions$chromEnd) + 100
-          fimo.chrom <- sub("chr", "", unique(tbl.regions$chrom))
-          query <- sprintf("select * from fimo_hg38 where chrom='%s' and start >= %d and endpos <= %d", fimo.chrom, start.pos, end.pos)
-          tbl.fimo <- dbGetQuery(obj@fimoDB, query)
-          gr.fimo <- GRanges(seqnames=paste("chr", tbl.fimo$chrom, sep=""), IRanges(start=tbl.fimo$start, end=tbl.fimo$endpos))
-          gr.regions <- GRanges(seqnames=tbl.regions$chrom, IRanges(start=tbl.regions$chromStart, end=tbl.regions$chromEnd))
-          tbl.ov <- as.data.frame(findOverlaps(gr.fimo, gr.regions, type="within"))
-          tbl.fimo <- cbind(tbl.fimo[tbl.ov$queryHits,], tbl.regions[tbl.ov$subjectHits,])
-          tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE, header=TRUE)
-          tfs.by.motif <- lapply(tbl.fimo$motifname, function(m) subset(tbl.mg, motif==m)$tf.gene)
-          all.fimo.tfs <- sort(unique(unlist(tfs.by.motif)))
-          tfs.by.motif.joined <- unlist(lapply(tfs.by.motif, function(m) paste(m, collapse=";")))
-          tbl.fimo$tf <- tfs.by.motif.joined
-          chrom.cols <- grep("^chrom$", colnames(tbl.fimo))
-          if(length(chrom.cols) == 2)
-             tbl.fimo <- tbl.fimo[, -(chrom.cols[1])]
-          col.empty <- grep("empty", colnames(tbl.fimo))
-          if(length(col.empty) == 1)
-             tbl.fimo <- tbl.fimo[, -col.empty]
-          desired.column.order <- c("motifname", "chrom", "start", "endpos", "strand", "motifscore", "pval", "sequence",
-                                    "chromStart", "chromEnd", "count", "score", "tf")
-          tbl.fimo <- tbl.fimo[, desired.column.order]
-          tbl.fimo <- tbl.fimo[order(tbl.fimo$motifscore, decreasing=TRUE),]
-          } # if nrow(tbl.regions) > 0
-
-           # use bioconductor native packages to
-           #   - get all the DNA sequence in the regulatory regions
-           #   - identify all of the PWMs which fall within those sequences
-           #   - combine regions and motifs and their cognate tfs into a data.frame
-
-       if(nrow(tbl.regions) > 0){
-          seqs <- getSequence(obj, tbl.regions)
-          tbl.motifs <- .getScoredMotifs(seqs, obj@pwmMatchPercentageThreshold, obj@quiet)
-          region.count <- length(seqs)
-          tbl.bioc <- data.frame()
-          all.bioc.tfs <- c()
-          for(i in seq_len(region.count)){
-             if(nrow(tbl.motifs[[i]]) > 0)
-                tbl.bioc <- rbind(tbl.bioc, cbind(tbl.motifs[[i]], tbl.regions[i,]))
-              } # for i
-          tbl.bioc$start <- tbl.bioc$start + tbl.bioc$chromStart - 1;
-          tbl.bioc$end <- tbl.bioc$end  + tbl.bioc$chromStart - 1;
-             # change some column names
-          colnames(tbl.bioc)[4] <- "motifscore"
-          colnames(tbl.bioc)[2] <- "endpos"
-          colnames(tbl.bioc)[7] <- "motifname"
-          tbl.bioc <- tbl.bioc[, -c(3,5)] # get rid of width and maxScore columns
-          desired.column.order <- c("motifname", "chrom", "start", "endpos", "strand", "motifscore", "relativeScore", "match",
-                                    "chromStart", "chromEnd", "count", "score")
-          tbl.bioc <- tbl.bioc[, desired.column.order]
-          tbl.bioc <- tbl.bioc[order(tbl.bioc$motifscore, decreasing=TRUE),]
-          tfs.by.motif <- lapply(tbl.bioc$motifname, function(m) subset(tbl.mg, motif==m)$tf.gene)
-          all.bioc.tfs <- sort(unique(unlist(tfs.by.motif)))
-          tfs.by.motif.joined <- unlist(lapply(tfs.by.motif, function(m) paste(m, collapse=";")))
-          tbl.bioc$tf <- tfs.by.motif.joined
-             # tentative, empirically obtained cutoff
-          upper.quartile.threshold <- fivenum(tbl.bioc$motifscore)[4]
-          tbl.bioc <- subset(tbl.bioc, motifscore >= upper.quartile.threshold)
-          } # if nrow(tbl.regions) > 0
-
-       list(tbl.fimo=tbl.fimo,
-            tfs.fimo=all.fimo.tfs,
-            tbl.bioc=tbl.bioc,
-            tfs.bioc=all.bioc.tfs)
-	}) # getCandidates
+       printf("HumanDHSFilter::getCandidates");
+       tbl.regions <- as.data.frame(do.call("rbind", lapply(regions, function(region) .parseChromLocString(region))))
+       tbl.regions$chrom <- as.character(tbl.regions$chrom)
+       tbl.regions$start <- as.integer(tbl.regions$start)
+       tbl.regions$end <- as.integer(tbl.regions$end)
+       #browser();
+       mm <- MotifMatcher(name="rs13384219.neighborhood", genomeName=obj@genomeName)
+       x <- findMatchesByChromosomalRegion(mm, tbl.regions,
+                                           pwmMatchMinimumAsPercentage=obj@pwmMatchPercentageThreshold)
+       x
+    }) # getCandidates
 
 #----------------------------------------------------------------------------------------------------
 setMethod("getRegulatoryRegions", "HumanDHSFilter",
@@ -327,13 +255,13 @@ setMethod("getRegulatoryRegions", "HumanDHSFilter",
    }) # getRegulatoryRegions
 
 #----------------------------------------------------------------------------------------------------
-setMethod("getSequence", "HumanDHSFilter",
+setMethod("getSequence_tmp", "HumanDHSFilter",
 
    function(obj, tbl.regions){
      gr.regions <- with(tbl.regions, GRanges(seqnames=chrom, IRanges(start=chromStart, end=chromEnd)))
      seqs <- getSeq(obj@genome, gr.regions)
      as.character(seqs)
-     })  # getSequence
+     })  # getSequence_tmp
 
 #----------------------------------------------------------------------------------------------------
 .matchForwardAndReverse <- function(sequence, pfm, motifName, min.match.percentage=95, quiet=TRUE)

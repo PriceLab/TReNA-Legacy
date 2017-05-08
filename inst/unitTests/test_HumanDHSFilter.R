@@ -11,13 +11,13 @@ runTests <- function()
    test_create.vrk2.candidateFilterSpec()
    test_basicConstructor()
    test_geneSymbolToTSS()
-   test_getEncodeRegulatoryTableNames()
-   test_checkAllEncodeTables(quiet=TRUE)
+   #test_getEncodeRegulatoryTableNames()
+   #test_checkAllEncodeTables(quiet=FALSE)
 
    test_getRegulatoryRegions()
    #test_getCandidates.vrk2()
    test_getCandidates.vrk2.rs13384219.neighborhood()
-   test_getSequence()
+   #test_getSequence()
    test_.matchForwardAndReverse()
    test_.getScoredMotifs()
 
@@ -553,20 +553,9 @@ test_getCandidates.vrk2.rs13384219.neighborhood <- function()
                               geneCenteredSpec=geneCenteredSpec,
                               quiet=TRUE))
    x <- getCandidates(hdf)
-   checkEquals(sort(names(x)), c("tbl.bioc", "tbl.fimo", "tfs.bioc", "tfs.fimo"))
-   motifs.bioc <- unique(x$tbl.bioc$motifname)
-   motifs.fimo <- unique(x$tbl.fimo$motifname)
-   tfs.bioc <- x$tfs.bioc
-   tfs.fimo <- x$tfs.fimo
-   tbl.bioc <- x$tbl.bioc
-   tbl.fimo <- x$tbl.fimo
-
-      # make sure that cutoff of tbl.bioc by motifscore, top quartile only, hard-coded for
-      # now, captures all of the motifs found by fimo
-   checkEquals(length(setdiff(tbl.fimo$motifname, tbl.bioc$motifname)), 0)
-   checkTrue(all(tfs.fimo %in% tfs.bioc))
-   checkEquals(length(tfs.bioc), 162)
-   checkEquals(length(tfs.fimo), 18)
+   checkEquals(sort(names(x)), c("tbl", "tfs"))
+   checkEquals(dim(x$tbl), c(66, 11))
+   checkTrue(length(x$tfs) > 150)
 
 } # test_getCandidates.vrk2.rs13384219.neighborhood
 #------------------------------------------------------------------------------------------------------------------------
