@@ -1,5 +1,3 @@
-#' Class TReNA
-#'
 #' @name TReNA-class
 #' @rdname TReNA-class
 #' @aliases TReNA
@@ -15,11 +13,48 @@
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
 #' @export
-setGeneric("solve", signature="obj",
-           function(obj, target.gene, tfs, tf.weights=rep(1, length(tfs)), extraArgs=list())
-              standardGeneric ("solve"))
+setGeneric("solve",                    signature="obj", function(obj, target.gene, tfs,
+                                                                 tf.weights=rep(1, length(tfs)), extraArgs=list())
+    standardGeneric ("solve"))
+
+#' Get the Solver Name from a TReNA Object
+#'
+#' @rdname getSolverName
+#' @aliases getSolverName
+#' 
+#' @param obj An object of class TReNA
+#'
+#' @return The name of the solver subclass object contained by the given TReNA object
+#'
+#' @examples
+#' # Create a LassoSolver object using the included Alzheimer's data and retrieve the solver name
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' solver <- TReNA(mtx.sub, solver = "lasso")
+#' mtx <- getSolverName(solver)
+#' 
 #' @export
 setGeneric("getSolverName",   signature="obj", function(obj) standardGeneric ("getSolverName"))
+
+#' Get the Solver Object from a TReNA Object
+#'
+#' @rdname getSolverObject
+#' @aliases getSolverObject
+#'
+#' @param obj An object of class TReNA
+#'
+#' @export
+#'
+#' @return The Solver object contained by the given TReNA object
+#'
+#' @examples
+#'
+#' # Create a LassoSolver object using the included Alzheimer's data and retrieve the solver object
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' solver <- TReNA(mtx.sub, solver = "lasso")
+#' mtx <- getSolverObject(solver)
+#' 
+#' @export
+setGeneric("getSolverObject", signature="obj", function(obj) standardGeneric ("getSolverObject"))
 #----------------------------------------------------------------------------------------------------
 #' @title Class TReNA
 #'
@@ -49,7 +84,7 @@ setGeneric("getSolverName",   signature="obj", function(obj) standardGeneric ("g
 #'
 #' @return An object of the TReNA class
 #'
-#' @seealso \code{\link{solve}}
+#' @seealso \code{\link{solve}}, \code{\link{Solver}}, \code{\link{getSolverName}}, \code{\link{getSolverObject}}
 
 TReNA <- function(mtx.assay=matrix(), solverName="lasso", quiet=TRUE)
 {
@@ -104,6 +139,8 @@ TReNA <- function(mtx.assay=matrix(), solverName="lasso", quiet=TRUE)
 #'
 #' @seealso \code{\link{TReNA}}
 #'
+#' @family solver methods
+#'
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with LASSO as the solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
@@ -116,22 +153,13 @@ setMethod("solve", "TReNA",
 
    function (obj, target.gene, tfs, tf.weights=rep(1, length(tfs)), extraArgs=list()){
       # printf("entering TReNA::solve")
-      run(obj@solver, target.gene, tfs, tf.weights, extraArgs)
+      run(getSolverObject(obj), target.gene, tfs, tf.weights, extraArgs)
       })
 #----------------------------------------------------------------------------------------------------
-#' Get the Solver Name from a TReNA Object
-#'
-#' Retrieve the name of the solver specified in a TReNA object
-#'
-#' @rdname getSolverName
-#' @aliases getSolverName
+#' @describeIn TReNA Retrieve the name of the solver specified in a TReNA object
 #'
 #' @param obj An object of class TReNA
-#'
-#' @export
-#'
-#' @return A string giving the name of the solver type for the given Solver object
-#'
+#' 
 #' @examples
 #'
 #' # Create a LassoSolver object using the included Alzheimer's data and retrieve the solver name
@@ -146,3 +174,20 @@ setMethod("getSolverName", "TReNA",
               return(class(obj@solver)[1])
           })
 
+#----------------------------------------------------------------------------------------------------
+#' @describeIn TReNA Retrieve the Solver object contained in a TReNA object
+#'
+#' @examples
+#'
+#' # Create a LassoSolver object using the included Alzheimer's data and retrieve the solver object
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' solver <- TReNA(mtx.sub, solver = "lasso")
+#' mtx <- getSolverObject(solver)
+
+setMethod("getSolverObject", "TReNA",
+
+          function(obj){
+              # Return the solver name stored in the object
+              return(obj@solver)                
+          })
+#----------------------------------------------------------------------------------------------------

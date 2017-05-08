@@ -33,11 +33,11 @@
 
      if( length(tfs) == 0 ) return( data.frame() )
 
-     mtx <- obj@mtx.assay
+     mtx <- getAssayData(obj)
      stopifnot(target.gene %in% rownames(mtx))
      stopifnot(all(tfs %in% rownames(mtx)))
      stopifnot(class(lambda) %in% c("NULL","numeric"))
-     features <- t(mtx[tfs,,drop=F ])
+     features <- t(mtx[tfs,,drop=FALSE ])
      target <- as.numeric(mtx[target.gene,])
 
      if( length(tfs) == 1 ) {
@@ -46,8 +46,8 @@
        cor.target.feature = stats::cor( target , features )[1,1]
        mtx.beta = data.frame( beta = mtx.beta[2] , intercept = mtx.beta[1] , gene.cor = cor.target.feature )
        rownames(mtx.beta) = tfs
-       if( keep.metrics == F ) return( mtx.beta )
-       if( keep.metrics == T ) return( list( mtx.beta = mtx.beta , lambda = NA , r2 = cor.target.feature^2 ) )
+       if( keep.metrics == FALSE ) return( mtx.beta )
+       if( keep.metrics == TRUE ) return( list( mtx.beta = mtx.beta , lambda = NA , r2 = cor.target.feature^2 ) )
      }
 
      if( is.null(lambda) ) {

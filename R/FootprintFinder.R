@@ -1,11 +1,3 @@
-#' @title Class FootprintFinder
-#'
-#' @description
-#' The FootprintFinder class is designed to query 2 supplied footprint databases (a genome database
-#' and a project database) for supplied genes or regions. Within the TReNA package, the
-#' FootprintFinder class is mainly used by the FootprintFilter class, but the FootprintFinder class
-#' offers more flexibility in constructing queries.
-#'
 #' @import methods
 #'
 #' @name FootprintFinder-class
@@ -16,11 +8,6 @@
 #' @slot project.db The address of a project database for use in filtering
 #' @slot quiet A logical argument denoting whether the FootprintFinder object should behave quietly
 #'
-#' @return An object of the FootprintFinder class that can reduce a list of genes to a subset prior
-#' to forming a TReNA object
-#'
-#' @seealso \code{\link{FootprintFilter}}
-
 
 #----------------------------------------------------------------------------------------------------
 .FootprintFinder <- setClass("FootprintFinder",
@@ -68,7 +55,7 @@ setGeneric("closeDatabaseConnections", signature="obj",
            function(obj) standardGeneric("closeDatabaseConnections"))
 #' @export
 setGeneric("getPromoterRegionsAllGenes",signature="obj",
-           function(obj ,size.upstream=10000 , size.downstream=10000 , use_gene_ids = T )
+           function(obj ,size.upstream=10000 , size.downstream=10000 , use_gene_ids = TRUE )
                standardGeneric("getPromoterRegionsAllGenes"))
 #' @export
 setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
@@ -91,6 +78,12 @@ setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
 #' @name FootprintFinder-class
 #' @rdname FootprintFinder-class
 #'
+#' @description
+#' The FootprintFinder class is designed to query 2 supplied footprint databases (a genome database
+#' and a project database) for supplied genes or regions. Within the TReNA package, the
+#' FootprintFinder class is mainly used by the FootprintFilter class, but the FootprintFinder class
+#' offers more flexibility in constructing queries. 
+#'
 #' @param genome.database.uri The address of a genome database for use in filtering. This database
 #' must contain the tables "gtf" and "motifsgenes" at a minimum. The URI format is as follows:
 #' "dbtype://host/database" (e.g. "postgres://localhost/genomedb")
@@ -102,6 +95,10 @@ setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
 #' @return An object of the FootprintFinder class
 #'
 #' @export
+#' 
+#' @seealso \code{\link{FootprintFilter}}
+#'
+#' @family FootprintFinder methods
 
 FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRUE)
 {
@@ -188,10 +185,13 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
 #'
 #' This method takes a FootprintFinder object and closes connections to the footprint databases
 #' if they are currently open.
-#'
-#' @rdname FootprintFinder-class
-#'
+#' 
+#' @rdname closeDatabaseConnections
+#' @aliases closeDatabaseConnections
+#' 
 #' @param obj An object of class FootprintFinder
+#'
+#' @family FootprintFinder methods
 #'
 #' @return Closes the specified database connection
 
@@ -217,8 +217,18 @@ setMethod("closeDatabaseConnections", "FootprintFinder",
 #'
 #' @export
 #'
+#' @family FootprintFinder methods
+#' 
 #' @return A sorted list of the types of biological units contained in the gtf table of the genome
 #' database.
+#'
+#' @examples
+#' db.address <- system.file(package="TReNA", "extdata")
+#' genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+#' project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+#' fp <- FootprintFinder(genome.db.uri, project.db.uri)
+#'
+#' biotypes <- getGtfGeneBioTypes(fp)
 
 setMethod("getGtfGeneBioTypes", "FootprintFinder",
 
@@ -239,8 +249,18 @@ setMethod("getGtfGeneBioTypes", "FootprintFinder",
 #'
 #' @export
 #'
+#' @family FootprintFinder methods
+#' 
 #' @return A sorted list of the types of molecules contained in the gtf table of the genome
 #' database.
+#'
+#' @examples
+#' db.address <- system.file(package="TReNA", "extdata")
+#' genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+#' project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+#' fp <- FootprintFinder(genome.db.uri, project.db.uri)
+#'
+#' mol.types <- getGtfMoleculeTypes(fp)
 
 setMethod("getGtfMoleculeTypes", "FootprintFinder",
 
@@ -264,9 +284,19 @@ setMethod("getGtfMoleculeTypes", "FootprintFinder",
 #'
 #' @export
 #'
+#' @family FootprintFinder methods
+#' 
 #' @return A dataframe containing the results of a database query pertaining to the specified name,
 #' biotype, and molecule type. This dataframe contains the following columns: gene_id, gene_name,
 #' chr, start, endpos, strand
+#'
+#' @examples
+#' db.address <- system.file(package="TReNA", "extdata")
+#' genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+#' project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+#' fp <- FootprintFinder(genome.db.uri, project.db.uri)
+#'
+#' chrom.locs <- getChromLoc(fp, name = "MEF2C")
 
 setMethod("getChromLoc", "FootprintFinder",
 
@@ -299,17 +329,27 @@ setMethod("getChromLoc", "FootprintFinder",
 #'
 #' @export
 #'
+#' @family FootprintFinder methods
+#'
 #' @return A list containing 3 elements:
 #' 1) chr : The name of the chromasome containing the promoter region for the specified gene
 #' 2) start : The starting location of the promoter region for the specified gene
 #' 3) end : The ending location of the promoter region for the specified gene
+#'
+#' @examples
+#' db.address <- system.file(package="TReNA", "extdata")
+#' genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+#' project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+#' fp <- FootprintFinder(genome.db.uri, project.db.uri)
+#'
+#' prom.region <- getGenePromoterRegion(fp, gene = "MEF2C")
 
 setMethod("getGenePromoterRegion", "FootprintFinder",
 
    function(obj, gene, size.upstream=1000, size.downstream=0, biotype="protein_coding", moleculetype="gene"){
 
       tbl.loc <- getChromLoc(obj, gene, biotype=biotype, moleculetype=moleculetype)
-      if(nrow(tbl.loc) != 1){
+      if(nrow(tbl.loc) < 1){
           warning(sprintf("no chromosomal location for %s (%s, %s)", gene, biotype, moleculetype))
           return(NA)
           }
@@ -352,8 +392,16 @@ setMethod("getGenePromoterRegion", "FootprintFinder",
 #' @return A dataframe containing all footprints for the specified gene and accompanying parameters
 #'
 #' @export
+#' 
+#' @family FootprintFinder methods
 #'
-#' @seealso \code{\link{getGenePromoterRegion}}, \code{\link{getFootprintsInRegion}}
+#' @examples
+#' db.address <- system.file(package="TReNA", "extdata")
+#' genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+#' project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+#' fp <- FootprintFinder(genome.db.uri, project.db.uri)
+#'
+#' footprints <- getFootprintsForGene(fp, gene = "MEF2C")
 
 setMethod("getFootprintsForGene", "FootprintFinder",
 
@@ -382,7 +430,18 @@ setMethod("getFootprintsForGene", "FootprintFinder",
 #'
 #' @export
 #'
+#' @family FootprintFinder methods
+#' 
 #' @return A dataframe containing all footprints for the specified region
+#'
+#' @examples
+#' db.address <- system.file(package="TReNA", "extdata")
+#' genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+#' project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+#' fp <- FootprintFinder(genome.db.uri, project.db.uri)
+#'
+#' footprints <- getFootprintsInRegion(fp, chromosome = "chr5",
+#' start = 88903305, end = 88903319 )
 
 setMethod("getFootprintsInRegion", "FootprintFinder",
 
@@ -429,10 +488,20 @@ setMethod("getFootprintsInRegion", "FootprintFinder",
 #' @return A GRanges object containing the promoter regions for all genes
 #'
 #' @export
+#'
+#' @family FootprintFinder methods
+#' 
+#' @examples
+#' db.address <- system.file(package="TReNA", "extdata")
+#' genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+#' project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+#' fp <- FootprintFinder(genome.db.uri, project.db.uri)
+#'
+#' footprints <- getPromoterRegionsAllGenes(fp)
 
 setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 
-   function( obj , size.upstream=10000 , size.downstream=10000 , use_gene_ids = T ) {
+   function( obj , size.upstream=10000 , size.downstream=10000 , use_gene_ids = TRUE ) {
 
    query <-
    paste( "select gene_name, gene_id, chr, start, endpos, strand from gtf where" ,
@@ -466,9 +535,9 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
         gene_name = genes$gene_name ,
         gene_id = genes$gene_id ))
    # GRanges obj
-   gr = GenomicRanges::makeGRangesFromDataFrame( promoter_regions , keep.extra.columns = T )
-   if( use_gene_ids == F ) names(gr) = promoter_regions$gene_name
-   if( use_gene_ids == T ) names(gr) = promoter_regions$gene_id
+   gr = GenomicRanges::makeGRangesFromDataFrame( promoter_regions , keep.extra.columns = TRUE )
+   if( use_gene_ids == FALSE ) names(gr) = promoter_regions$gene_name
+   if( use_gene_ids == TRUE ) names(gr) = promoter_regions$gene_id
    return( gr )
 
 }) # getPromoterRegionsAllGenes
@@ -489,9 +558,17 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 #' factors they map to
 #'
 #' @export
+#' 
+#' @family FootprintFinder methods
 #'
-#' @seealso \code{\link{getFootprintsInRegion}}, \code{\link{getFootprintsForGene}}
-
+#' @examples
+#' db.address <- system.file(package="TReNA", "extdata")
+#' genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+#' project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+#' fp <- FootprintFinder(genome.db.uri, project.db.uri)
+#'
+#' footprints <- getFootprintsForGene(fp, gene = "MEF2C")
+#' tfs <- mapMotifsToTFsMergeIntoTable(fp, footprints)
 
 setMethod("mapMotifsToTFsMergeIntoTable", "FootprintFinder",
 
@@ -512,5 +589,4 @@ setMethod("mapMotifsToTFsMergeIntoTable", "FootprintFinder",
          tbl <- tbl[-deleters,]
       invisible(tbl)
       })
-
 #----------------------------------------------------------------------------------------------------

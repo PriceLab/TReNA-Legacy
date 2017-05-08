@@ -20,3 +20,14 @@ Create a Solver class object using Spearman correlation coefficients as the solv
 \examples{
 solver <- SpearmanSolver()
 }
+\seealso{
+\code{\link{solve.Spearman}}, \code{\link{getAssayData}}
+
+Other Solver class objects: \code{\link{BayesSpikeSolver}},
+  \code{\link{EnsembleSolver}},
+  \code{\link{LassoPVSolver}}, \code{\link{LassoSolver}},
+  \code{\link{PearsonSolver}},
+  \code{\link{RandomForestSolver}},
+  \code{\link{RidgeSolver}}, \code{\link{Solver-class}},
+  \code{\link{SqrtLassoSolver}}
+}

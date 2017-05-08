@@ -14,9 +14,9 @@ test_NullFilter <- function()
     printf("--- test_NullFilter")
 
     # Check that dummy data returns all gene names
-    x <- test_developAndFitDummyTestData(quiet=TRUE)
-    null.filter <- NullFilter(mtx.assay = x$assay)
-    checkEquals(getCandidates(null.filter),rownames(x$assay))
+    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+    null.filter <- NullFilter(mtx.assay = mtx.sub)
+    checkEquals(getCandidates(null.filter),rownames(mtx.sub))
 
 } # test_NullFilter
 #----------------------------------------------------------------------------------------------------

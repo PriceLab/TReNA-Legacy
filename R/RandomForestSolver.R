@@ -18,8 +18,13 @@
 #'
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the solver should print output
+#'
 #' @return A Solver class object with Random Forest as the solver
 #'
+#' @seealso  \code{\link{solve.RandomForest}}, \code{\link{getAssayData}}
+#'
+#' @family Solver class objects
+#' 
 #' @export
 #'
 #' @examples
@@ -71,6 +76,12 @@ setMethod('show', 'RandomForestSolver',
 #' @rdname solve.RandomForest
 #' @aliases run.RandomForestSolver solve.RandomForest
 #'
+#' @description
+#' Given a TReNA object with RandomForest as the solver, use the \code{\link{randomForest}} function
+#' to estimate coefficients for each transcription factor as a predictor of the target gene's
+#' expression level.
+#' This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
+
 #' @param obj An object of class TReNA with "randomForest" as the solver string
 #' @param targetGene A designated target gene that should be part of the mtx.assay data
 #' @param candidateRegulators The designated set of transcription factors that could be associated with the target gene.
@@ -79,8 +90,8 @@ setMethod('show', 'RandomForestSolver',
 #'
 #' @return A list containing various parameters of the Random Forest fit.
 #'
-#' @seealso \code{\link{randomForest}}
-#'
+#' @seealso \code{\link{randomForest}}, \code{\link{RandomForestSolver}}
+#' 
 #' @family solver methods
 #'
 #' @examples
@@ -96,10 +107,15 @@ setMethod("run", "RandomForestSolver",
 
   function (obj){
 
-      # Check if targetGene is in the bottom 10% in mean expression; if so, send a warning
-      if(rowMeans(obj@mtx.assay)[obj@targetGene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){
-          warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
-      }
+      # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning      
+      if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){          
+          warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")          
+      }      
+      
+     mtx <- getAssayData(obj)
+     stopifnot(target.gene %in% rownames(mtx))
+     stopifnot(all(tfs %in% rownames(mtx)))
+     if(length(tfs)==0) return(NULL)
 
      mtx <- obj@mtx.assay
      if(length(obj@candidateRegulators)==0) return(NULL)
@@ -116,5 +132,4 @@ setMethod("run", "RandomForestSolver",
      edges <- edges[order(edges$IncNodePurity, decreasing=TRUE),]
      return(list(edges = edges , r2 = r2))
      })
-
 #----------------------------------------------------------------------------------------------------

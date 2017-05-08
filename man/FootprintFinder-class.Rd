@@ -7,12 +7,9 @@
 \alias{FootprintFinder}
 \alias{FootprintFinder-class}
 \alias{FootprintFinder}
-\alias{closeDatabaseConnections,FootprintFinder-method}
 \title{Class FootprintFinder}
 \usage{
 FootprintFinder(genome.database.uri, project.database.uri, quiet = TRUE)
-
-\S4method{closeDatabaseConnections}{FootprintFinder}(obj)
 }
 \arguments{
 \item{genome.database.uri}{The address of a genome database for use in filtering. This database
@@ -24,25 +21,15 @@ must contain the tables "regions" and "hits" at a minimum. The URI format is as 
 "dbtype://host/database" (e.g. "postgres://localhost/projectdb")}
 
 \item{quiet}{A logical denoting whether or not the FootprintFinder object should print output}
-
-\item{obj}{An object of class FootprintFinder}
 }
 \value{
-An object of the FootprintFinder class that can reduce a list of genes to a subset prior
-to forming a TReNA object
-
 An object of the FootprintFinder class
-
-Closes the specified database connection
 }
 \description{
 The FootprintFinder class is designed to query 2 supplied footprint databases (a genome database
 and a project database) for supplied genes or regions. Within the TReNA package, the
 FootprintFinder class is mainly used by the FootprintFilter class, but the FootprintFinder class
 offers more flexibility in constructing queries.
-
-This method takes a FootprintFinder object and closes connections to the footprint databases
-if they are currently open.
 }
 \section{Slots}{
 
@@ -56,4 +43,14 @@ if they are currently open.
 
 \seealso{
 \code{\link{FootprintFilter}}
+
+Other FootprintFinder methods: \code{\link{closeDatabaseConnections,FootprintFinder-method}},
+  \code{\link{getChromLoc,FootprintFinder-method}},
+  \code{\link{getFootprintsForGene,FootprintFinder-method}},
+  \code{\link{getFootprintsInRegion,FootprintFinder-method}},
+  \code{\link{getGenePromoterRegion,FootprintFinder-method}},
+  \code{\link{getGtfGeneBioTypes,FootprintFinder-method}},
+  \code{\link{getGtfMoleculeTypes,FootprintFinder-method}},
+  \code{\link{getPromoterRegionsAllGenes,FootprintFinder-method}},
+  \code{\link{mapMotifsToTFsMergeIntoTable,FootprintFinder-method}}
 }

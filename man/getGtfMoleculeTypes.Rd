@@ -19,3 +19,22 @@ database.
 Using the gtf table in the genome database contained in a FootprintFinder object, get the list of
 different types of molecules contained in the table.
 }
+\examples{
+db.address <- system.file(package="TReNA", "extdata")
+genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+fp <- FootprintFinder(genome.db.uri, project.db.uri)
+
+mol.types <- getGtfMoleculeTypes(fp)
+}
+\seealso{
+Other FootprintFinder methods: \code{\link{FootprintFinder-class}},
+  \code{\link{closeDatabaseConnections,FootprintFinder-method}},
+  \code{\link{getChromLoc,FootprintFinder-method}},
+  \code{\link{getFootprintsForGene,FootprintFinder-method}},
+  \code{\link{getFootprintsInRegion,FootprintFinder-method}},
+  \code{\link{getGenePromoterRegion,FootprintFinder-method}},
+  \code{\link{getGtfGeneBioTypes,FootprintFinder-method}},
+  \code{\link{getPromoterRegionsAllGenes,FootprintFinder-method}},
+  \code{\link{mapMotifsToTFsMergeIntoTable,FootprintFinder-method}}
+}

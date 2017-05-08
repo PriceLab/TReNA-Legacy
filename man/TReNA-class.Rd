@@ -7,9 +7,15 @@
 \alias{TReNA}
 \alias{TReNA-class}
 \alias{TReNA}
+\alias{getSolverName,TReNA-method}
+\alias{getSolverObject,TReNA-method}
 \title{Class TReNA}
 \usage{
 TReNA(mtx.assay = matrix(), solver = "lasso", quiet = TRUE)
+
+\S4method{getSolverName}{TReNA}(obj)
+
+\S4method{getSolverObject}{TReNA}(obj)
 }
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
@@ -29,16 +35,35 @@ TReNA currently supports 9 solver strings (default = "lasso"):
 }}
 
 \item{quiet}{A logical denoting whether or not the TReNA object should print output}
+
+\item{obj}{An object of class TReNA}
 }
 \value{
 An object of the TReNA class
 }
 \description{
-Class TReNA
-
 Class \code{TReNA} defines a TReNA object and contains an assay matrix, which contains expression data over a set of
 samples for a group of genes, and a string representing the name of a chosen solver.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{getSolverName}: Retrieve the name of the solver specified in a TReNA object
+
+\item \code{getSolverObject}: Retrieve the Solver object contained in a TReNA object
+}}
+
+\examples{
+
+# Create a LassoSolver object using the included Alzheimer's data and retrieve the solver name
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+solver <- TReNA(mtx.sub, solver = "lasso")
+mtx <- getSolverName(solver)
+
+# Create a LassoSolver object using the included Alzheimer's data and retrieve the solver object
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+solver <- TReNA(mtx.sub, solver = "lasso")
+mtx <- getSolverObject(solver)
+}
 \seealso{
-\code{\link{solve}}
+\code{\link{solve}}, \code{\link{Solver}}, \code{\link{getSolverName}}, \code{\link{getSolverObject}}
 }

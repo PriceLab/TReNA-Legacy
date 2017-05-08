@@ -14,12 +14,12 @@ test_VarianceFilter <- function()
     printf("--- test_VarianceFilter")
 
     # Create dummy data and filter it based on variance
-    x <- test_developAndFitDummyTestData(quiet=TRUE)
-    var.filter <- VarianceFilter(mtx.assay = x$assay)
-    tf.list <- getCandidates(var.filter, extraArgs = list("target.gene" = x$correlated.target,
+    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+    var.filter <- VarianceFilter(mtx.assay = mtx.sub)
+    tf.list <- getCandidates(var.filter, extraArgs = list("target.gene" = "MEF2C",
                                                           "var.size" = 0.5))
     
-    checkTrue(length(tf.list$tfs) > 0)
+    checkTrue(length(tf.list$tfs) == 1)
 
 } # test_VarianceFilter
 #----------------------------------------------------------------------------------------------------

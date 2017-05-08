@@ -12,7 +12,7 @@ setGeneric("predictFromModel",         signature="obj", function(obj, model, tfs
 setMethod("trainModel", "TReNA",
 
    function (obj, target.gene, tfs, training.samples, tf.weights=rep(1, length(tfs))){
-      fit <- trainModel(obj@solver, target.gene, tfs, training.samples, tf.weights)
+      fit <- trainModel(getSolverObject(obj), target.gene, tfs, training.samples, tf.weights)
       return(fit)
       })
 
@@ -20,7 +20,7 @@ setMethod("trainModel", "TReNA",
 setMethod("predictFromModel", "TReNA",
 
    function (obj, model, tfs, test.samples){
-      prediction <- predictFromModel(obj@solver, model, tfs, test.samples)
+      prediction <- predictFromModel(getSolverObject(obj), model, tfs, test.samples)
       return(prediction)
       })
 
@@ -48,7 +48,7 @@ setMethod("trainModel", "BayesSpikeSolver",
 
      tf.weights <- 1/tf.weights
 
-     mtx <- obj@mtx.assay
+     mtx <- getAssayData(obj)
      stopifnot(target.gene %in% rownames(mtx))
      stopifnot(all(tfs %in% rownames(mtx)))
      features <- t(mtx[tfs, ])
@@ -75,7 +75,7 @@ setGeneric("predictFromModel", function(obj, model, tfs, test.samples) standardG
 setMethod("predictFromModel", "BayesSpikeSolver",
 
    function (obj, model, tfs, test.samples){
-      mtx <- obj@mtx.assay
+      mtx <- getAssayData(obj)
       predict.glmnet(model, t(mtx[tfs, test.samples]))
       })
 
@@ -100,7 +100,7 @@ setMethod("trainModel", "LassoSolver",
 
      tf.weights <- 1/tf.weights
 
-     mtx <- obj@mtx.assay
+     mtx <- getAssayData(obj)
      stopifnot(target.gene %in% rownames(mtx))
      stopifnot(all(tfs %in% rownames(mtx)))
      features <- t(mtx[tfs, ])
@@ -126,7 +126,7 @@ setMethod("trainModel", "LassoSolver",
 setMethod("predictFromModel", "LassoSolver",
 
    function (obj, model, tfs, test.samples){
-      mtx <- obj@mtx.assay
+      mtx <- getAssayData(obj)
       predict.glmnet(model, t(mtx[tfs, test.samples]))
       })
 

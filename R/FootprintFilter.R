@@ -28,10 +28,12 @@ printf <- function(...) print(noquote(sprintf(...)))
 #'
 #' #' @param quiet A logical denoting whether or not the filter should print output
 #'
-#' @seealso \code{\link{getCandidates-FootprintFilter}}
+#' @seealso \code{\link{getCandidates-FootprintFilter}}, \code{\link{getFilterAssayData}}
 #'
 #' @export
 #'
+#' @return An object of the FootprintFilter class
+#' 
 #' @family Filtering Objects
 #'
 #' @examples
@@ -104,9 +106,9 @@ setMethod("getCandidates", "FootprintFilter",
 
      function(obj){
 
-              # Create a FootprintFinder object and find the footprints
-        fp <- FootprintFinder(obj@genomeDB, obj@footprintDB, quiet=TRUE)
-        tbl.out <- data.frame()
+         # Create a FootprintFinder object and find the footprints         
+         fp <- FootprintFinder(obj@genomeDB, obj@footprintDB, quiet=TRUE)         
+         tbl.out <- data.frame()         
 
         for(region in obj@regions){
            chromLoc <- .parseChromLocString(region)

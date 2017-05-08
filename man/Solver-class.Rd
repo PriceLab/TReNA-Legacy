@@ -5,14 +5,20 @@
 \alias{Solver-class}
 \alias{.Solver}
 \alias{Solver}
-\title{Solver Class}
+\alias{Solver}
+\alias{getAssayData,Solver-method}
+\title{Define an object of class Solver}
 \usage{
 Solver(mtx.assay = matrix(), quiet = TRUE)
+
+\S4method{getAssayData}{Solver}(obj)
 }
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
 
 \item{quiet}{A logical indicating whether or not the Solver object should print output}
+
+\item{obj}{An object of class Solver}
 }
 \value{
 An object of the Solver class
@@ -22,22 +28,31 @@ The Solver class is a generic class that governs the different solvers available
 Solver class object is constructed during creation of a TReNA object and resides within the
 TReNA object. It is rarely called by itself; rather, interaction with a particular solver object
 is achieved using the \code{\link{solve}} method on a TReNA object.
-
-Define an object of class Solver
 }
-\section{Slots}{
-
-\describe{
-\item{\code{mtx.assay}}{An assay matrix of gene expression data}
-
-\item{\code{quiet}}{A logical element indicating whether the Solver object should print output}
+\section{Methods (by generic)}{
+\itemize{
+\item \code{getAssayData}: Retrieve the assay matrix of gene expression data
 }}
 
 \examples{
+# Create a simple Solver object with default options
 mtx <- matrix(rnorm(10000), nrow = 100)
 solver <- Solver(mtx)
 
+
+# Create a Solver object using the included Alzheimer's data and retrieve the matrix
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+solver <- Solver(mtx.sub)
+mtx <- getAssayData(solver)
 }
 \seealso{
-\code{\link{TReNA}}, \code{\link{solve}}
+\code{\link{getAssayData}}, \code{\link{TReNA}}, \code{\link{solve}}
+
+Other Solver class objects: \code{\link{BayesSpikeSolver}},
+  \code{\link{EnsembleSolver}},
+  \code{\link{LassoPVSolver}}, \code{\link{LassoSolver}},
+  \code{\link{PearsonSolver}},
+  \code{\link{RandomForestSolver}},
+  \code{\link{RidgeSolver}}, \code{\link{SpearmanSolver}},
+  \code{\link{SqrtLassoSolver}}
 }

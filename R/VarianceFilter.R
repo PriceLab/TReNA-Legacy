@@ -27,9 +27,11 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' @return A CandidateFilter class object with variance as the filtering method
 #'
 #' @export
+#' 
+#' @seealso \code{\link{getCandidates-VarianceFilter}}, \code{\link{getFilterAssayData}}
 #'
-#' @seealso \code{\link{getCandidates-VarianceFilter}}
-#'
+#' @return An object of the VarianceFilter class
+#' 
 #' @family Filtering Objects
 #'
 #' @examples
@@ -76,13 +78,13 @@ setMethod("getCandidates", "VarianceFilter",
               target.gene <- argsList[["target.gene"]]
               var.size <- argsList[["var.size"]]
 
-              # Designate the target genes and tfs
-              tfs <- setdiff(rownames(obj@mtx.assay), target.gene)
-              tf.mtx <- obj@mtx.assay[-c(which(rownames(obj@mtx.assay) == target.gene)),]
-              target.mtx <- obj@mtx.assay[which(rownames(obj@mtx.assay) == target.gene),]
-
-              # Find the variances
-              tf.var <- apply(tf.mtx,1,stats::var)
+              # Designate the target genes and tfs              
+              tfs <- setdiff(rownames(getFilterAssayData(obj)), target.gene)              
+              tf.mtx <- getFilterAssayData(obj)[-c(which(rownames(getFilterAssayData(obj)) == target.gene)),]              
+              target.mtx <- getFilterAssayData(obj)[which(rownames(getFilterAssayData(obj)) == target.gene),]
+              
+              # Find the variances              
+              tf.var <- apply(tf.mtx,1,stats::var)              
               target.var <- stats::var(target.mtx)
 
               # Return only the genes with variances within the var.size of target gene variance
@@ -91,7 +93,6 @@ setMethod("getCandidates", "VarianceFilter",
               tf.vars <- tf.var[var.idx]
 
               return(list(tfs = tfs, tf.vars = tf.vars))
-
           }
 )
 #----------------------------------------------------------------------------------------------------

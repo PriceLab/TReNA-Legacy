@@ -15,6 +15,9 @@ FootprintFilter(mtx.assay = matrix(), quiet = TRUE)
 
 \item{quiet}{A logical denoting whether or not the filter should print output}
 }
+\value{
+An object of the FootprintFilter class
+}
 \description{
 A FootprintFilter object allows for filtering based on gene footprinting databases. Using its
 associated \code{getCandidates} method and URIs for both a genome database and project database,
@@ -26,9 +29,8 @@ load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RD
 footprint.filter <- FootprintFilter(mtx.assay = mtx.sub)
 }
 \seealso{
-\code{\link{getCandidates-FootprintFilter}}
+\code{\link{getCandidates-FootprintFilter}}, \code{\link{getFilterAssayData}}
 
-Other Filtering Objects: \code{\link{HumanDNAseClusterFilter-class}},
-  \code{\link{NullFilter-class}},
+Other Filtering Objects: \code{\link{NullFilter-class}},
   \code{\link{VarianceFilter-class}}
 }

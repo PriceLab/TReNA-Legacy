@@ -18,6 +18,10 @@
 #' 
 #' @return A Solver class object with Bayes Spike as the solver
 #'
+#' @family Solver class objects
+#' 
+#' @seealso  \code{\link{solve.BayesSpike}}, \code{\link{getAssayData}}
+#'
 #' @examples
 #' solver <- BayesSpikeSolver()
 
@@ -38,19 +42,22 @@ BayesSpikeSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @rdname solve.BayesSpike
 #' @aliases run.BayesSpikeSolver solve.BayesSpike
 #' 
-#' @description Given a TReNA object with Bayes Spike as the solver, use the \code{\link{vbsr}} function to estimate coefficients
-#' for each transcription factor as a predictor of the target gene's expression level.
+#' @description Given a TReNA object with Bayes Spike as the solver, use the \code{\link{vbsr}}
+#' function to estimate coefficients for each transcription factor as a predictor of the target
+#' gene's expression level. This method should be called using the \code{\link{solve}} method on an
+#' appropriate TReNA object. 
 #'
-#' @param obj An object of the class TReNA with "bayesSpike" as the solver string
+#' @param obj An object of the class Solver with "bayesSpike" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
 #' @param extraArgs Modifiers to the Bayes Spike solver; this includes \code{n_orderings}, the
 #' number of random starts used by the solver
 #' 
-#' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters
+#' @return A data frame containing the coefficients relating the target gene to each transcription factor,
+#' plus other fit parameters
 #'
-#' @seealso \code{\link{vbsr}}
+#' @seealso \code{\link{vbsr}}, \code{\link{BayesSpikeSolver}}
 #'
 #' @family solver methods
 #' 
@@ -70,7 +77,7 @@ setMethod("run", "BayesSpikeSolver",
   function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
 
       # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning      
-      if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                   
+      if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){                   
           warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")         
       }
             
@@ -88,7 +95,7 @@ setMethod("run", "BayesSpikeSolver",
           message(sprintf("BayesSpikeSolver removing target.gene from candidate regulators: %s", target.gene))          
       }      
 
-    mtx <- obj@mtx.assay
+    mtx <- getAssayData(obj)
     stopifnot(target.gene %in% rownames(mtx))
     stopifnot(all(tfs %in% rownames(mtx)))
     features <- t(mtx[tfs, ])

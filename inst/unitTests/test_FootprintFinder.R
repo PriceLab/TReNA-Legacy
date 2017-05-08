@@ -2,6 +2,8 @@ library(TReNA)
 library(RUnit)
 library(RPostgreSQL)
 #----------------------------------------------------------------------------------------------------
+printf <- function(...) print(noquote(sprintf(...)))
+#----------------------------------------------------------------------------------------------------
 runTests <- function()
 {
    test_.parseDatabaseUri()
@@ -19,19 +21,19 @@ runTests <- function()
 test_.parseDatabaseUri <- function()
 {
    printf("--- test_.parseDatabaseUri")
-   genome.db.uri <- "postgres://whovian/hg38"
-   #project.db.uri <-  "postgres://whovian/lymphoblast"
-   project.db.uri <-  "postgres://whovian/brain_wellington"
-
+   db.address <- system.file(package="TReNA", "extdata")
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+   
    x <- TReNA:::.parseDatabaseUri(genome.db.uri)
-   checkEquals(x$brand, "postgres")
-   checkEquals(x$host,  "whovian")
-   checkEquals(x$name,  "hg38")
+   checkEquals(x$brand, "sqlite")
+   checkEquals(x$host,  db.address)
+   checkEquals(x$name,  "genome.sub.db")
 
    x <- TReNA:::.parseDatabaseUri(project.db.uri)
-   checkEquals(x$brand, "postgres")
-   checkEquals(x$host,  "whovian")
-   checkEquals(x$name,  "brain_wellington")
+   checkEquals(x$brand, "sqlite")
+   checkEquals(x$host,  db.address)
+   checkEquals(x$name,  "project.sub.db")
 
 } # test_.parseDatabaseUri
 #----------------------------------------------------------------------------------------------------
@@ -39,37 +41,30 @@ test_constructor <- function()
 {
    printf("--- test_constructor")
 
-   genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/brain_wellington"
+   db.address <- system.file(package="TReNA", "extdata")
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")   
+
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
    closeDatabaseConnections(fp)
 
 } # test_constructor
 #----------------------------------------------------------------------------------------------------
-test_database.hg38.whovian <- function()
-{
-   printf("--- test_database.hg38.whovian")
-   db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="hg38", host="whovian")
-   checkTrue("DBIConnection" %in% is(db))
-   checkTrue("gtf" %in% dbListTables(db))
-   rowCount <-  dbGetQuery(db, "select count(*) from gtf")[1, 1]
-   checkTrue(rowCount >  2.5 * 10^6)
-
-} # test_database.hg38.whovian
-#----------------------------------------------------------------------------------------------------
 test_getGtfGeneBioTypes <- function()
 {
    printf("--- test_getGtfGeneBioTypes")
 
-   genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/brain_wellington"
+   db.address <- system.file(package="TReNA", "extdata")
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
    types <- getGtfGeneBioTypes(fp)
-   checkTrue(length(types) >= 40)
-   some.expected.types <- c("processed_transcript", "protein_coding", "pseudogene", "rRNA", "ribozyme", "sRNA")
-   checkTrue(all(some.expected.types %in% types))
+#   checkTrue(length(types) >= 40)
+#   some.expected.types <- c("processed_transcript", "protein_coding", "pseudogene", "rRNA", "ribozyme", "sRNA")
+   #   checkTrue(all(some.expected.types %in% types))
+   checkEquals(types, "protein_coding")
    closeDatabaseConnections(fp)
-
 
 } # test_getGtfGeneBioTypes
 #----------------------------------------------------------------------------------------------------
@@ -77,17 +72,19 @@ test_getGtfMoleculeTypes <- function()
 {
    printf("--- test_getGtfMoleculeTypes")
 
-   genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/brain_wellington"
+   db.address <- system.file(package="TReNA", "extdata")
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+   
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
    types <- getGtfMoleculeTypes(fp)
 
-   checkTrue(length(types) >= 9)
-   some.expected.types <- c("CDS", "exon", "five_prime_utr", "gene", "start_codon", "stop_codon",
-                            "three_prime_utr", "transcript")
-   checkTrue(all(some.expected.types %in% types))
+   checkEquals(types, "gene")
+   #checkTrue(length(types) >= 9)
+   #some.expected.types <- c("CDS", "exon", "five_prime_utr", "gene", "start_codon", "stop_codon",
+   #                         "three_prime_utr", "transcript")
+   #checkTrue(all(some.expected.types %in% types))
    closeDatabaseConnections(fp)
-
 
 } # test_getGtfMoleculeTypes
 #----------------------------------------------------------------------------------------------------
@@ -95,8 +92,10 @@ test_getChromLoc <- function()
 {
    printf("--- test_getChromLoc")
 
-   genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/brain_wellington"
+   db.address <- system.file(package="TReNA", "extdata")
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+   
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
    tbl.loc <- getChromLoc(fp, "MEF2C", biotype="protein_coding", moleculetype="gene")
    checkEquals(dim(tbl.loc), c(1, 6))
@@ -118,63 +117,63 @@ test_getChromLoc <- function()
    checkEquals(as.list(tbl.loc), expected)
    closeDatabaseConnections(fp)
 
-
 } # test_getChromLoc
 #------------------------------------------------------------------------------------------------------------------------
 test_getGenePromoterRegion <- function()
 {
    printf("--- test_getGenePromoterRegion")
 
-   genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/brain_wellington"
+   db.address <- system.file(package="TReNA", "extdata")
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+   
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
       # TREM2: prepare for test of both gene symbol and ensembl gene id
-   tbl.loc <- getChromLoc(fp, "TREM2")
+   tbl.loc <- getChromLoc(fp, "MEF2C")
    ensg <- tbl.loc$gene_id[1]
 
       # test this gene, two ids, zero length and 50 bp length regions
 
-   region <- getGenePromoterRegion(fp, "TREM2", 0, 0)
-   checkEquals(region$chr, "chr6")
-   checkEquals(region$start, 41163186)
-   checkEquals(region$end,   41163186)
+   region <- getGenePromoterRegion(fp, "MEF2C", 0, 0)
+   checkEquals(region$chr, "chr5")
+   checkEquals(region$start, 88904257)
+   checkEquals(region$end,   88904257)
 
    region <- getGenePromoterRegion(fp, ensg, 0, 0)
-   checkEquals(region$chr, "chr6")
-   checkEquals(region$start, 41163186)
-   checkEquals(region$end,   41163186)
+   checkEquals(region$chr, "chr5")
+   checkEquals(region$start, 88904257)
+   checkEquals(region$end,   88904257)
 
-   region <- getGenePromoterRegion(fp, "TREM2", 20, 30)
-   checkEquals(region$chr, "chr6")
-   checkEquals(region$start, 41163156)  #
-   checkEquals(region$end,   41163206)  # 20 bases upstream from the "end" TSS
+   region <- getGenePromoterRegion(fp, "MEF2C", 20, 30)
+   checkEquals(region$chr, "chr5")
+   checkEquals(region$start, 88904227)  #
+   checkEquals(region$end,   88904277)  # 20 bases upstream from the "end" TSS
 
    region <- getGenePromoterRegion(fp, ensg, 20, 30)
-   checkEquals(region$chr, "chr6")
-   checkEquals(region$start, 41163156)  #
-   checkEquals(region$end,   41163206)  # 20 bases upstream from the "end" TSS
-
+   checkEquals(region$chr, "chr5")
+   checkEquals(region$start, 88904227)  #
+   checkEquals(region$end,   88904277)  # 20 bases upstream from the "end" TSS
 
      # now a plus strand gene
-   region <- getGenePromoterRegion(fp, "SP1", 0, 0)
-   checkEquals(region$chr, "chr12")
-   checkEquals(region$start, 53380176)
-   checkEquals(region$end,   53380176)
+#   region <- getGenePromoterRegion(fp, "SP1", 0, 0)
+#   checkEquals(region$chr, "chr12")
+#   checkEquals(region$start, 53380176)
+#   checkEquals(region$end,   53380176)
 
-   region <- getGenePromoterRegion(fp, "SP1", 1000, 1)
-   checkEquals(region$chr, "chr12")
-   checkEquals(region$start, 53379176)
-   checkEquals(region$end,   53380177)
+#   region <- getGenePromoterRegion(fp, "SP1", 1000, 1)
+#   checkEquals(region$chr, "chr12")
+#   checkEquals(region$start, 53379176)
+#   checkEquals(region$end,   53380177)
 
      # now try a lincRNA, with explicit biotype
-   region <- getGenePromoterRegion(fp, "LINC01254", 1000, 1000, biotype="lincRNA")
-   checkEquals(region$chr, "chr18")
-   checkEquals(region$start, 10413515)
-   checkEquals(region$end,   10415515)
+#   region <- getGenePromoterRegion(fp, "LINC01254", 1000, 1000, biotype="lincRNA")
+#   checkEquals(region$chr, "chr18")
+#   checkEquals(region$start, 10413515)
+#   checkEquals(region$end,   10415515)
 
      # now try a lincRNA, with implicit biotype, "protein_coding"
-   suppressWarnings(checkTrue(is.na(getGenePromoterRegion(fp, "LINC01254", 1000, 1000))))
+#   suppressWarnings(checkTrue(is.na(getGenePromoterRegion(fp, "LINC01254", 1000, 1000))))
 
    closeDatabaseConnections(fp)
 
@@ -184,8 +183,10 @@ test_getFootprintsForGene <- function()
 {
    printf("--- test_getFootprintsForGene")
 
-   genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/brain_wellington"
+   db.address <- system.file(package="TReNA", "extdata")
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
       # get enembl gene id for MEF2C
@@ -217,8 +218,10 @@ test_getFootprintsInRegion <- function()
 {
    printf("--- test_getFootprintsInRegion")
 
-   genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/brain_wellington"
+   db.address <- system.file(package="TReNA", "extdata")
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
       # use MEF2C and the hg38 assembly
@@ -238,10 +241,12 @@ test_getFootprintsInRegion <- function()
 #----------------------------------------------------------------------------------------------------
 test_mapMotifsToTFsMergeIntoTable <- function()
 {
-   printf("--- test_mapMotifsToTFsMergeIntoTable")
+    printf("--- test_mapMotifsToTFsMergeIntoTable")
+    
+   db.address <- system.file(package="TReNA", "extdata")
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
 
-   genome.db.uri <- "postgres://whovian/hg38"
-   project.db.uri <-  "postgres://whovian/brain_hint"
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
       # use MEF2C and the hg38 assembly
@@ -295,8 +300,6 @@ explore_variantsInFootprints <- function()
    checkTrue(nrow(tbl) > 0)   # 11
 
    tbl.withTFs <- mapMotifsToTFsMergeIntoTable(fp, tbl)
-
-
 
 } # explore_variantsInFootprints
 #----------------------------------------------------------------------------------------------------

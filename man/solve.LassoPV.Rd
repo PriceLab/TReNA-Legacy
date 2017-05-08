@@ -11,7 +11,7 @@
   length(tfs)), extraArgs = list())
 }
 \arguments{
-\item{obj}{An object of class TReNA with "lassopv" as the solver string}
+\item{obj}{An object of class Solver with "lassopv" as the solver string}
 
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 
@@ -26,8 +26,10 @@ A data frame containing the p-values for each transcription factor pertaining to
 plus the Pearson correlations between each transcription factor and the target gene.
 }
 \description{
-Given a TReNA object with LASSO P-Value as the solver, use the \code{\link{lassopv}} function to estimate coefficients
-for each transcription factor as a predictor of the target gene's expression level.
+Given a TReNA object with LASSO P-Value as the solver, use the \code{\link{lassopv}}
+function to estimate coefficients for each transcription factor as a predictor of the target
+gene's expression level. This method should be called using the \code{\link{solve}} method on an
+appropriate TReNA object.
 }
 \examples{
 # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
@@ -38,7 +40,7 @@ tfs <- setdiff(rownames(mtx.sub), target.gene)
 tbl <- solve(trena, target.gene, tfs)
 }
 \seealso{
-\code{\link{lassopv}}
+\code{\link{lassopv}}, , \code{\link{LassoPVSolver}}
 
 Other solver methods: \code{\link{run,BayesSpikeSolver-method}},
   \code{\link{run,EnsembleSolver-method}},
@@ -47,5 +49,6 @@ Other solver methods: \code{\link{run,BayesSpikeSolver-method}},
   \code{\link{run,RandomForestSolver-method}},
   \code{\link{run,RidgeSolver-method}},
   \code{\link{run,SpearmanSolver-method}},
-  \code{\link{run,SqrtLassoSolver-method}}
+  \code{\link{run,SqrtLassoSolver-method}},
+  \code{\link{solve,TReNA-method}}
 }
