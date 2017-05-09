@@ -29,7 +29,7 @@ HumanDHSFilter <- function(genomeName,
                            geneInfoDatabase.uri,
                            geneCenteredSpec=c(),
                            regionsSpec=c(),
-                           variants=NA_character,
+                           variants=NA_character_,
                            quiet=TRUE)
 {
    regions <- c();   # one or more chromLoc strings: "chr5:88903257-88905257"

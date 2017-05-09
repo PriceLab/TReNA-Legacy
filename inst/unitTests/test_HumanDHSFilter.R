@@ -9,7 +9,8 @@ mef2c.promoter.string <- with(mef2c.promoter.region, sprintf("%s:%d-%d", chrom, 
 runTests <- function()
 {
    test_create.vrk2.candidateFilterSpec()
-   test_create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
+   test_create.vrk2.rs13384219.variant.candidateFilterSpec()
+
    test_basicConstructor()
    test_geneSymbolToTSS()
    test_getEncodeRegulatoryTableNames()
@@ -17,8 +18,8 @@ runTests <- function()
 
    test_getRegulatoryRegions()
    test_getCandidates.vrk2.twoRegions()
-   test_getCandidates.vrk2.rs13384219.neighborhood()
    test_getCandidates.vrk2.rs13384219.variant()
+   test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants()
 
    #test_getRegulatoryRegions_hardCase()
    #test_.matchForwardAndReverse()
@@ -134,7 +135,7 @@ test_create.vrk2.rs13384219.variant.candidateFilterSpec <- function(shoulder=10)
 {
    printf("--- test_create.vrk2.rs13384219.variant.candidateFilterSpec")
 
-   spec <- create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
+   spec <- create.vrk2.rs13384219.variant.candidateFilterSpec()
    checkEquals(spec$variants, "rs13384219")
    checkEquals(spec$regionsSpec, "chr2:57907313-57907333")
 
@@ -154,7 +155,6 @@ test_basicConstructor <- function(reuse=FALSE)
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
-                              #fimoDatabase.uri=fimoDB,
                               pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               regionsSpec=regionsSpec,
@@ -579,30 +579,63 @@ test_getCandidates.vrk2.twoRegions <- function()
 #  rs13384219  A->G
 #  gtcagtagtggtggaaccagcatgc[A/G]aattagacaatgtgacttcatagcc
 #  Chromosome: 2:57907323
- #  vrk2 tss at chr2:57908651
+#  vrk2 tss at chr2:57908651
 #  from wgEncodeRegDnaseClustered:
 #   chrom chromStart chromEnd count score
 # 9  chr2   57907313 57907333     1    98
-
-test_getCandidates.vrk2.rs13384219.neighborhood <- function()
+test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants <- function()
 {
-   printf("--- test_getCandidates.vrk2.rs13384219.neighborhood")
-   candidateFilterSpec <- create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
+   printf("--- test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants")
+
+   candidateFilterSpec <- create.vrk2.rs13384219.variant.candidateFilterSpec()
 
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
                               pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
-                              regionsSpec=regionsSpec,
+                              regionsSpec=regionsSpec,         # note that no variants passed in
                               geneCenteredSpec=geneCenteredSpec,
                               quiet=TRUE))
-   x <- getCandidates(hdf)
-   checkEquals(sort(names(x)), c("tbl", "tfs"))
-   checkEquals(dim(x$tbl), c(66, 11))
-   checkTrue(length(x$tfs) > 150)
+   x.wt <- getCandidates(hdf)
+   checkEquals(sort(names(x.wt)), c("tbl", "tfs"))
+   checkEquals(dim(x.wt$tbl), c(66, 11))
+   checkTrue(length(x.wt$tfs) > 150)
 
-} # test_getCandidates.vrk2.rs13384219.neighborhood
+   cfSpec.variant <- create.vrk2.rs13384219.variant.candidateFilterSpec()
+
+   hdf <- with(cfSpec.variant, HumanDHSFilter(genomeName,
+                                              encodeTableName=encodeTableName,
+                                              pwmMatchPercentageThreshold=85L,
+                                              geneInfoDatabase.uri=geneInfoDB,
+                                              regionsSpec=regionsSpec,
+                                              geneCenteredSpec=geneCenteredSpec,
+                                              variants=variants,
+                                              quiet=TRUE))
+   x.mut <- getCandidates(hdf)
+   checkEquals(sort(names(x.mut)), c("tbl", "tfs"))
+   checkEquals(dim(x.mut$tbl), c(55, 11))
+   checkTrue(length(x.mut$tfs) > 140)
+
+   # the top-scoring motifs in the wild type are missing from the mutant
+
+   tbl.wt <- x.wt$tbl
+   tbl.mut <- x.mut$tbl
+   tfs.wt <- x.wt$tfs
+   tfs.mut <- x.mut$tfs
+
+   tfs.lost <- setdiff(tfs.wt, tfs.mut)
+   tfs.gained <- setdiff(tfs.mut, tfs.wt)  # none
+   checkEquals(length(tfs.lost), 18)
+   checkEquals(length(tfs.gained), 0)
+
+   missing.motifs <- setdiff(tbl.wt$motifName, tbl.mut$motifName)
+   checkEquals(length(missing.motifs), 11)
+     # high-scoring, long motifs for POU family tfs have been lost
+   checkEqualsNumeric(mean(subset(tbl.wt,  motifName %in% missing.motifs)$motifScore), 7.66, tol=1e-1)
+   checkEqualsNumeric(mean(subset(tbl.wt, !motifName %in% missing.motifs)$motifScore), 5.49, tol=1e-1)
+
+} # test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants
 #------------------------------------------------------------------------------------------------------------------------
 test_getCandidates.vrk2.rs13384219.variant <- function()
 {
@@ -619,8 +652,8 @@ test_getCandidates.vrk2.rs13384219.variant <- function()
                               quiet=TRUE))
    x <- getCandidates(hdf)
    checkEquals(sort(names(x)), c("tbl", "tfs"))
-   checkEquals(dim(x$tbl), c(66, 11))
-   checkTrue(length(x$tfs) > 150)
+   checkEquals(dim(x$tbl), c(55, 11))
+   checkTrue(length(x$tfs) > 140)
 
 
 } # test_getCandidates.vrk2.rs13384219.variant

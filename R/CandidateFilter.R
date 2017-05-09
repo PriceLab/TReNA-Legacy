@@ -28,7 +28,7 @@ printf <- function(...) print(noquote(sprintf(...)))
 #'
 #' @family getCandidate Methods
 #' @export
-setGeneric("getCandidates", signature="obj", function(obj, argsList) standardGeneric("getCandidates"))
+setGeneric("getCandidates", signature="obj", function(obj, ...) standardGeneric("getCandidates"))
 
 #' Retrieve the assay matrix of gene expression data
 #'
@@ -78,7 +78,7 @@ CandidateFilter <- function(quiet = TRUE)
 #' @describeIn CandidateFilter Retrieve the assay matrix of gene expression data
 #'
 #' @param obj An object of a CandidateFilter class
-#' 
+#'
 #' @examples
 #'
 #' # Create a CandidateFilter object using the included Alzheimer's data and retrieve the matrix

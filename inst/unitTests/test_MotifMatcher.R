@@ -102,8 +102,7 @@ test_.injectSnp <- function()
 #  chr2:57907323:A:G
 test_getSequenceWithVariants <- function()
 {
-   if(!indirect)
-      printf("--- test_getSequence")
+   printf("--- test_getSequenceWithVariants")
 
    mm <- MotifMatcher(genomeName="hg38")
 
@@ -112,14 +111,10 @@ test_getSequenceWithVariants <- function()
    ends   <- 57907328
    tbl.regions <- data.frame(chrom=chroms, start=starts, end=ends, stringsAsFactors=FALSE)
 
-   seqs <- getSequence(mm, tbl.regions, "rs13384219")
-   chrom <- sub("ch", "chr", chrom)
-   checkEquals(length(seqs), 3)
-   checkEquals(unlist(lapply(seqs, nchar)), 1 + tbl.regions$end - tbl.regions$start)
+   seq.mut <- getSequence(mm, tbl.regions, "rs13384219")
+   seq.wt <- getSequence(mm, tbl.regions)
 
-   invisible(seqs)
-
-} # test_getSequence
+} # test_getSequenceWithVariants
 #----------------------------------------------------------------------------------------------------
 test_findMatchesByChromosomalRegion <- function()
 {

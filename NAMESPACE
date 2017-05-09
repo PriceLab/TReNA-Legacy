@@ -3,6 +3,7 @@ exportClasses(
    VarianceFilter,
    MotifMatcher,
    FootprintFilter,
+   NullFilter,
    HumanDHSFilter,
    GeneOntologyFilter,
    RandomForestSolver,

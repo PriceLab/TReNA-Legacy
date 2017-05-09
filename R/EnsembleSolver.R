@@ -18,7 +18,7 @@
 #' @seealso  \code{\link{solve.Ensemble}}, \code{\link{getAssayData}}
 #'
 #' @family Solver class objects
-#' 
+#'
 #' @export
 #'
 #' @examples
@@ -27,7 +27,7 @@
 
 EnsembleSolver <- function(mtx.assay=matrix(), solverName, quiet=TRUE)
 {
-    obj <- .EnsembleSolver(Solver(mtx.assay=mtx.assay, quiet=quiet)
+    obj <- .EnsembleSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
     obj
 
 } # EnsembleSolver, the constructor
@@ -37,7 +37,7 @@ EnsembleSolver <- function(mtx.assay=matrix(), solverName, quiet=TRUE)
 #' @name run,EnsembleSolver-method
 #' @rdname solve.Ensemble
 #' @aliases run.EnsembleSolver solve.Ensemble
-#' 
+#'
 #' @description Given a TReNA object with Ensemble as the solver and a list of solvers
 #' (default = "default.solvers"), estimate coefficients for each transcription factor
 #' as a predictor of the target gene's expression level. The final scores for the ensemble
@@ -59,10 +59,10 @@ EnsembleSolver <- function(mtx.assay=matrix(), solverName, quiet=TRUE)
 #' \item{"pcaMax": a composite score created using the root mean square of the principal
 #' components of the individual solver scores}
 #' }
-#' 
+#'
 #'
 #' @seealso \code{\link{EnsembleSolver}}
-#' 
+#'
 #' @family solver methods
 #'
 #' @examples
@@ -84,15 +84,15 @@ setMethod("run", "EnsembleSolver",
 
            function(obj, target.gene, tfs, tf.weights = rep(1, length(tfs)), extraArgs = list()){
 
-               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning               
-               if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){                   
-                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")                  
-               }               
-               
+               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
+               if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){
+                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
+               }
+
                # Specify defaults for gene cutoff and solver list
                gene.cutoff <- 0.1
                solver.list <- "default.solvers"
-               
+
                # Check for the gene cutoff and solvers, then and set them if they're not there
                if("gene.cutoff" %in% names(extraArgs))
                    gene.cutoff <- extraArgs[["gene.cutoff"]]
@@ -102,12 +102,12 @@ setMethod("run", "EnsembleSolver",
 
                # Convert the "all" solvers argument
                if(solver.list[1] == "default.solvers"){
-                   solver.list <- c("lasso",                                    
-                                    "randomForest",                                    
-#                                    "bayesSpike",                                    
-                                    "pearson",                                    
-                                    "spearman",                                    
-#                                    "sqrtlasso",                                    
+                   solver.list <- c("lasso",
+                                    "randomForest",
+#                                    "bayesSpike",
+                                    "pearson",
+                                    "spearman",
+#                                    "sqrtlasso",
                                     "lassopv",
                                     "ridge")
                }
@@ -300,7 +300,7 @@ setMethod("run", "EnsembleSolver",
                concordance$gene <- rownames(concordance)
                rownames(concordance) <- NULL
                tbl.all <- merge(tbl.all, concordance, by = "gene", all = TRUE)
-               
+
                # Transform via PCA and compute the pcaMax score
                pcaMax <- apply(pca$x[,pca$sdev > 0.1],1, function(x) {sqrt(mean(x*x))})
                pcaMax <- as.data.frame(pcaMax)

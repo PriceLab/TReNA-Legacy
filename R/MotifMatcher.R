@@ -45,7 +45,7 @@ MotifMatcher <- function(name=NA_character_,
 #------------------------------------------------------------------------------------------------------------------------
 setMethod("findMatchesByChromosomalRegion", "MotifMatcher",
 
-    function(obj, tbl.regions, pwmMatchMinimumAsPercentage, variants=NA_character){
+    function(obj, tbl.regions, pwmMatchMinimumAsPercentage, variants=NA_character_){
        sequences <- getSequence(obj, tbl.regions, variants)
        colnames(tbl.regions) <- c("chrom", "chromStart", "chromEnd")   # preprend 'chrom' to start and end, to distinguish
        tbl.motifs <- .getScoredMotifs(sequences, pwmMatchMinimumAsPercentage, obj@quiet)
@@ -336,7 +336,7 @@ setMethod("getPfms", "MotifMatcher",
 #------------------------------------------------------------------------------------------------------------------------
 setMethod("getSequence", "MotifMatcher",
 
-   function(obj, tbl.regions, variants=NA_character){
+   function(obj, tbl.regions, variants=NA_character_){
      gr.regions <- with(tbl.regions, GRanges(seqnames=chrom, IRanges(start=start, end=end)))
      seqs <- as.character(getSeq(obj@genome, gr.regions))
      tbl.regions$seq <- seqs
