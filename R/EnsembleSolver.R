@@ -60,9 +60,8 @@ EnsembleSolver <- function(mtx.assay=matrix(), solverName, quiet=TRUE)
 #' components of the individual solver scores}
 #' }
 #'
-#'
 #' @seealso \code{\link{EnsembleSolver}}
-#'
+#' 
 #' @family solver methods
 #'
 #' @examples
@@ -102,6 +101,7 @@ setMethod("run", "EnsembleSolver",
 
                # Convert the "all" solvers argument
                if(solver.list[1] == "default.solvers"){
+
                    solver.list <- c("lasso",
                                     "randomForest",
 #                                    "bayesSpike",

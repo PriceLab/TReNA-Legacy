@@ -170,5 +170,6 @@ test_FootprintFilter.geneCenteredPlusRegion <- function()
    checkTrue(nrow(list.out$tbl) > 25)   # we see 22 rows without the extra 1k bp
 
 } # test_FootprintFilter.geneCenteredPlusRegion
+
 #----------------------------------------------------------------------------------------------------
 if(!interactive()) runTests()

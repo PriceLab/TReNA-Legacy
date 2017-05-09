@@ -81,7 +81,6 @@ setMethod('show', 'RandomForestSolver',
 #' to estimate coefficients for each transcription factor as a predictor of the target gene's
 #' expression level.
 #' This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
-
 #' @param obj An object of class TReNA with "randomForest" as the solver string
 #' @param targetGene A designated target gene that should be part of the mtx.assay data
 #' @param candidateRegulators The designated set of transcription factors that could be associated with the target gene.
@@ -119,6 +118,7 @@ setMethod("run", "RandomForestSolver",
 
      mtx <- obj@mtx.assay
      if(length(obj@candidateRegulators)==0) return(NULL)
+
 
      x = t(mtx[obj@candidateRegulators,,drop=F])
      y = as.vector(t(mtx[obj@targetGene,])) # Change y to a vector to avoid RF warning

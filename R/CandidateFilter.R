@@ -46,6 +46,7 @@ setGeneric("getCandidates", signature="obj", function(obj, ...) standardGeneric(
 #' mtx <- getFilterAssayData(my.filter)
 
 #' @export
+#' 
 setGeneric("getFilterAssayData",    signature="obj", function(obj) standardGeneric ("getFilterAssayData"))
 #----------------------------------------------------------------------------------------------------
 #' CandidateFilter

@@ -26,6 +26,7 @@ export(
     MotifMatcher,
     FootprintFilter,
     HumanDHSFilter,
+    NullFilter,
     VarianceFilter,
     GeneOntologyFilter,
     FootprintFinder,
