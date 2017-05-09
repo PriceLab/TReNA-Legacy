@@ -351,7 +351,7 @@ setMethod("getSequence", "MotifMatcher",
            } # for r
           } # for variant
        } # !is.na(variants)
-     tbl.regions$seq
+      tbl.regions$seq
      })  # getSequence
 
 #----------------------------------------------------------------------------------------------------

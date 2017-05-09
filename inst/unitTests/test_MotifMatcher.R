@@ -94,7 +94,7 @@ test_.injectSnp <- function()
                                              variant.info)
    checkEquals(tbl.regionsInjected$seq[1], "CATGCGAATTA")
 
-} # test_.injectSnp
+ } # test_.injectSnp
 #----------------------------------------------------------------------------------------------------
 #  rs13384219  A->G
 #  gtcagtagtggtggaaccagcatgc[A/G]aattagacaatgtgacttcatagcc

@@ -579,7 +579,7 @@ test_getCandidates.vrk2.twoRegions <- function()
 #  rs13384219  A->G
 #  gtcagtagtggtggaaccagcatgc[A/G]aattagacaatgtgacttcatagcc
 #  Chromosome: 2:57907323
-#  vrk2 tss at chr2:57908651
+ #  vrk2 tss at chr2:57908651
 #  from wgEncodeRegDnaseClustered:
 #   chrom chromStart chromEnd count score
 # 9  chr2   57907313 57907333     1    98
