@@ -47,12 +47,12 @@ setGeneric("rescalePredictorWeights",
 #' is achieved using the \code{\link{solve}} method on a TReNA object.
 #' 
 #' @rdname Solver-class
-#' 
+#'
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical indicating whether or not the Solver object should print output
 #'
 #' @export
-#' 
+#'
 #' @return An object of the Solver class
 #'
 #' @examples
@@ -67,13 +67,13 @@ setGeneric("rescalePredictorWeights",
 Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
     # If a matrix is supplied, check the distribution to see if it's too big
-    if(!is.na(max(mtx.assay))){        
-        mtx.ratio <- (max(mtx.assay) - stats::quantile(mtx.assay,0.75))/(stats::quantile(mtx.assay,0.75) - stats::median(mtx.assay))        
-        if(mtx.ratio > 1000){                    
+    if(!is.na(max(mtx.assay))){
+        mtx.ratio <- (max(mtx.assay) - stats::quantile(mtx.assay,0.75))/(stats::quantile(mtx.assay,0.75) - stats::median(mtx.assay))
+        if(mtx.ratio > 1000){
             warning("Assay matrix may contain highly skewed data; consider transforming your matrix.")
             }
     }
-    
+
     env <- new.env(parent=emptyenv())
    .Solver(mtx.assay=mtx.assay, quiet=quiet, state=env)
 
@@ -100,7 +100,7 @@ setMethod("getAssayData", "Solver",
 #'
 #' Solvers such as LASSO penalize predictors on a scale of 1 (full weight) to infinity (zero weight).
 #' With the \code{rescalePredictorWeights} method, incoming raw values can be scaled between a possibly
-#' theoretical minimum and maximum value. 
+#' theoretical minimum and maximum value.
 #'
 #' @rdname rescalePredictorWeights
 #' @aliases rescalePredictorWeights
@@ -124,6 +124,6 @@ setMethod("getAssayData", "Solver",
 setMethod("rescalePredictorWeights", "Solver",
 
           function(obj, rawValue.min, rawValue.max, rawValues){
-              1 - ((rawValues-rawValue.min)/(rawValue.max-rawValue.min))           
+              1 - ((rawValues-rawValue.min)/(rawValue.max-rawValue.min))
           })
 #----------------------------------------------------------------------------------------------------

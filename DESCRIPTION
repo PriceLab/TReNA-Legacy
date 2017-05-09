@@ -1,11 +1,9 @@
 Package: TReNA
 Type: Package
 Title: Fit transcriptional regulatory networks using gene expression, priors, machine learning
-Version: 0.99.10
-Date: 2017-04-24
-Author: Seth Ament <seth.ament@systemsbiology.org>,
-    Paul Shannon <pshannon@systemsbioloyg.org>,
-    Matthew Richards <mrichard@systemsbiology.org>
+Version: 0.99.115
+Date: 2017-05-05
+Author: Seth Ament <seth.ament@systemsbiology.org>, Paul Shannon <pshannon@systemsbioloyg.org>, Matthew Richards <mrichard@systemsbiology.org>
 Maintainer: Matthew Richards <mrichard@systemsbiology.org>
 Imports:
     RSQLite,
@@ -17,12 +15,13 @@ Imports:
     doParallel,
     RPostgreSQL,
     methods,
-    DBI,
-    GenomicRanges
+    RMySQL,
+    DBI
 Depends:
-    R (>= 3.4.0),
+    R (>= 3.3.0),
     utils,
     glmnet (>= 2.0.3),
+    GenomicRanges
 Suggests:
     RUnit,
     limma,
@@ -41,12 +40,15 @@ Collate:
     'Solver.R'
     'BayesSpikeSolver.R'
     'CandidateFilter.R'
+    'NullFilter.R'
     'EnsembleSolver.R'
-    'FootprintFilter.R'
+    'MotifMatcher.R'
     'FootprintFinder.R'
+    'FootprintFilter.R'
+    'HumanDHSFilter.R'
+    'GeneOntologyFilter.R'
     'LassoPVSolver.R'
     'LassoSolver.R'
-    'NullFilter.R'
     'PearsonSolver.R'
     'RandomForestSolver.R'
     'RidgeSolver.R'
@@ -56,4 +58,6 @@ Collate:
     'VarianceFilter.R'
     'help.R'
     'sharedFunctions.R'
+    'Recipe.R'
+    'Cook.R'
 RoxygenNote: 6.0.1

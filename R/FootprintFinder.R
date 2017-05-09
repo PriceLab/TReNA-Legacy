@@ -1,15 +1,13 @@
 #' @import methods
-#' 
+#'
 #' @name FootprintFinder-class
 #' @rdname FootprintFinder-class
 #' @aliases FootprintFinder
-#' 
+#'
 #' @slot genome.db The address of a genome database for use in filtering
 #' @slot project.db The address of a project database for use in filtering
 #' @slot quiet A logical argument denoting whether the FootprintFinder object should behave quietly
 #'
-
-
 
 #----------------------------------------------------------------------------------------------------
 .FootprintFinder <- setClass("FootprintFinder",
@@ -27,7 +25,7 @@ printf <- function(...) print(noquote(sprintf(...)))
 #   Homo_sapiens.GRCh38.84.chr.gtf
 #   2) a footprint table, the output from cory's pipeline
 #   3) a motif/TF map, with scores & etc
-#			    
+#
 #----------------------------------------------------------------------------------------------------
 #' @export
 setGeneric("getChromLoc", signature="obj",
@@ -116,8 +114,8 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
       driver <- RPostgreSQL::PostgreSQL()
       genome.db <- DBI::dbConnect(driver, user= "trena", password="trena", dbname=dbname, host=host)
       existing.databases <- DBI::dbGetQuery(genome.db, "select datname from pg_database")[,1]
-      stopifnot(dbname %in% existing.databases)
       DBI::dbDisconnect(genome.db)
+      stopifnot(dbname %in% existing.databases)
       genome.db <- DBI::dbConnect(driver, user="trena", password="trena", dbname=dbname, host=host)
       expected.tables <- c("gtf", "motifsgenes")
       stopifnot(all(expected.tables %in% DBI::dbListTables(genome.db)))
@@ -214,7 +212,7 @@ setMethod("closeDatabaseConnections", "FootprintFinder",
 #'
 #' @rdname getGtfGeneBioTypes
 #' @aliases getGtfGeneBioTypes
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #'
 #' @export
@@ -246,7 +244,7 @@ setMethod("getGtfGeneBioTypes", "FootprintFinder",
 #'
 #' @rdname getGtfMoleculeTypes
 #' @aliases getGtfMoleculeTypes
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #'
 #' @export
@@ -278,7 +276,7 @@ setMethod("getGtfMoleculeTypes", "FootprintFinder",
 #'
 #' @rdname getChromLoc
 #' @aliases getChromLoc
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #' @param name A gene name or ID
 #' @param biotype A type of biological unit (default="protein_coding")
@@ -319,7 +317,7 @@ setMethod("getChromLoc", "FootprintFinder",
 #'
 #' @rdname getGenePromoterRegion
 #' @aliases getGenePromoterRegion
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #' @param gene A gene name of ID
 #' @param size.upstream An integer denoting the distance upstream of the target gene to look for footprints
@@ -381,7 +379,7 @@ setMethod("getGenePromoterRegion", "FootprintFinder",
 #'
 #' @rdname getFootprintsForGene
 #' @aliases getFootprintsForGene
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #' @param gene A gene name of ID
 #' @param size.upstream An integer denoting the distance upstream of the target gene to look for footprints
@@ -421,10 +419,10 @@ setMethod("getFootprintsForGene", "FootprintFinder",
 #' Using the regions and hits tables inside the project database specified by the FootprintFinder
 #' object, return the location, chromasome, starting position, and ending positions of all footprints
 #' for the specified region.
-#' 
+#'
 #' @rdname getFootprintsInRegion
 #' @aliases getFootprintsInRegion
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #' @param chromosome The name of the chromosome of interest
 #' @param start An integer denoting the start of the desired region
@@ -475,11 +473,11 @@ setMethod("getFootprintsInRegion", "FootprintFinder",
 #' Get Promoter Regions for All Genes
 #'
 #' Using the gtf table inside the genome database specified by the FootprintFinder object, return the
-#' promoter regions for every protein-coding gene in the database. 
-#' 
+#' promoter regions for every protein-coding gene in the database.
+#'
 #' @rdname getPromoterRegionsAllGenes
 #' @aliases getPromoterRegionsAllGenes
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #' @param size.upstream An integer denoting the distance upstream of each gene's transcription start
 #' site to include in the promoter region (default = 1000)
@@ -548,13 +546,13 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 #'
 #' Using the motifsgenes table inside the genome database specified by the FootprintFinder object,
 #' return a table mapping each motif to transcription factors
-#' 
+#'
 #' @rdname mapMotifsToTFsMergeIntoTable
 #' @aliases mapMotifsToTFsMergeIntoTable
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #' @param tbl A dataframe of footprints, generally obtained using \code{\link{getFootprintsInRegion}}
-#' or \code{\link{getFootprintsForGene}} 
+#' or \code{\link{getFootprintsForGene}}
 #'
 #' @return A data frame containing the motifs from the supplied footprints table and the transcription
 #' factors they map to
@@ -572,7 +570,6 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 #' footprints <- getFootprintsForGene(fp, gene = "MEF2C")
 #' tfs <- mapMotifsToTFsMergeIntoTable(fp, footprints)
 
-
 setMethod("mapMotifsToTFsMergeIntoTable", "FootprintFinder",
 
    function(obj, tbl){
@@ -582,8 +579,14 @@ setMethod("mapMotifsToTFsMergeIntoTable", "FootprintFinder",
       collected.motifs <- sprintf("('%s')", paste(motifs, collapse="','"))
       query.string <- sprintf("select * from motifsgenes where motif in %s", collected.motifs)
       tbl.mtf <- DBI::dbGetQuery(obj@genome.db, query.string)
-      tbl.out <- merge(tbl, tbl.mtf, by.x='name', by.y='motif')
-      tbl.out
+      tfsCollapsed <- unlist(lapply(tbl$name, function(name) paste(subset(tbl.mtf, motif==name)$tf, collapse=";")))
+      tbl$tf <- tfsCollapsed
+      tbl <- tbl[, c("chrom", "start", "endpos", "name", "length", "strand", "score1", "score2", "score3", "tf")]
+      colnames(tbl) <- c("chrom", "start", "end", "motifName", "length", "strand", "score1", "score2", "score3", "tf")
+      signature <- with(tbl, sprintf("%s:%d-%d-%s-%s-%d", chrom, start, end, motifName, strand, length))
+      deleters <- which(duplicated(signature))
+      if(length(deleters) > 0)
+         tbl <- tbl[-deleters,]
+      invisible(tbl)
       })
-
 #----------------------------------------------------------------------------------------------------

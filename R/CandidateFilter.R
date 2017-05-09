@@ -1,19 +1,18 @@
 #' @import methods
-#' 
+#'
 #' @name CandidateFilter-class
 #' @rdname CandidateFilter-class
 #' @aliases CandidateFilter
-#' 
+#'
 #' @slot mtx.assay An assay matrix of gene expression data
 #' @slot quiet A logical denoting whether or not the CandidateFilter object should print output
 #'
 #' @family Filtering objects
 
 .CandidateFilter <- setClass("CandidateFilter",
-                    slots = c(mtx.assay = "matrix",
-		              quiet = "logical"
+                    slots = c(quiet = "logical"
 			      )
-)
+                    )
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
@@ -29,7 +28,7 @@ printf <- function(...) print(noquote(sprintf(...)))
 #'
 #' @family getCandidate Methods
 #' @export
-setGeneric("getCandidates", signature="obj", function(obj,extraArgs) standardGeneric("getCandidates"))
+setGeneric("getCandidates", signature="obj", function(obj, ...) standardGeneric("getCandidates"))
 
 #' Retrieve the assay matrix of gene expression data
 #'
@@ -47,13 +46,14 @@ setGeneric("getCandidates", signature="obj", function(obj,extraArgs) standardGen
 #' mtx <- getFilterAssayData(my.filter)
 
 #' @export
+#' 
 setGeneric("getFilterAssayData",    signature="obj", function(obj) standardGeneric ("getFilterAssayData"))
 #----------------------------------------------------------------------------------------------------
 #' CandidateFilter
 #'
 #' A CandidateFilter is an S4 class to represent a gene candidate filter. These filters can employ a variety of methods
 #' to reduce the number of transcription factors used as predictors for solving a TReNA object.
-#' 
+#'
 #' @rdname CandidateFilter-class
 #' @aliases CandidateFilter
 #'
@@ -65,21 +65,21 @@ setGeneric("getFilterAssayData",    signature="obj", function(obj) standardGener
 #' @seealso \code{\link{getCandidates}}, \code{\link{getFilterAssayData}}
 #'
 #' @export
-#' 
+#'
 #' @examples
 #' # Create an empty candidate filter
 #' candidate.filter <- CandidateFilter(mtx.assay = matrix(), quiet=TRUE)
 
-CandidateFilter <- function(mtx.assay = matrix(), quiet = TRUE)
+CandidateFilter <- function(quiet = TRUE)
 {
-    .CandidateFilter(mtx.assay = mtx.assay, quiet = quiet)
+    .CandidateFilter(quiet = quiet)
 
 } # CandidateFilter, the constructor
 #----------------------------------------------------------------------------------------------------
 #' @describeIn CandidateFilter Retrieve the assay matrix of gene expression data
 #'
 #' @param obj An object of a CandidateFilter class
-#' 
+#'
 #' @examples
 #'
 #' # Create a CandidateFilter object using the included Alzheimer's data and retrieve the matrix
