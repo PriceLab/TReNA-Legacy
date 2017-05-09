@@ -5,10 +5,12 @@
                                          quiet="logical")
                         )
 #------------------------------------------------------------------------------------------------------------------------
-setGeneric("getPfms",          signature="obj", function(obj) standardGeneric ("getPfms"))
-setGeneric("getSequence",      signature="obj", function(obj, tbl.regions) standardGeneric ("getSequence"))
-setGeneric("findMatchesByChromosomalRegion", signature="obj", function(obj, tbl.regions, pwmMatchMinimumAsPercentage)
-               standardGeneric ("findMatchesByChromosomalRegion"))
+setGeneric("getPfms",            signature="obj", function(obj) standardGeneric ("getPfms"))
+setGeneric("getSequence",        signature="obj", function(obj, tbl.regions, variants=NA_character_) standardGeneric ("getSequence"))
+setGeneric("parseVariantString", signature="obj", function(obj, variantString) standardGeneric ("parseVariantString"))
+setGeneric("findMatchesByChromosomalRegion", signature="obj",
+           function(obj, tbl.regions, pwmMatchMinimumAsPercentage, variants=NA_character_)
+              standardGeneric ("findMatchesByChromosomalRegion"))
 #------------------------------------------------------------------------------------------------------------------------
 MotifMatcher <- function(name=NA_character_,
                          genomeName="hg38",
@@ -43,8 +45,8 @@ MotifMatcher <- function(name=NA_character_,
 #------------------------------------------------------------------------------------------------------------------------
 setMethod("findMatchesByChromosomalRegion", "MotifMatcher",
 
-    function(obj, tbl.regions, pwmMatchMinimumAsPercentage){
-       sequences <- getSequence(obj, tbl.regions)
+    function(obj, tbl.regions, pwmMatchMinimumAsPercentage, variants=NA_character){
+       sequences <- getSequence(obj, tbl.regions, variants)
        colnames(tbl.regions) <- c("chrom", "chromStart", "chromEnd")   # preprend 'chrom' to start and end, to distinguish
        tbl.motifs <- .getScoredMotifs(sequences, pwmMatchMinimumAsPercentage, obj@quiet)
            # tbl.mg will soon come from MotifDb
@@ -334,10 +336,66 @@ setMethod("getPfms", "MotifMatcher",
 #------------------------------------------------------------------------------------------------------------------------
 setMethod("getSequence", "MotifMatcher",
 
-   function(obj, tbl.regions){
+   function(obj, tbl.regions, variants=NA_character){
      gr.regions <- with(tbl.regions, GRanges(seqnames=chrom, IRanges(start=start, end=end)))
-     seqs <- getSeq(obj@genome, gr.regions)
-     as.character(seqs)
+     seqs <- as.character(getSeq(obj@genome, gr.regions))
+     tbl.regions$seq <- seqs
+     if(!is.na(variants)){
+        for(variant in variants){
+           variant.info <- parseVariantString(obj, variant)
+           gr.variants <- with(variant.info, GRanges(seqnames=chrom, IRanges(start=loc, end=loc)))
+           tbl.overlaps <- as.data.frame(findOverlaps(gr.variants, gr.regions))
+           for(r in 1:nrow(tbl.overlaps)){
+              tbl.regions <- .injectSnp(tbl.regions, tbl.overlaps$queryHits[r], tbl.overlaps$subjectHits[r],
+                                        variant.info)
+           } # for r
+          } # for variant
+       } # !is.na(variants)
+     tbl.regions$seq
      })  # getSequence
+
+#----------------------------------------------------------------------------------------------------
+.injectSnp <- function(tbl.regions, queryIndex, subjectIndex, variant.info)
+{
+   wt <- as.list(tbl.regions[subjectIndex,])
+   stopifnot(variant.info$loc <= wt$end)
+   stopifnot(variant.info$loc >= wt$start)
+   stopifnot(wt$chrom == variant.info$chrom)
+
+   offset <- 1 + variant.info$loc - wt$start
+   mut.loc <- wt$start + offset
+   wt.base <- substring(wt$seq, offset, offset)
+   mutant.seq <- sprintf("%s%s%s", substr(wt$seq, 1, (offset-1)), variant.info$mut,
+                                   substr(wt$seq, offset+1, nchar(wt$seq)))
+   tbl.regions[subjectIndex, "seq"] <- mutant.seq
+   tbl.regions
+
+} # .injextSnp
+#----------------------------------------------------------------------------------------------------
+setMethod("parseVariantString", "MotifMatcher",
+
+    function(obj, variantString) {
+       if(grepl("^rs", variantString)){
+          require(SNPlocs.Hsapiens.dbSNP144.GRCh38)
+          snp.info <- as.data.frame(snpsById(SNPlocs.Hsapiens.dbSNP144.GRCh38, variantString))[1,]
+          chrom <- as.character(snp.info$seqnames)
+          if(!grepl("chr", chrom))
+             chrom <- sub("ch", "chr", chrom)
+          start <- as.numeric(snp.info$pos)
+          ambiguity.code <- snp.info$alleles_as_ambig
+          elements.string <- IUPAC_CODE_MAP[[ambiguity.code]]
+          elements <- strsplit(elements.string,'')[[1]]
+          wt <- as.character(getSeq(obj@genome, chrom, start, start))
+          mut <- setdiff(elements, wt)
+          snp <- list(chrom=chrom, loc=start, wt=wt, mut=mut)
+          }
+       else{
+          tokens <- strsplit(variantString, ":")[[1]]
+          stopifnot(length(tokens) == 4)
+          snp <- list(chrom=tokens[1], loc=as.numeric(tokens[2]), wt=tokens[3], mut=tokens[4])
+          }
+
+       snp
+    })
 
 #----------------------------------------------------------------------------------------------------

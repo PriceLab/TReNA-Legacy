@@ -10,6 +10,8 @@ runTests <- function()
 {
    test_basicConstructor()
    test_getSequence()
+   test_parseVariantString()
+   test_getSequenceWithVariants()
    test_.matchPwmForwardAndReverse()
    test_.getScoredMotifs()
    test_findMatchesByChromosomalRegion()
@@ -81,12 +83,49 @@ test_getSequence <- function(indirect=FALSE)
 
 } # test_getSequence
 #----------------------------------------------------------------------------------------------------
+test_.injectSnp <- function()
+{
+   printf("--- test_.injectSnp")
+   tbl.regions <- data.frame(chrom="chr2", start=57907318, end=57907328, seq="CATGCAAATTA",
+                             stringsAsFactors=FALSE)
+   variant.info <- list(chrom="chr2", loc=57907323, wt="A", mut="G")
+   tbl.overlaps <- data.frame(queryHits=1,  subjectHits=1, stringsAsFactors=FALSE)
+   tbl.regionsInjected <- TReNA:::.injectSnp(tbl.regions, queryIndex=1, subjectIndex=1,
+                                             variant.info)
+   checkEquals(tbl.regionsInjected$seq[1], "CATGCGAATTA")
+
+} # test_.injectSnp
+#----------------------------------------------------------------------------------------------------
+#  rs13384219  A->G
+#  gtcagtagtggtggaaccagcatgc[A/G]aattagacaatgtgacttcatagcc
+#  Chromosome: 2:57907323
+#  chr2:57907323:A:G
+test_getSequenceWithVariants <- function()
+{
+   if(!indirect)
+      printf("--- test_getSequence")
+
+   mm <- MotifMatcher(genomeName="hg38")
+
+   chroms <- "chr2"
+   starts <- 57907318
+   ends   <- 57907328
+   tbl.regions <- data.frame(chrom=chroms, start=starts, end=ends, stringsAsFactors=FALSE)
+
+   seqs <- getSequence(mm, tbl.regions, "rs13384219")
+   chrom <- sub("ch", "chr", chrom)
+   checkEquals(length(seqs), 3)
+   checkEquals(unlist(lapply(seqs, nchar)), 1 + tbl.regions$end - tbl.regions$start)
+
+   invisible(seqs)
+
+} # test_getSequence
+#----------------------------------------------------------------------------------------------------
 test_findMatchesByChromosomalRegion <- function()
 {
    printf("--- test_findMatchesByChromosomalRegion")
      # the vrk2 promoter snp,  chr2:57907313-57907333
-   mm <- MotifMatcher(name="rs13384219.neighborhood",
-                      genomeName="hg38")
+   mm <- MotifMatcher(name="rs13384219.neighborhood", genomeName="hg38")
 
    tbl.regions <- data.frame(chrom="chr2", start=57907313, end=57907333, stringsAsFactors=FALSE)
    x <- findMatchesByChromosomalRegion(mm, tbl.regions, pwmMatchMinimumAsPercentage=90)
@@ -95,4 +134,16 @@ test_findMatchesByChromosomalRegion <- function()
    checkTrue(length(x$tfs) > 150)
 
 } # test_findMatchesByChromosomalRegion
+#----------------------------------------------------------------------------------------------------
+test_parseVariantString <- function()
+{
+   mm <- MotifMatcher(name="rs13384219.neighborhood", genomeName="hg38")
+
+   variant <- TReNA:::parseVariantString(mm, "rs13384219")
+   checkEquals(variant, list(chrom="chr2", loc=57907323, wt="A", mut="G"))
+
+   variant <- TReNA:::parseVariantString(mm, "chr2:57907323:A:G")
+   checkEquals(variant, list(chrom="chr2", loc=57907323, wt="A", mut="G"))
+
+} # test_parseVariantString
 #----------------------------------------------------------------------------------------------------

@@ -9,17 +9,16 @@ mef2c.promoter.string <- with(mef2c.promoter.region, sprintf("%s:%d-%d", chrom, 
 runTests <- function()
 {
    test_create.vrk2.candidateFilterSpec()
+   test_create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
    test_basicConstructor()
    test_geneSymbolToTSS()
    test_getEncodeRegulatoryTableNames()
    test_checkAllEncodeTables(quiet=FALSE)
 
    test_getRegulatoryRegions()
-   test_getCandidates.vrk2()
+   test_getCandidates.vrk2.twoRegions()
    test_getCandidates.vrk2.rs13384219.neighborhood()
-   #test_getSequence()
-   #test_.matchForwardAndReverse()
-   #test_.getScoredMotifs()
+   test_getCandidates.vrk2.rs13384219.variant()
 
    #test_getRegulatoryRegions_hardCase()
    #test_.matchForwardAndReverse()
@@ -43,10 +42,12 @@ create.vrk2.candidateFilterSpec <- function(geneCentered=TRUE, promoter.length=1
                                encodeTableName="wgEncodeRegDnaseClustered",
                                pwmMatchPercentageThreshold=85L,
                                geneInfoDB="postgres://whovian/gtf",
-                               regionsSpec=NA_character_,  # no explicit regions in this recipe
                                geneCenteredSpec=list(targetGene=target.gene,
                                                      tssUpstream=promoter.length,
-                                                     tssDownstream=promoter.length))
+                                                     tssDownstream=promoter.length),
+                               regionsSpec=NA_character_,
+                               variants=NA_character_)  # no explicit regions in this recipe
+
    if(!geneCentered) {
       candidateFilterSpec$geneCenteredSpec <- list()
       candidateFilterSpec$regionsSpec=sprintf("%s:%d-%d", chromosome, tss-promoter.length, tss+promoter.length)
@@ -73,28 +74,12 @@ create.vrk2.candidateFilterSpec.twoRegions <- function()
                         # 2 dhs regions found by inspection
                   regionsSpec=c("chr2:57906700-57906870",
                                 "chr2:57907740-57908150"),
-                  geneCenteredSpec=list())
+                  geneCenteredSpec=list(),
+                  variants=NA_character_)
+
    return(cfSpec)
 
 } # create.vrk2.candidateFilterSpec
-#----------------------------------------------------------------------------------------------------
-#  rs13384219  A->G
-#  rs13384219 at chr2:57907073-57907573
-#  gtcagtagtggtggaaccagcatgc[A/G]aattagacaatgtgacttcatagcc
-#  Chromosome: 2:57907323
-#  vrk2 tss at chr2:57908651
-create.vrk2.rs13384219.neighborhood.candidateFilterSpec <- function(shoulder=10)
-{
-   spec <- create.vrk2.candidateFilterSpec(geneCentered=FALSE)
-
-   rs13384219.loc <- 57907323
-   left.loc <- rs13384219.loc - shoulder
-   right.loc <- rs13384219.loc + shoulder
-   spec$regionsSpec <- sprintf("chr2:%d-%d", left.loc, right.loc)
-
-   spec
-
-} # create.vrk2.rs13384219.neighborhood.candidateFilterSpec
 #----------------------------------------------------------------------------------------------------
 test_create.vrk2.candidateFilterSpec <- function()
 {
@@ -111,17 +96,50 @@ test_create.vrk2.candidateFilterSpec <- function()
    checkEquals(spec.0$geneCenteredSpec$targetGene, "VRK2")
    checkEquals(spec.0$geneCenteredSpec$tssUpstream, 1000)
    checkEquals(spec.0$geneCenteredSpec$tssDownstream, 1000)
+   checkTrue(is.na(spec.0$variants))
 
    checkEquals(spec.1$filterType, "EncodeDNaseClusters")
    checkEquals(spec.1$genomeName, "hg38")
    checkEquals(spec.1$encodeTableName, "wgEncodeRegDnaseClustered")
    #checkEquals(spec.1$fimoDB, "postgres://whovian/fimo")
    checkEquals(spec.1$geneInfoDB, "postgres://whovian/gtf")
-   checkEquals(spec.1$regionsSpec, "chr2:57906651-57908651")
    checkEquals(spec.1$geneCenteredSpec, list())
+   checkEquals(spec.1$regionsSpec, "chr2:57906651-57908651")
+   checkTrue(is.na(spec.1$variants))
 
 } # test_create.vrk2.candidateFilterSpec
 #------------------------------------------------------------------------------------------------------------------------
+#  rs13384219  A->G
+#  rs13384219 at chr2:57907073-57907573
+#  gtcagtagtggtggaaccagcatgc[A/G]aattagacaatgtgacttcatagcc
+#  Chromosome: 2:57907323
+#  vrk2 tss at chr2:57908651
+create.vrk2.rs13384219.variant.candidateFilterSpec <- function(shoulder=10)
+{
+   spec <- create.vrk2.candidateFilterSpec(geneCentered=FALSE)
+
+   rs13384219.loc <- 57907323
+   left.loc <- rs13384219.loc - shoulder
+   right.loc <- rs13384219.loc + shoulder
+   spec$regionsSpec <- sprintf("chr2:%d-%d", left.loc, right.loc)
+   spec$variants <- "rs13384219"
+
+   spec
+
+} # create.vrk2.rs13384219.variant.candidateFilterSpec
+#----------------------------------------------------------------------------------------------------
+# gtcagtagtggtggaaccagcatgc[A/G]aattagacaatgtgacttcatagcc
+# Chromosome: 2:57907323
+test_create.vrk2.rs13384219.variant.candidateFilterSpec <- function(shoulder=10)
+{
+   printf("--- test_create.vrk2.rs13384219.variant.candidateFilterSpec")
+
+   spec <- create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
+   checkEquals(spec$variants, "rs13384219")
+   checkEquals(spec$regionsSpec, "chr2:57907313-57907333")
+
+} # test_create.vrk2.rs13384219.variant.candidateFilterSpec
+#----------------------------------------------------------------------------------------------------
 test_basicConstructor <- function(reuse=FALSE)
 {
 
@@ -574,7 +592,6 @@ test_getCandidates.vrk2.rs13384219.neighborhood <- function()
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
                               encodeTableName=encodeTableName,
-                              #fimoDatabase.uri=fimoDB,
                               pwmMatchPercentageThreshold=85L,
                               geneInfoDatabase.uri=geneInfoDB,
                               regionsSpec=regionsSpec,
@@ -586,6 +603,27 @@ test_getCandidates.vrk2.rs13384219.neighborhood <- function()
    checkTrue(length(x$tfs) > 150)
 
 } # test_getCandidates.vrk2.rs13384219.neighborhood
+#------------------------------------------------------------------------------------------------------------------------
+test_getCandidates.vrk2.rs13384219.variant <- function()
+{
+   printf("--- test_getCandidates.vrk2.rs13384219.variant")
+   cfSpec <- create.vrk2.rs13384219.variant.candidateFilterSpec()
+
+   hdf <- with(cfSpec, HumanDHSFilter(genomeName,
+                              encodeTableName=encodeTableName,
+                              pwmMatchPercentageThreshold=85L,
+                              geneInfoDatabase.uri=geneInfoDB,
+                              regionsSpec=regionsSpec,
+                              geneCenteredSpec=geneCenteredSpec,
+                              variants=variants,
+                              quiet=TRUE))
+   x <- getCandidates(hdf)
+   checkEquals(sort(names(x)), c("tbl", "tfs"))
+   checkEquals(dim(x$tbl), c(66, 11))
+   checkTrue(length(x$tfs) > 150)
+
+
+} # test_getCandidates.vrk2.rs13384219.variant
 #------------------------------------------------------------------------------------------------------------------------
 test_vrk2Promoter.normalUse <- function()
 {

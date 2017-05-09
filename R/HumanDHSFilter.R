@@ -4,11 +4,11 @@
                             slots=list(genomeName="character",
                                        genome="BSgenome",
                                        encodeTableName="character",
-                                       #fimoDB="DBIConnection",
                                        pwmMatchPercentageThreshold="integer",
                                        geneInfoDatabase.uri="character",   # access to gtf database
                                        geneCenteredSpec="list",
                                        regionsSpec="character",
+                                       variants="character",
                                        pfms="list",
                                        quiet="logical"))
 
@@ -29,6 +29,7 @@ HumanDHSFilter <- function(genomeName,
                            geneInfoDatabase.uri,
                            geneCenteredSpec=c(),
                            regionsSpec=c(),
+                           variants=NA_character,
                            quiet=TRUE)
 {
    regions <- c();   # one or more chromLoc strings: "chr5:88903257-88905257"
@@ -53,19 +54,6 @@ HumanDHSFilter <- function(genomeName,
        }
 
 
-   #fimo.db.info <- .parseDatabaseUri(fimoDatabase.uri)
-
-   #stopifnot(fimo.db.info$brand %in% c("postgres"))
-   #switch(fimo.db.info$brand,
-   #       postgres={
-   #          host <- fimo.db.info$host
-   #          dbname <- fimo.db.info$name
-   #          driver <- RPostgreSQL::PostgreSQL()
-   #          fimo.db <- DBI::dbConnect(driver, user= "trena", password="trena", dbname=dbname, host=host)
-   #          #print(dbListTables(fimo.db))
-   #          },
-   #       printf("unrecognized fimo db protoocol '%s'", fimo.db.info$brand)
-   #       )
    .HumanDHSFilter(CandidateFilter(quiet = quiet),
                    genomeName=genomeName,
                    #fimoDB=fimo.db,
@@ -75,6 +63,7 @@ HumanDHSFilter <- function(genomeName,
                    genome=reference.genome,
                    geneCenteredSpec=geneCenteredSpec,
                    regionsSpec=regionsSpec,
+                   variants=variants,
                    pfms=pfms,
                    quiet=quiet)
 
@@ -168,7 +157,8 @@ setMethod("getCandidates", "HumanDHSFilter",
        colnames(tbl.reg) <- c("chrom", "start", "end", "count", "score")
        mm <- MotifMatcher(name="rs13384219.neighborhood", genomeName=obj@genomeName)
        x <- findMatchesByChromosomalRegion(mm, tbl.regions,
-                                           pwmMatchMinimumAsPercentage=obj@pwmMatchPercentageThreshold)
+                                           pwmMatchMinimumAsPercentage=obj@pwmMatchPercentageThreshold,
+                                           variants=obj@variants)
        if(!obj@quiet)
           printf(" and %d motifs", nrow(x$tbl))
 
