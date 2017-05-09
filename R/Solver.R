@@ -1,19 +1,9 @@
 #----------------------------------------------------------------------------------------------------
-#' @title Solver Class
-#'
 #' @name Solver-class
 #' @rdname Solver-class
-#'
+#' @aliases Solver
+#' 
 #' @import methods
-#'
-#' @description
-#' The Solver class is a generic class that governs the different solvers available in TReNA. A
-#' Solver class object is constructed during creation of a TReNA object and resides within the
-#' TReNA object. It is rarely called by itself; rather, interaction with a particular solver object
-#' is achieved using the \code{\link{solve}} method on a TReNA object.
-#'
-#' @slot mtx.assay An assay matrix of gene expression data
-#' @slot quiet A logical element indicating whether the Solver object should print output
 
 .Solver <- setClass ("Solver",
                      slots = c(mtx.assay="matrix",
@@ -24,7 +14,23 @@
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
+#' Retrieve the assay matrix of gene expression data from a Solver object
+#' 
+#' @rdname getAssayData
+#' @aliases getAssayData
+#' 
+#' @param obj An object of class Solver
+#'
 #' @export
+#' 
+#' @return The assay matrix of gene expression data associated with a Solver object
+#'
+#' @examples
+#' # Create a Solver object using the included Alzheimer's data and retrieve the matrix
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' solver <- Solver(mtx.sub)
+#' mtx <- getAssayData(solver)
+#' 
 setGeneric("getAssayData",    signature="obj", function(obj) standardGeneric ("getAssayData"))
 #' @export
 setGeneric("run",             signature="obj", function(obj, target.gene, tfs, tf.weights, extraArgs=list()) standardGeneric ("run"))
@@ -34,6 +40,12 @@ setGeneric("rescalePredictorWeights",
 #----------------------------------------------------------------------------------------------------
 #' Define an object of class Solver
 #'
+#' @description
+#' The Solver class is a generic class that governs the different solvers available in TReNA. A
+#' Solver class object is constructed during creation of a TReNA object and resides within the
+#' TReNA object. It is rarely called by itself; rather, interaction with a particular solver object
+#' is achieved using the \code{\link{solve}} method on a TReNA object.
+#' 
 #' @rdname Solver-class
 #'
 #' @param mtx.assay An assay matrix of gene expression data
@@ -44,10 +56,13 @@ setGeneric("rescalePredictorWeights",
 #' @return An object of the Solver class
 #'
 #' @examples
+#' # Create a simple Solver object with default options
 #' mtx <- matrix(rnorm(10000), nrow = 100)
 #' solver <- Solver(mtx)
 #'
-#' @seealso \code{\link{TReNA}}, \code{\link{solve}}
+#' @seealso \code{\link{getAssayData}}, \code{\link{TReNA}}, \code{\link{solve}}
+#'
+#' @family Solver class objects
 
 Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 {
@@ -64,19 +79,10 @@ Solver <- function(mtx.assay=matrix(), quiet=TRUE)
 
 } # Solver, the constructor
 #----------------------------------------------------------------------------------------------------
-#' Get Assay Data from Solver
-#'
-#' Retrieve the assay matrix of gene expression data from a Solver object
-#'
-#' @rdname getAssayData
-#' @aliases getAssayData
+#' @describeIn Solver Retrieve the assay matrix of gene expression data
 #'
 #' @param obj An object of class Solver
-#'
-#' @export
-#'
-#' @return The assay matrix of gene expression data associated with a Solver object
-#'
+#' 
 #' @examples
 #'
 #' # Create a Solver object using the included Alzheimer's data and retrieve the matrix
@@ -111,11 +117,10 @@ setMethod("getAssayData", "Solver",
 #' @examples
 #' # Create a LassoSolver object using the included Alzheimer's data and rescale the predictors
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-#' solver <- LassoSolver(mtx.sub)
+#' ls <- LassoSolver(mtx.sub)
 #' raw.values <- c(241, 4739, 9854, 22215, 658334)
-#' cooked.values <- rescalePredictorWeights(solver,
-#' mtx <- rescalePredictorWeights(solver, rawValue.min = min(mtx.sub),
-#' rawValue.max = max(mtx.sub), rawValues = mtx.sub)
+#' cooked.values <- rescalePredictorWeights(ls, rawValue.min = 1, rawValue.max = 1000000, raw.values)
+
 setMethod("rescalePredictorWeights", "Solver",
 
           function(obj, rawValue.min, rawValue.max, rawValues){

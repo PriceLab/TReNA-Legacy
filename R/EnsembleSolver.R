@@ -12,8 +12,13 @@
 #'
 #' @param mtx.assay An assay matrix of gene expression data
 #' @param quiet A logical denoting whether or not the solver should print output
+#'
 #' @return A Solver class object with Ensemble as the solver
 #'
+#' @seealso  \code{\link{solve.Ensemble}}, \code{\link{getAssayData}}
+#'
+#' @family Solver class objects
+#' 
 #' @export
 #'
 #' @examples
@@ -22,8 +27,7 @@
 
 EnsembleSolver <- function(mtx.assay=matrix(), solverName, quiet=TRUE)
 {
-    obj <- .EnsembleSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
-
+    obj <- .EnsembleSolver(Solver(mtx.assay=mtx.assay, quiet=quiet)
     obj
 
 } # EnsembleSolver, the constructor
@@ -33,18 +37,32 @@ EnsembleSolver <- function(mtx.assay=matrix(), solverName, quiet=TRUE)
 #' @name run,EnsembleSolver-method
 #' @rdname solve.Ensemble
 #' @aliases run.EnsembleSolver solve.Ensemble
+#' 
+#' @description Given a TReNA object with Ensemble as the solver and a list of solvers
+#' (default = "default.solvers"), estimate coefficients for each transcription factor
+#' as a predictor of the target gene's expression level. The final scores for the ensemble
+#' method combine all specified solvers to create a composite score for each transcription factor.
+#' This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 #'
-#' @description Given a TReNA object with Ensemble as the solver and a list of solvers (default = "all.solvers"), estimate coefficients for each transcription factor as a predictor of the target gene's expression level. The final scores for the ensemble method combine all specified solvers to create a composite score for each transcription factor.
-#'
-#' @param obj An object of class TReNA with "ensemble" as the solver string
+#' @param obj An object of class Solver with "ensemble" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
 #' @param extraArgs Modifiers to the Ensemble solver, including "solver.list", "gene.cutoff", and solver-named
 #' arguments denoting extraArgs that correspond to a given solver (e.g. "lasso")
 #'
-#' @return A data frame containing the scores for all solvers and a composite score relating the target gene to each transcription factor
+#' @return A data frame containing the scores for all solvers and two composite scores
+#' relating the target gene to each transcription factor. The two new scores are:
+#' \itemize{
+#' \item{"concordance": a composite score created similarly to "extreme_score", but with each solver's
+#' score scaled using *atan(x)*. This score scales from 0-1}
+#' \item{"pcaMax": a composite score created using the root mean square of the principal
+#' components of the individual solver scores}
+#' }
+#' 
 #'
+#' @seealso \code{\link{EnsembleSolver}}
+#' 
 #' @family solver methods
 #'
 #' @examples
@@ -66,15 +84,15 @@ setMethod("run", "EnsembleSolver",
 
            function(obj, target.gene, tfs, tf.weights = rep(1, length(tfs)), extraArgs = list()){
 
-               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
-               if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){
-                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
-               }
-
+               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning               
+               if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){                   
+                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")                  
+               }               
+               
                # Specify defaults for gene cutoff and solver list
                gene.cutoff <- 0.1
-               solver.list <- "all.solvers"
-
+               solver.list <- "default.solvers"
+               
                # Check for the gene cutoff and solvers, then and set them if they're not there
                if("gene.cutoff" %in% names(extraArgs))
                    gene.cutoff <- extraArgs[["gene.cutoff"]]
@@ -83,13 +101,13 @@ setMethod("run", "EnsembleSolver",
                    solver.list <- extraArgs[["solver.list"]]
 
                # Convert the "all" solvers argument
-               if(solver.list[1] == "all.solvers"){
-                   solver.list <- c("lasso",
-                                    "randomForest",
-#                                    "bayesSpike",
-                                    "pearson",
-                                    "spearman",
-#                                    "sqrtlasso",
+               if(solver.list[1] == "default.solvers"){
+                   solver.list <- c("lasso",                                    
+                                    "randomForest",                                    
+#                                    "bayesSpike",                                    
+                                    "pearson",                                    
+                                    "spearman",                                    
+#                                    "sqrtlasso",                                    
                                     "lassopv",
                                     "ridge")
                }
@@ -97,7 +115,7 @@ setMethod("run", "EnsembleSolver",
 
                for(i in 1:length(solver.list)){
                    # Create and solve the TReNA object for each solver
-                   trena <- TReNA(obj@mtx.assay, solver = solver.list[[i]] )
+                   trena <- TReNA(getAssayData(obj), solver = solver.list[[i]] )
 
                    # if there's extraArgs, pass them
                    if(solver.list[[i]] %in% names(extraArgs)){
@@ -274,22 +292,24 @@ setMethod("run", "EnsembleSolver",
 
                rownames(tbl.scale) <- tbl.all$gene
 
-               # Transform via PCA and compute the ensemble score
+               # Compute the scaled "concordance score"
                pca <- stats::prcomp(tbl.scale, center=FALSE, scale.=FALSE)
-               extr <- apply(pca$x[,pca$sdev > 0.1],1, function(x) {sqrt(mean(x*x))})
-               extr <- as.data.frame(extr)
-               extr$gene <- rownames(extr)
-               rownames(extr) <- NULL
-               tbl.all <- merge(tbl.all, extr, by = "gene", all = TRUE)
-
-               # Compute the scaled "composite score"
-               comp <- apply(pca$x[, pca$sdev > 0.1], 1,
+               concordance <- apply(pca$x[, pca$sdev > 0.1], 1,
                              function(x) {sqrt(mean((2*atan(x)/pi)^2))})
-               comp <- as.data.frame(comp)
-               comp$gene <- rownames(comp)
-               rownames(comp) <- NULL
-               tbl.all <- merge(tbl.all, comp, by = "gene", all = TRUE)
-               tbl.all <- tbl.all[order(tbl.all$comp, decreasing = TRUE),]
+               concordance <- as.data.frame(concordance)
+               concordance$gene <- rownames(concordance)
+               rownames(concordance) <- NULL
+               tbl.all <- merge(tbl.all, concordance, by = "gene", all = TRUE)
+               
+               # Transform via PCA and compute the pcaMax score
+               pcaMax <- apply(pca$x[,pca$sdev > 0.1],1, function(x) {sqrt(mean(x*x))})
+               pcaMax <- as.data.frame(pcaMax)
+               pcaMax$gene <- rownames(pcaMax)
+               rownames(pcaMax) <- NULL
+               tbl.all <- merge(tbl.all, pcaMax, by = "gene", all = TRUE)
+
+               # Sort by pcaMax
+               tbl.all <- tbl.all[order(tbl.all$pcaMax, decreasing = TRUE),]
 
                return(tbl.all)
            })

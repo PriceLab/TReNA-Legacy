@@ -20,3 +20,14 @@ Create a Solver class object using the Ridge solver
 \examples{
 solver <- RidgeSolver()
 }
+\seealso{
+\code{\link{solve.Ridge}}, \code{\link{getAssayData}}
+
+Other Solver class objects: \code{\link{BayesSpikeSolver}},
+  \code{\link{EnsembleSolver}},
+  \code{\link{LassoPVSolver}}, \code{\link{LassoSolver}},
+  \code{\link{PearsonSolver}},
+  \code{\link{RandomForestSolver}},
+  \code{\link{Solver-class}}, \code{\link{SpearmanSolver}},
+  \code{\link{SqrtLassoSolver}}
+}

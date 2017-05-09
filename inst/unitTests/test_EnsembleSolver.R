@@ -41,8 +41,10 @@ test_ampAD.mef2c.154tfs.278samples.ensemble <- function()
    tbl <- solve(trena, target.gene, tfs)
 
    # Check for empirical values
-   checkTrue(min(tbl$extr) > 1.2)
-   checkTrue(max(tbl$extr) < 5.0)
+   checkTrue(min(tbl$pcaMax) > 1.2)
+   checkTrue(max(tbl$pcaMax) < 5.2)
+   checkTrue(min(tbl$concordance) > 0.4)
+   checkTrue(max(tbl$concordance) < 0.7)
    checkTrue(c("HLF") %in% tbl$gene)
 
 } # test_ampAD.mef2c.154tfs.278samples.ensemble

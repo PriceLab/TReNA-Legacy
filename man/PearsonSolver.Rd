@@ -20,3 +20,14 @@ Create a Solver class object using  Pearson correlation coefficients as the solv
 \examples{
 solver <- PearsonSolver()
 }
+\seealso{
+\code{\link{solve.Pearson}}, \code{\link{getAssayData}}
+
+Other Solver class objects: \code{\link{BayesSpikeSolver}},
+  \code{\link{EnsembleSolver}},
+  \code{\link{LassoPVSolver}}, \code{\link{LassoSolver}},
+  \code{\link{RandomForestSolver}},
+  \code{\link{RidgeSolver}}, \code{\link{Solver-class}},
+  \code{\link{SpearmanSolver}},
+  \code{\link{SqrtLassoSolver}}
+}

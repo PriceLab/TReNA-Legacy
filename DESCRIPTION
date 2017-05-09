@@ -18,7 +18,7 @@ Imports:
     RMySQL,
     DBI
 Depends:
-    R (>= 3.2.3),
+    R (>= 3.4.0),
     utils,
     glmnet (>= 2.0.3),
     GenomicRanges
@@ -26,13 +26,16 @@ Suggests:
     RUnit,
     limma,
     plyr,
-    knitr
+    knitr,
+    BiocGenerics,
+    rmarkdown
 VignetteBuilder:
     knitr
 Description: Methods for reconstructing transcriptional regulatory networks, especially in species
-  for which genome-wide TF binding site information is available.
+    for which genome-wide TF binding site information is available.
 License: GPL-3
-biocViews: Transcription, GeneRegulation, NetworkInference, FeatureExtraction, Regression, SystemsBiology
+biocViews: Transcription, GeneRegulation, NetworkInference, FeatureExtraction, Regression,
+    SystemsBiology, GeneExpression
 Collate:
     'Solver.R'
     'BayesSpikeSolver.R'

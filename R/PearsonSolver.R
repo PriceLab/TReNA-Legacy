@@ -16,6 +16,10 @@
 #' 
 #' @return A Solver class object with Pearson correlation coefficients as the solver
 #'
+#' @seealso  \code{\link{solve.Pearson}}, \code{\link{getAssayData}}
+#'
+#' @family Solver class objects
+#' 
 #' @export
 #' 
 #' @examples
@@ -39,10 +43,12 @@ PearsonSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 #' @rdname solve.Pearson
 #' @aliases run.PearsonSolver solve.Pearson
 #'
-#' @description Given a TReNA object with Pearson as the solver, use the \code{\link{cor}} function to
-#' estimate coefficients for each transcription factor as a perdictor of the target gene's expression level
+#' @description Given a TReNA object with Pearson as the solver, use the \code{\link{cor}} function
+#' to estimate coefficients for each transcription factor as a perdictor of the target gene's
+#' expression level. This method should be called using the \code{\link{solve}} method on an
+#' appropriate TReNA object.
 #'
-#' @param obj An object of class TReNA with "pearson" as the solver string
+#' @param obj An object of class Solver with "pearson" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
@@ -50,7 +56,7 @@ PearsonSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 #'
 #' @return The set of Pearson Correlation Coefficients between each transcription factor and the target gene.
 #'
-#' @seealso \code{\link{cor}}
+#' @seealso \code{\link{cor}}, \code{\link{PearsonSolver}}
 #'
 #' @family solver methods
 #' 
@@ -67,12 +73,11 @@ setMethod("run", "PearsonSolver",
           function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
 
               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning              
-              if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){                  
+              if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){                  
                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")                  
               }
               
-
-              mtx <- obj@mtx.assay
+              mtx <- getAssayData(obj)
               # Check that target gene and tfs are all part of the matrix
               stopifnot(target.gene %in% rownames(mtx))
               stopifnot(all(tfs %in% rownames(mtx)))
@@ -87,7 +92,7 @@ setMethod("run", "PearsonSolver",
               # If target gene was the only tf, then return nothing
               if(length(tfs)==0) return(NULL)
 
-              x = t(mtx[tfs,,drop=F])
+              x = t(mtx[tfs,,drop=FALSE])
               y = as.vector(t(mtx[target.gene,])) # Make target gene levels into a vector
 
               # Calculate Pearson correlation coefficients

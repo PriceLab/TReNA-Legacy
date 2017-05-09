@@ -20,3 +20,14 @@ Create a Solver class object using the LASSO solver
 \examples{
 solver <- LassoSolver()
 }
+\seealso{
+\code{\link{solve.Lasso}}, \code{\link{getAssayData}}
+
+Other Solver class objects: \code{\link{BayesSpikeSolver}},
+  \code{\link{EnsembleSolver}},
+  \code{\link{LassoPVSolver}}, \code{\link{PearsonSolver}},
+  \code{\link{RandomForestSolver}},
+  \code{\link{RidgeSolver}}, \code{\link{Solver-class}},
+  \code{\link{SpearmanSolver}},
+  \code{\link{SqrtLassoSolver}}
+}

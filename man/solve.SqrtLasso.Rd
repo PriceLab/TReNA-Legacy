@@ -11,7 +11,7 @@
   length(tfs)), extraArgs = list())
 }
 \arguments{
-\item{obj}{An object of class TReNA with "sqrtlasso" as the solver string}
+\item{obj}{An object of class Solver with "sqrtlasso" as the solver string}
 
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 
@@ -22,22 +22,26 @@
 \item{extraArgs}{Modifiers to the Square Root LASSO solver}
 }
 \value{
-A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
+A data frame containing the coefficients relating the target gene to
+each transcription factor, plus other fit parameters.
 }
 \description{
-Given a TReNA object with Square Root LASSO as the solver, use the \code{\link{slim}} function to estimate coefficients
+Given a TReNA object with Square Root LASSO as the solver,
+use the \code{\link{slim}} function to estimate coefficients
 for each transcription factor as a predictor of the target gene's expression level.
+This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 }
 \examples{
 # Load included Alzheimer's data, create a TReNA object with Square Root LASSO as solver, and solve
+# Use 4 cores with the extraArgs argument
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 trena <- TReNA(mtx.assay = mtx.sub, solver = "sqrtlasso")
 target.gene <- "MEF2C"
 tfs <- setdiff(rownames(mtx.sub), target.gene)
-tbl <- solve(trena, target.gene, tfs)
+tbl <- solve(trena, target.gene, tfs, extraArgs = list("num.cores" = 4))
 }
 \seealso{
-\code{\link{slim}}
+\code{\link{slim}}, \code{\link{SqrtLassoSolver}}
 
 Other solver methods: \code{\link{run,BayesSpikeSolver-method}},
   \code{\link{run,EnsembleSolver-method}},
@@ -46,5 +50,6 @@ Other solver methods: \code{\link{run,BayesSpikeSolver-method}},
   \code{\link{run,PearsonSolver-method}},
   \code{\link{run,RandomForestSolver-method}},
   \code{\link{run,RidgeSolver-method}},
-  \code{\link{run,SpearmanSolver-method}}
+  \code{\link{run,SpearmanSolver-method}},
+  \code{\link{solve,TReNA-method}}
 }

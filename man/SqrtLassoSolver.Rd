@@ -20,3 +20,14 @@ Create a Solver class object using the Square Root LASSO solver
 \examples{
 solver <- SqrtLassoSolver()
 }
+\seealso{
+\code{\link{solve.SqrtLasso}}, \code{\link{getAssayData}}
+
+Other Solver class objects: \code{\link{BayesSpikeSolver}},
+  \code{\link{EnsembleSolver}},
+  \code{\link{LassoPVSolver}}, \code{\link{LassoSolver}},
+  \code{\link{PearsonSolver}},
+  \code{\link{RandomForestSolver}},
+  \code{\link{RidgeSolver}}, \code{\link{Solver-class}},
+  \code{\link{SpearmanSolver}}
+}

@@ -11,7 +11,7 @@
 #' @name SqrtLassoSolver-class
 
 .SqrtLassoSolver <- setClass ("SqrtLassoSolver", contains="Solver")
-#------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 #' Create a Solver class object using the Square Root LASSO solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
@@ -19,6 +19,10 @@
 #' 
 #' @return A Solver class object with Square Root LASSO as the solver
 #'
+#' @seealso  \code{\link{solve.SqrtLasso}}, \code{\link{getAssayData}}
+#'
+#' @family Solver class objects
+#' 
 #' @export
 #' 
 #' @examples
@@ -41,28 +45,32 @@ SqrtLassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' @rdname solve.SqrtLasso
 #' @aliases run.SqrtLassoSolver solve.SqrtLasso
 #' 
-#' @description Given a TReNA object with Square Root LASSO as the solver, use the \code{\link{slim}} function to estimate coefficients
-#' for each transcription factor as a predictor of the target gene's expression level. 
+#' @description Given a TReNA object with Square Root LASSO as the solver,
+#' use the \code{\link{slim}} function to estimate coefficients
+#' for each transcription factor as a predictor of the target gene's expression level.
+#' This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 #' 
-#' @param obj An object of class TReNA with "sqrtlasso" as the solver string
+#' @param obj An object of class Solver with "sqrtlasso" as the solver string
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
 #' @param extraArgs Modifiers to the Square Root LASSO solver
 #'
-#' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
+#' @return A data frame containing the coefficients relating the target gene to
+#' each transcription factor, plus other fit parameters.
 #'
-#' @seealso \code{\link{slim}}
+#' @seealso \code{\link{slim}}, \code{\link{SqrtLassoSolver}}
 #'
 #' @family solver methods
 #'
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with Square Root LASSO as solver, and solve
+#' # Use 4 cores with the extraArgs argument
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 #' trena <- TReNA(mtx.assay = mtx.sub, solver = "sqrtlasso")
 #' target.gene <- "MEF2C"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
-#' tbl <- solve(trena, target.gene, tfs)
+#' tbl <- solve(trena, target.gene, tfs, extraArgs = list("num.cores" = 4))
 
 setMethod("run", "SqrtLassoSolver",
 
@@ -72,7 +80,7 @@ setMethod("run", "SqrtLassoSolver",
                   return(data.frame())              
 
               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
-              if(rowMeans(obj@mtx.assay)[target.gene] < stats::quantile(rowMeans(obj@mtx.assay), probs = 0.1)){
+              if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){
 
                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
                   }
@@ -98,11 +106,11 @@ setMethod("run", "SqrtLassoSolver",
               
               if( length(tfs) == 0 ) return( data.frame() )
               
-              mtx <- obj@mtx.assay              
+              mtx <- getAssayData(obj)              
               stopifnot(target.gene %in% rownames(mtx))             
               stopifnot(all(tfs %in% rownames(mtx)))              
               stopifnot(class(lambda) %in% c("NULL","numeric"))              
-              features <- t(mtx[tfs,,drop=F ])              
+              features <- t(mtx[tfs,,drop=FALSE ])              
               target <- as.numeric(mtx[target.gene,])
               
               if( length(tfs) == 1 ) {                  
@@ -126,7 +134,7 @@ setMethod("run", "SqrtLassoSolver",
                   if(is.null(num.cores))                      
                       num.cores <- parallel::detectCores()/2
                   
-                  cl <- parallel::makeForkCluster(nnodes = num.cores)
+                  cl <- parallel::makeCluster(num.cores)
                   doParallel::registerDoParallel(cl)
                   
                   lambda.list <- foreach::foreach(i = 1:30) %dopar% {

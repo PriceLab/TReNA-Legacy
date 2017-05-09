@@ -1,6 +1,8 @@
 # TReNA
  Fit transcriptional regulatory networks using gene expression, priors, machine learning
 
+## Getting Started 
+
 To build and test:
 
  - clone this repository
@@ -13,6 +15,16 @@ To build and test:
    - lassopv
  - cd TReNA
  - R CMD INSTALL .
+ 
+The most reliable way to install package dependencies (and other of their dependencies):
+
+````
+source("http://bioconductor.org/biocLite.R")
+biocLite(c("glmnet", "RUnit"))
+````
+
+## Using TReNA
+
  - open an R session
  - source("inst/unitTests/test_TReNA.R")
  - runTests()
@@ -20,11 +32,6 @@ To build and test:
 The unitTests perform double duty: they ensure the package performs as (currently) expected;
 they introduce the package to the user and developer.
 Thus [test_TReNA.R](https://github.com/PriceLab/TReNA/blob/master/inst/unitTests/test_TReNA.R)
-is your entry point into this project.
+is one entry point into this project.
 
-The most reliable way to install package dependencies (and other of their dependencies):
-
-````
-source("http://bioconductor.org/biocLite.R")
-biocLite(c("glmnet", "RUnit"))
-````
+We have also created a [Jupyter Notebook](http://nbviewer.jupyter.org/github/PriceLab/TReNA/blob/master/inst/demos/Assess_Distributions.ipynb) demonstrating use of TReNA with 4 different solvers

@@ -11,7 +11,7 @@
   length(tfs)), extraArgs = list())
 }
 \arguments{
-\item{obj}{An object of class TReNA with "ensemble" as the solver string}
+\item{obj}{An object of class Solver with "ensemble" as the solver string}
 
 \item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 
@@ -23,10 +23,21 @@
 arguments denoting extraArgs that correspond to a given solver (e.g. "lasso")}
 }
 \value{
-A data frame containing the scores for all solvers and a composite score relating the target gene to each transcription factor
+A data frame containing the scores for all solvers and two composite scores
+relating the target gene to each transcription factor. The two new scores are:
+\itemize{
+\item{"concordance": a composite score created similarly to "extreme_score", but with each solver's
+score scaled using *atan(x)*. This score scales from 0-1}
+\item{"pcaMax": a composite score created using the root mean square of the principal
+components of the individual solver scores}
+}
 }
 \description{
-Given a TReNA object with Ensemble as the solver and a list of solvers (default = "all.solvers"), estimate coefficients for each transcription factor as a predictor of the target gene's expression level. The final scores for the ensemble method combine all specified solvers to create a composite score for each transcription factor.
+Given a TReNA object with Ensemble as the solver and a list of solvers
+(default = "default.solvers"), estimate coefficients for each transcription factor
+as a predictor of the target gene's expression level. The final scores for the ensemble
+method combine all specified solvers to create a composite score for each transcription factor.
+This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 }
 \examples{
 # Load included Alzheimer's data, create a TReNA object with LASSO as solver, and solve
@@ -44,6 +55,8 @@ tbl <- solve(trena, target.gene, tfs, extraArgs = list("gene.cutoff" = 0.2, "las
 tbl <- solve(trena, target.gene, tfs, extraArgs = list("solver.list" = c("lasso", "randomForest", "pearson", "bayesSpike")))
 }
 \seealso{
+\code{\link{EnsembleSolver}}
+
 Other solver methods: \code{\link{run,BayesSpikeSolver-method}},
   \code{\link{run,LassoPVSolver-method}},
   \code{\link{run,LassoSolver-method}},
@@ -51,5 +64,6 @@ Other solver methods: \code{\link{run,BayesSpikeSolver-method}},
   \code{\link{run,RandomForestSolver-method}},
   \code{\link{run,RidgeSolver-method}},
   \code{\link{run,SpearmanSolver-method}},
-  \code{\link{run,SqrtLassoSolver-method}}
+  \code{\link{run,SqrtLassoSolver-method}},
+  \code{\link{solve,TReNA-method}}
 }
