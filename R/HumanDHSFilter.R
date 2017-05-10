@@ -156,7 +156,7 @@ setMethod("getCandidates", "HumanDHSFilter",
 
        colnames(tbl.reg) <- c("chrom", "start", "end", "count", "score")
        mm <- MotifMatcher(name="rs13384219.neighborhood", genomeName=obj@genomeName)
-        x <- findMatchesByChromosomalRegion(mm, tbl.regions,
+       x <- findMatchesByChromosomalRegion(mm, tbl.regions,
                                            pwmMatchMinimumAsPercentage=obj@pwmMatchPercentageThreshold,
                                            variants=obj@variants)
        if(!obj@quiet)
