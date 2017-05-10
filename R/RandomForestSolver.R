@@ -24,7 +24,7 @@
 #' @seealso  \code{\link{solve.RandomForest}}, \code{\link{getAssayData}}
 #'
 #' @family Solver class objects
-#' 
+#'
 #' @export
 #'
 #' @examples
@@ -90,7 +90,7 @@ setMethod('show', 'RandomForestSolver',
 #' @return A list containing various parameters of the Random Forest fit.
 #'
 #' @seealso \code{\link{randomForest}}, \code{\link{RandomForestSolver}}
-#' 
+#'
 #' @family solver methods
 #'
 #' @examples
@@ -106,17 +106,15 @@ setMethod("run", "RandomForestSolver",
 
   function (obj){
 
-      # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning      
-      if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){          
-          warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")          
-      }      
-      
-     mtx <- getAssayData(obj)
-     stopifnot(target.gene %in% rownames(mtx))
-     stopifnot(all(tfs %in% rownames(mtx)))
-     if(length(tfs)==0) return(NULL)
+      # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
+      if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){
+          warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
+      }
 
+     #mtx <- getAssayData(obj)
+     stopifnot(target.gene %in% rownames(mtx))
      mtx <- obj@mtx.assay
+     stopifnot(all(obj@candidateRegulators %in% rownames(mtx)))
      if(length(obj@candidateRegulators)==0) return(NULL)
 
 
