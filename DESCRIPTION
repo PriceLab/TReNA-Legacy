@@ -16,12 +16,17 @@ Imports:
     RPostgreSQL,
     methods,
     RMySQL,
-    DBI
+    DBI,
+    graph,
+    jsonlite
 Depends:
     R (>= 3.3.0),
     utils,
     glmnet (>= 2.0.3),
-    GenomicRanges
+    GenomicRanges,
+    BrowserViz,
+    graph,
+    jsonlite
 Suggests:
     RUnit,
     limma,
@@ -60,4 +65,5 @@ Collate:
     'sharedFunctions.R'
     'Recipe.R'
     'Cook.R'
+    'TReNA-Viz.R'
 RoxygenNote: 6.0.1

@@ -8,10 +8,11 @@ exportClasses(
    GeneOntologyFilter,
    RandomForestSolver,
    Recipe,
-   Cook)
+   Cook,
+   TReNA.Viz)
 
 export(
-    TReNA,
+   TReNA,
     Solver,
     BayesSpikeSolver,
     EnsembleSolver,
@@ -39,7 +40,8 @@ export(
     getGenome,
     getMinid,
     Cook,
-    run
+    run,
+    TReNA.Viz
     )
 
 exportMethods(
@@ -83,6 +85,7 @@ import(
     BSgenome.Hsapiens.UCSC.hg19
 )
 
+import(jsonlite)
 importFrom(RSQLite, SQLite)
 importFrom(RPostgreSQL, PostgreSQL)
 importFrom(RMySQL, MySQL)
