@@ -21,6 +21,14 @@ test_basicConstructor <- function(reuse=FALSE)
 test_addDemoGraph <- function()
 {
    printf("--- test_addDemoGraph")
+   g <- graphNEL(edgemode="directed")
+   g <- addNode(c("A", "B"), g)
+   g <- addEdge("A", "B", g)
+
+   tv <- TReNA.Viz()
+   TReNA:::addGraph(tv, g)
+
+   tv
 
 } # test_addDemoGraph
 #----------------------------------------------------------------------------------------------------

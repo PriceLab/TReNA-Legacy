@@ -10,6 +10,12 @@ printf <- function(...) print(noquote(sprintf(...)))
 
 
 #----------------------------------------------------------------------------------------------------
+setGeneric('addGraph',     signature='obj', function(obj, graph) standardGeneric ('addGraph'))
+setGeneric('fit',          signature='obj', function(obj, graph) standardGeneric ('fit'))
+setGeneric('fitSelected',  signature='obj', function(obj, graph) standardGeneric ('fitSelected'))
+setGeneric('layout',              signature='obj', function(obj, strategy) standardGeneric('layout'))
+setGeneric('layoutStrategies',    signature='obj', function(obj) standardGeneric('layoutStrategies'))
+#----------------------------------------------------------------------------------------------------
 # constructor
 TReNA.Viz = function(portRange=11000:11025, host="localhost", title="TReNA-Viz", quiet=TRUE)
 {
@@ -31,6 +37,71 @@ TReNA.Viz = function(portRange=11000:11025, host="localhost", title="TReNA-Viz",
    obj
 
 } # TReNA.Viz constructor
+#----------------------------------------------------------------------------------------------------
+setMethod('addGraph', 'TReNA.Viz',
+
+  function (obj, graph) {
+     printf("TReNA.Viz::addGraph");
+     print(graph)
+     g.json <- .graphToJSON(graph)
+     printf("about to send g.json: %d chars", nchar(g.json));
+     send(obj, list(cmd="addGraph", callback="handleResponse", status="request",
+                    payload=g.json))
+     while (!browserResponseReady(obj)){
+        Sys.sleep(.1)
+        }
+     printf("browserResponseReady")
+     getBrowserResponse(obj);
+     })
+
+#----------------------------------------------------------------------------------------------------
+setMethod('fit', 'TReNA.Viz',
+
+  function (obj) {
+     send(obj, list(cmd="fit", callback="handleResponse", status="request", payload=""))
+     while (!browserResponseReady(obj)){
+        Sys.sleep(.1)
+        }
+     printf("browserResponseReady")
+     getBrowserResponse(obj);
+     })
+
+#----------------------------------------------------------------------------------------------------
+setMethod('fitSelected', 'TReNA.Viz',
+
+  function (obj) {
+     send(obj, list(cmd="fitSelected", callback="handleResponse", status="request", payload=""))
+     while (!browserResponseReady(obj)){
+        Sys.sleep(.1)
+        }
+     printf("browserResponseReady")
+     getBrowserResponse(obj);
+     })
+
+#----------------------------------------------------------------------------------------------------
+setMethod('layoutStrategies', 'TReNA.Viz',
+
+  function (obj) {
+     send(obj, list(cmd="layoutStrategies", callback="handleResponse", status="request",
+                                  payload=""))
+     while (!browserResponseReady(obj)){
+        Sys.sleep(.1)
+        }
+     getBrowserResponse(obj)
+     })
+
+#----------------------------------------------------------------------------------------------------
+setMethod('layout', 'TReNA.Viz',
+
+  function (obj, strategy="random") {
+     send(obj, list(cmd="doLayout", callback="handleResponse", status="request",
+                                  payload=strategy))
+     while (!browserResponseReady(obj)){
+        Sys.sleep(.1)
+        }
+     getBrowserResponse(obj)
+     })
+
 #----------------------------------------------------------------------------------------------------
 # {elements: [
 #    {data: {id: 'a', score:5}, position: {x: 100, y: 200}},

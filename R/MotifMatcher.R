@@ -367,8 +367,11 @@ setMethod("getSequence", "MotifMatcher",
    wt.base <- substring(wt$seq, offset, offset)
    mutant.seq <- sprintf("%s%s%s", substr(wt$seq, 1, (offset-1)), variant.info$mut,
                                    substr(wt$seq, offset+1, nchar(wt$seq)))
-   tbl.regions[subjectIndex, "seq"] <- mutant.seq
-   tbl.regions
+   # create as many (initially identical) rows as there are mutant.seqs
+   mutant.seq.count <- length(mutant.seq)
+   tbl.regions.new <- as.data.frame(lapply(tbl.regions, rep, mutant.seq.count))
+   tbl.regions.new$seq <- mutant.seq
+   tbl.regions.new
 
 } # .injextSnp
 #----------------------------------------------------------------------------------------------------

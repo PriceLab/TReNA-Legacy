@@ -94,6 +94,18 @@ test_.injectSnp <- function()
                                              variant.info)
    checkEquals(tbl.regionsInjected$seq[1], "CATGCGAATTA")
 
+   #---- a snp with three known variants
+   tbl.regions <- data.frame(chrom="chr18", start=26864390, end=26864430,
+                             seq="GGAAGAGCTGGCTCCACAGGGGGGTGGCCAGCCACATCCCA",
+                             stringsAsFactors=FALSE)
+   variant.info <- list(chrom="chr18", loc=26864410, wt="G", mut=c("A", "T"))
+   tbl.regionsInjected <- TReNA:::.injectSnp(tbl.regions, queryIndex=1, subjectIndex=1,
+                                             variant.info)
+
+   checkEquals(tbl.regionsInjected$seq,
+               c("GGAAGAGCTGGCTCCACAGGAGGGTGGCCAGCCACATCCCA",
+                 "GGAAGAGCTGGCTCCACAGGTGGGTGGCCAGCCACATCCCA"))
+
  } # test_.injectSnp
 #----------------------------------------------------------------------------------------------------
 #  rs13384219  A->G

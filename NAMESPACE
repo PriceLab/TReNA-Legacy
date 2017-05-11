@@ -41,7 +41,12 @@ export(
     getMinid,
     Cook,
     run,
-    TReNA.Viz
+    TReNA.Viz,
+    addGraph,
+    fit,
+    fitSelected,
+    layoutStrategies,
+    layout
     )
 
 exportMethods(
