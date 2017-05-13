@@ -20,6 +20,7 @@ runTests <- function()
    test_getCandidates.vrk2.twoRegions()
    test_getCandidates.vrk2.rs13384219.variant()
    test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants()
+   test_getCandidates.twoAlternateAllelesInVariant()
 
    #test_getRegulatoryRegions_hardCase()
    #test_.matchForwardAndReverse()
@@ -655,13 +656,43 @@ test_getCandidates.vrk2.rs13384219.variant <- function()
    checkEquals(dim(x$tbl), c(55, 11))
    checkTrue(length(x$tfs) > 140)
 
-
 } # test_getCandidates.vrk2.rs13384219.variant
 #------------------------------------------------------------------------------------------------------------------------
-test_vrk2Promoter.normalUse <- function()
+test_getCandidates.twoAlternateAllelesInVariant <- function()
 {
    printf("--- test_mef2cPromoter.normalUse")
 
+   rsid <- "rs3763040"  # 18:26864410 A/C/T
+   target.gene <- "APQR"
+   genome <- "hg38"
+   chromosome <- "chr18"
+   loc <- 26864410
+   region <- sprintf("%s:%d-%d", chromosome, loc-5, loc+5)
+
+   recipe <- list(filterType="EncodeDNaseClusters",
+                  genomeName="hg38",
+                  encodeTableName="wgEncodeRegDnaseClustered",
+                  pwmMatchPercentageThreshold=80L,
+                  geneInfoDB="postgres://whovian/gtf",
+                  geneCenteredSpec=list(),
+                  regionsSpec=region,
+                  variants=rsid)
+
+   hdf <- with(recipe, HumanDHSFilter(genomeName=genomeName,
+                              encodeTableName=encodeTableName,
+                              pwmMatchPercentageThreshold=pwmMatchPercentageThreshold,
+                              geneInfoDatabase.uri=geneInfoDB,
+                              regionsSpec=regionsSpec,
+                              geneCenteredSpec=geneCenteredSpec,
+                              variants=variants,
+                              quiet=TRUE))
+
+   x <- getCandidates(hdf)
+
+
+
+} # test_getCandidates.twoAlternateAllelesInVariant
+#------------------------------------------------------------------------------------------------------------------------
 #   hdcf <- HumanDHSFilter("hg38")
 #    # chr5:88,813,245-88,832,344: has just a few high scoring clusters
 #   chrom <- "chr5"
@@ -681,7 +712,7 @@ test_vrk2Promoter.normalUse <- function()
 #   checkTrue(length(x$tfs) > 200)  # 217 on (29 mar 2017)
 #   checkEquals(length(which(duplicated(x$tfs))), 0)
 
-} # test_vrk2Promoter.normalUse
+#} # test_vrk2Promoter.normalUse
 #----------------------------------------------------------------------------------------------------
 # a gene possibly involved in alzheimer's disease
 notest_bin1 <- function()

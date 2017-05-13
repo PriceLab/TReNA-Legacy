@@ -43,15 +43,24 @@ MotifMatcher <- function(name=NA_character_,
 
 } # MotifMatcher constructor
 #------------------------------------------------------------------------------------------------------------------------
+setMethod("show", "MotifMatcher",
+
+     function(object){
+        s <- sprintf("MotifMatcher...")
+        cat(s, sep="\n")
+        })
+#----------------------------------------------------------------------------------------------------
 setMethod("findMatchesByChromosomalRegion", "MotifMatcher",
 
     function(obj, tbl.regions, pwmMatchMinimumAsPercentage, variants=NA_character_){
-       sequences <- getSequence(obj, tbl.regions, variants)
-       colnames(tbl.regions) <- c("chrom", "chromStart", "chromEnd")   # preprend 'chrom' to start and end, to distinguish
-       tbl.motifs <- .getScoredMotifs(sequences, pwmMatchMinimumAsPercentage, obj@quiet)
+       #stopifnot(nrow(tbl.regions) == 1)   # simplify our manipulations.
+       browser()
+       tbl.regions <- getSequence(obj, tbl.regions, variants)
+       colnames(tbl.regions) <- c("chrom", "chromStart", "chromEnd", "seq", "variant")   # preprend 'chrom' to start and end, to distinguish
+       tbl.motifs <- .getScoredMotifs(tbl.regions$seq, pwmMatchMinimumAsPercentage, obj@quiet)
            # tbl.mg will soon come from MotifDb
        tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE, header=TRUE)
-       region.count <- length(sequences)
+       region.count <- nrow(tbl.regions)
        tbl.out <- data.frame()
        all.tfs <- c()
        for(i in seq_len(region.count)){
@@ -69,7 +78,7 @@ setMethod("findMatchesByChromosomalRegion", "MotifMatcher",
        colnames(tbl.out)[7] <- "motifname"
        tbl.out <- tbl.out[, -c(3,5)] # get rid of width and maxScore columns
        desired.column.order <- c("motifname", "chrom", "start", "endpos", "strand", "motifscore", "relativeScore", "match",
-                                 "chromStart", "chromEnd") #, "count", "score")
+                                 "chromStart", "chromEnd", "seq", "variant") #, "count", "score")
        tbl.out <- tbl.out[, desired.column.order]
        tbl.out <- tbl.out[order(tbl.out$motifscore, decreasing=TRUE),]
        tfs.by.motif <- lapply(tbl.out$motifname, function(m) subset(tbl.mg, motif==m)$tf.gene)
@@ -337,12 +346,20 @@ setMethod("getPfms", "MotifMatcher",
 setMethod("getSequence", "MotifMatcher",
 
    function(obj, tbl.regions, variants=NA_character_){
+        # either no variants are supplied, or a variant string is offered for each row
+     #.distributeVariants(tbl.regions, variants)
+     stopifnot(is.na(variants) || nrow(tbl.regions) == length(variants))
      gr.regions <- with(tbl.regions, GRanges(seqnames=chrom, IRanges(start=start, end=end)))
      seqs <- as.character(getSeq(obj@genome, gr.regions))
      tbl.regions$seq <- seqs
+     variant.column <- rep("", nrow(tbl.regions))
      if(!is.na(variants)){
+        i <- 0
         for(variant in variants){
+           i <- i + 1
            variant.info <- parseVariantString(obj, variant)
+           browser()
+           variant.column[i] <- with(variant.info, sprintf("%s:%d:%s", chrom, loc, mut))
            gr.variants <- with(variant.info, GRanges(seqnames=chrom, IRanges(start=loc, end=loc)))
            tbl.overlaps <- as.data.frame(findOverlaps(gr.variants, gr.regions))
            for(r in 1:nrow(tbl.overlaps)){
@@ -351,7 +368,8 @@ setMethod("getSequence", "MotifMatcher",
            } # for r
           } # for variant
        } # !is.na(variants)
-      tbl.regions$seq
+      tbl.regions$variant <- variant.column
+      tbl.regions
      })  # getSequence
 
 #----------------------------------------------------------------------------------------------------
@@ -367,7 +385,7 @@ setMethod("getSequence", "MotifMatcher",
    wt.base <- substring(wt$seq, offset, offset)
    mutant.seq <- sprintf("%s%s%s", substr(wt$seq, 1, (offset-1)), variant.info$mut,
                                    substr(wt$seq, offset+1, nchar(wt$seq)))
-   # create as many (initially identical) rows as there are mutant.seqs
+      # create as many (initially identical) rows as there are mutant.seqs
    mutant.seq.count <- length(mutant.seq)
    tbl.regions.new <- as.data.frame(lapply(tbl.regions, rep, mutant.seq.count))
    tbl.regions.new$seq <- mutant.seq
@@ -391,14 +409,23 @@ setMethod("parseVariantString", "MotifMatcher",
           wt <- as.character(getSeq(obj@genome, chrom, start, start))
           mut <- setdiff(elements, wt)
           snp <- list(chrom=chrom, loc=start, wt=wt, mut=mut)
-          }
+          variant.count <- length(snp$mut)
+          result <- vector(mode="list", length=variant.count)
+          for(v in 1:variant.count){
+             result[[v]] <- snp
+             result[[v]]$mut <- snp$mut[v]
+             } # for v
+          tbl.out <- do.call(rbind.data.frame, result)
+          } # if rsid
        else{
           tokens <- strsplit(variantString, ":")[[1]]
           stopifnot(length(tokens) == 4)
-          snp <- list(chrom=tokens[1], loc=as.numeric(tokens[2]), wt=tokens[3], mut=tokens[4])
+          tbl.out <- data.frame(chrom=tokens[1], loc=as.numeric(tokens[2]), wt=tokens[3], mut=tokens[4])
           }
-
-       snp
+       tbl.out$chrom <- as.character(tbl.out$chrom)
+       tbl.out$wt <- as.character(tbl.out$wt)
+       tbl.out$mut <- as.character(tbl.out$mut)
+       tbl.out
     })
 
 #----------------------------------------------------------------------------------------------------

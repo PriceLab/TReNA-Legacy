@@ -98,6 +98,7 @@ setMethod("show", "HumanDHSFilter",
         s <- sprintf("HumanDHSFilter...")
         cat(s, sep="\n")
         })
+
 #----------------------------------------------------------------------------------------------------
 setMethod("geneSymbolToTSS", "HumanDHSFilter",
 
@@ -155,7 +156,7 @@ setMethod("getCandidates", "HumanDHSFilter",
           printf("found %d regulatory regions in %d requested regions", nrow(tbl.regions), nrow(tbl.reg))
 
        colnames(tbl.reg) <- c("chrom", "start", "end", "count", "score")
-       mm <- MotifMatcher(name="rs13384219.neighborhood", genomeName=obj@genomeName)
+       mm <- MotifMatcher(name="untitltedMotifMatcher", genomeName=obj@genomeName)
        x <- findMatchesByChromosomalRegion(mm, tbl.regions,
                                            pwmMatchMinimumAsPercentage=obj@pwmMatchPercentageThreshold,
                                            variants=obj@variants)
