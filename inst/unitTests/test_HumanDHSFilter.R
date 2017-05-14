@@ -14,7 +14,7 @@ runTests <- function()
    test_basicConstructor()
    test_geneSymbolToTSS()
    test_getEncodeRegulatoryTableNames()
-   test_checkAllEncodeTables(quiet=FALSE)
+   test_checkSampleOfEncodeTables(quiet=FALSE)
 
    test_getRegulatoryRegions()
    test_getCandidates.vrk2.twoRegions()
@@ -198,9 +198,9 @@ test_getEncodeRegulatoryTableNames <- function()
 
 } # test_getEncodeRegulatoryTableNames
 #----------------------------------------------------------------------------------------------------
-test_checkAllEncodeTables <- function(quiet=TRUE)
+test_checkSampleOfEncodeTables <- function(quiet=TRUE)
 {
-   printf("--- test_checkAllEncodeTables")
+   printf("--- test_checkSampleOfEncodeTables")
 
    candidateFilterSpec <- create.vrk2.candidateFilterSpec()
    #candidateFilterSpec <- create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
@@ -227,7 +227,9 @@ test_checkAllEncodeTables <- function(quiet=TRUE)
    start <- rs13384219.loc - 10
    end <- rs13384219.loc + 10
 
-   for(tableName in tableNames){
+   selectedTableNames <- tableNames[sample(1:length(tableNames), size=10)]
+
+   for(tableName in selectedTableNames){
       tbl <-getRegulatoryRegions(hdf, tableName, chrom, start, end)
       if(!quiet) printf("--- %s: %d rows", tableName, nrow(tbl))
       checkTrue(nrow(tbl) >= 0)
@@ -235,7 +237,7 @@ test_checkAllEncodeTables <- function(quiet=TRUE)
       #browser(); xyz <- 99
       }
 
-} # test_checkAllEncodeTables
+} # test_checkSampleOfEncodeTables
 #----------------------------------------------------------------------------------------------------
 # use this sample code to poke at the encode data offered by uscs
 # note that most of the tables here only serve to list, not regions, but
@@ -460,7 +462,7 @@ test_.matchForwardAndReverse <- function()
    checkEquals(nrow(tbl), 1)
    checkEquals(tbl$start, 57)
    checkEquals(tbl$end, 67)
-   checkEquals(tbl$width, 11)
+   checkEquals(tbl$width, 13)
    checkEqualsNumeric(tbl$score, 7.98, tol=0.1)
    checkEquals(tbl$motif, "MA0476.1")
    checkEquals(tbl$strand, "+")
@@ -571,8 +573,8 @@ test_getCandidates.vrk2.twoRegions <- function()
 
    x <- getCandidates(hdf)
    checkEquals(sort(names(x)), c("tbl", "tfs"))
-   checkEquals(ncol(x$tbl), 11)
-   checkTrue(nrow(x$tbl) > 150)    # 153 x 11
+   checkEquals(ncol(x$tbl), 13)
+   checkTrue(nrow(x$tbl) > 150)    # 153 x 13
    checkTrue(length(x$tfs) > 400)  # 422
 
 } # test_getCandidates.vrk2.twoRegions
@@ -600,7 +602,7 @@ test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants <- function
                               quiet=TRUE))
    x.wt <- getCandidates(hdf)
    checkEquals(sort(names(x.wt)), c("tbl", "tfs"))
-   checkEquals(dim(x.wt$tbl), c(66, 11))
+   checkEquals(dim(x.wt$tbl), c(66, 13))
    checkTrue(length(x.wt$tfs) > 150)
 
    cfSpec.variant <- create.vrk2.rs13384219.variant.candidateFilterSpec()
@@ -615,7 +617,7 @@ test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants <- function
                                               quiet=TRUE))
    x.mut <- getCandidates(hdf)
    checkEquals(sort(names(x.mut)), c("tbl", "tfs"))
-   checkEquals(dim(x.mut$tbl), c(55, 11))
+   checkEquals(dim(x.mut$tbl), c(55, 13))
    checkTrue(length(x.mut$tfs) > 140)
 
    # the top-scoring motifs in the wild type are missing from the mutant
@@ -653,7 +655,7 @@ test_getCandidates.vrk2.rs13384219.variant <- function()
                               quiet=TRUE))
    x <- getCandidates(hdf)
    checkEquals(sort(names(x)), c("tbl", "tfs"))
-   checkEquals(dim(x$tbl), c(55, 11))
+   checkEquals(dim(x$tbl), c(55, 13))
    checkTrue(length(x$tfs) > 140)
 
 } # test_getCandidates.vrk2.rs13384219.variant
@@ -820,3 +822,5 @@ test_rs34423320 <- function()
 
 } # test_rs34423320
 #----------------------------------------------------------------------------------------------------
+if(!interactive())
+   runTests()
