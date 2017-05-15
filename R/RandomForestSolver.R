@@ -107,6 +107,7 @@ setMethod("run", "RandomForestSolver",
   function (obj){
 
       # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
+      target.gene <- obj@targetGene
       if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){
           warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
       }
