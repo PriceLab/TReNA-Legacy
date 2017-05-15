@@ -574,6 +574,10 @@ test_getCandidates.vrk2.twoRegions <- function()
    x <- getCandidates(hdf)
    checkEquals(sort(names(x)), c("tbl", "tfs"))
    checkEquals(ncol(x$tbl), 13)
+   checkEquals(colnames(x$tbl),
+               c("motifName", "chrom", "motifStart", "motifEnd", "strand", "motifScore", "motifRelativeScore", "match",
+                 "regulatoryRegionStart", "regualtoryRegionEnd", "regulatorySequence", "variant", "tfs"))
+
    checkTrue(nrow(x$tbl) > 150)    # 153 x 13
    checkTrue(length(x$tfs) > 400)  # 422
 
@@ -603,6 +607,10 @@ test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants <- function
    x.wt <- getCandidates(hdf)
    checkEquals(sort(names(x.wt)), c("tbl", "tfs"))
    checkEquals(dim(x.wt$tbl), c(66, 13))
+   checkEquals(colnames(x.wt$tbl),
+               c("motifName", "chrom", "motifStart", "motifEnd", "strand", "motifScore", "motifRelativeScore", "match",
+                 "regulatoryRegionStart", "regualtoryRegionEnd", "regulatorySequence", "variant", "tfs"))
+
    checkTrue(length(x.wt$tfs) > 150)
 
    cfSpec.variant <- create.vrk2.rs13384219.variant.candidateFilterSpec()
@@ -618,6 +626,10 @@ test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants <- function
    x.mut <- getCandidates(hdf)
    checkEquals(sort(names(x.mut)), c("tbl", "tfs"))
    checkEquals(dim(x.mut$tbl), c(55, 13))
+   checkEquals(colnames(x.mut$tbl),
+               c("motifName", "chrom", "motifStart", "motifEnd", "strand", "motifScore", "motifRelativeScore", "match",
+                 "regulatoryRegionStart", "regualtoryRegionEnd", "regulatorySequence", "variant", "tfs"))
+
    checkTrue(length(x.mut$tfs) > 140)
 
    # the top-scoring motifs in the wild type are missing from the mutant
@@ -655,7 +667,12 @@ test_getCandidates.vrk2.rs13384219.variant <- function()
                               quiet=TRUE))
    x <- getCandidates(hdf)
    checkEquals(sort(names(x)), c("tbl", "tfs"))
+
    checkEquals(dim(x$tbl), c(55, 13))
+   checkEquals(colnames(x$tbl),
+               c("motifName", "chrom", "motifStart", "motifEnd", "strand", "motifScore", "motifRelativeScore", "match",
+                 "regulatoryRegionStart", "regualtoryRegionEnd", "regulatorySequence", "variant", "tfs"))
+
    checkTrue(length(x$tfs) > 140)
 
 } # test_getCandidates.vrk2.rs13384219.variant

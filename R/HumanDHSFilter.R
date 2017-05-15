@@ -164,7 +164,7 @@ setMethod("getCandidates", "HumanDHSFilter",
           printf(" and %d motifs", nrow(x$tbl))
 
        colnames(x$tbl) <- c("motifName", "chrom", "motifStart", "motifEnd", "strand", "motifScore", "motifRelativeScore",
-                            "match", "regulatoryRegionStart", "regualtoryRegionEnd", "tfs")
+                            "match", "regulatoryRegionStart", "regualtoryRegionEnd", "regulatorySequence", "variant", "tfs")
        x
     }) # getCandidates
 
