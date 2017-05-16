@@ -52,18 +52,22 @@ function setHub(newHub)
 function initializeCytoscape()
 {
    options = {container: $("#cyDiv"),
-              elements: {nodes: [{data: {id:'a'}}],
-                         edges: [{data:{source:'a', target:'a'}}]},
+              //elements: {nodes: [{data: {id:'a'}}],
+              //           edges: [{data:{source:'a', target:'a'}}]},
               style: cytoscape.stylesheet()
                        .selector('node').style({'background-color': '#ddd',
                                                 'label': 'data(id)',
                                                 'text-valign': 'center',
                                                 'text-halign': 'center',
                                                 'border-width': 1})
+                       .selector('node:selected').style({'overlay-opacity': 0.2,
+                                                         'overlay-color': 'gray'})
                        .selector('edge').style({'line-color': 'black',
                                                 'target-arrow-shape': 'triangle',
                                                 'target-arrow-color': 'black',
                                                 'curve-style': 'bezier'})
+                       .selector('edge:selected').style({'overlay-opacity': 0.2,
+                                                         'overlay-color': 'gray'})
              };
 
    cy = cytoscape(options);
@@ -716,7 +720,8 @@ function doLayout(msg)
 {
    console.log("=== doLayout");
    var strategy = msg.payload;
-   cy.layout({name: strategy});
+   var layout = cy.layout({name: strategy, fit: true});
+   layout.run();
 
    hub.send({cmd: msg.callback, status: "success", callback: "", payload: ""});
 
@@ -1410,23 +1415,6 @@ function addGraph(msg)
 
 } // addGraph
 //----------------------------------------------------------------------------------------------------
-function fit(msg)
-{
-  cy.fit();
-  return_msg = {cmd: msg.callback, status: "success", callback: "", payload: ""};
-  hub.send(return_msg);
-
-} // fit
-//----------------------------------------------------------------------------------------------------
-function fitSelected(msg)
-{
-  cy.fit(cy.nodes(":selected"));
-
-  return_msg = {cmd: msg.callback, status: "success", callback: "", payload: ""};
-  hub.send(return_msg);
-
-} // fitSelected
-//----------------------------------------------------------------------------------------------------
 function httpAddGraph(msg)
 {
   console.log("=== entering httpAddGraph");
@@ -1703,6 +1691,8 @@ hub.start();
     <li><a href="#igvDiv">IGV</a></li>
     <li><a href="#modelDiv">Model</a></li>
   </ul>
+
+
   <div id="cyDiv">
   </div>
   <div id="igvDiv">

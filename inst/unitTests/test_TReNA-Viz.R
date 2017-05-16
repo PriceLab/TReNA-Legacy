@@ -27,6 +27,7 @@ test_addDemoGraph <- function()
 
    tv <- TReNA.Viz()
    TReNA:::addGraph(tv, g)
+   layout(tv, "grid")
 
    tv
 

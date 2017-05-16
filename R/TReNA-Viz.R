@@ -10,9 +10,13 @@ printf <- function(...) print(noquote(sprintf(...)))
 
 
 #----------------------------------------------------------------------------------------------------
-setGeneric('addGraph',     signature='obj', function(obj, graph) standardGeneric ('addGraph'))
-setGeneric('fit',          signature='obj', function(obj, graph) standardGeneric ('fit'))
-setGeneric('fitSelected',  signature='obj', function(obj, graph) standardGeneric ('fitSelected'))
+setGeneric('addGraph',         signature='obj', function(obj, graph) standardGeneric ('addGraph'))
+setGeneric('fit',              signature='obj', function(obj, padding=30) standardGeneric('fit'))
+setGeneric('fitSelected',      signature='obj', function(obj, padding=30) standardGeneric('fitSelectedContent'))
+setGeneric('selectNodes',      signature='obj', function(obj, nodeIDs) standardGeneric('selectNodes'))
+setGeneric('sfn',              signature='obj', function(obj) standardGeneric('sfn'))
+
+
 setGeneric('layout',              signature='obj', function(obj, strategy) standardGeneric('layout'))
 setGeneric('layoutStrategies',    signature='obj', function(obj) standardGeneric('layoutStrategies'))
 #----------------------------------------------------------------------------------------------------
@@ -57,8 +61,8 @@ setMethod('addGraph', 'TReNA.Viz',
 #----------------------------------------------------------------------------------------------------
 setMethod('fit', 'TReNA.Viz',
 
-  function (obj) {
-     send(obj, list(cmd="fit", callback="handleResponse", status="request", payload=""))
+  function (obj, padding=30) {
+     send(obj, list(cmd="fit", callback="handleResponse", status="request", payload=padding))
      while (!browserResponseReady(obj)){
         Sys.sleep(.1)
         }
@@ -69,8 +73,8 @@ setMethod('fit', 'TReNA.Viz',
 #----------------------------------------------------------------------------------------------------
 setMethod('fitSelected', 'TReNA.Viz',
 
-  function (obj) {
-     send(obj, list(cmd="fitSelected", callback="handleResponse", status="request", payload=""))
+  function (obj, padding=30) {
+     send(obj, list(cmd="fitSelected", callback="handleResponse", status="request", payload=padding))
      while (!browserResponseReady(obj)){
         Sys.sleep(.1)
         }
