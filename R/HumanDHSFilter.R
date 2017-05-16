@@ -165,6 +165,8 @@ setMethod("getCandidates", "HumanDHSFilter",
 
        colnames(x$tbl) <- c("motifName", "chrom", "motifStart", "motifEnd", "strand", "motifScore", "motifRelativeScore",
                             "match", "regulatoryRegionStart", "regualtoryRegionEnd", "regulatorySequence", "variant", "tfs")
+       if(nchar(x$tbl$regulatorySequence[1]) > 20)
+          x$tbl$regulatorySequence <- paste(substr(x$tbl$regulatorySequence, 1, 17), "...", sep="")
        x
     }) # getCandidates
 
