@@ -9,6 +9,12 @@
    <!-- script   src="http://pshannon.systemsbiology.net/js/cytoscape-2.7.10.js"></script -->
    <script src="https://cdn.rawgit.com/paul-shannon/CDN/master/js/BrowserViz.js"></script>
 
+  <script src='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js'></script>
+   <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css"/>
+
+  <script src="http://igv.org/web/release/1.0.7/igv-1.0.7.js"></script>
+  <link rel="stylesheet" type="text/css" href="http://igv.org/web/release/1.0.7/igv-1.0.7.css">
+
 <style>
 
 #trenaVizDiv {
@@ -21,17 +27,36 @@
   z-index: 1;
   }
 
+#cyOuterDiv{
+  background-color: #F8F8F8;
+  margin-top: 1px;
+  padding: 1px;
+  }
+
 #cyDiv{
   background-color: #F8F8F8;
   margin-top: 5px;
+  margin: 1px;
+  width: 100%; height: 98%
   }
+
+#cyMenubarDiv{
+  background-color: #E8E8E4;
+  height: 30px"
+  }
+
+.cyMenuButton{
+   margin: 2px;
+   height: 25px;
+   }
 
 </style>
 
 <script>
 //----------------------------------------------------------------------------------------------------
-var cy;  // keep this outside of module scope so it can be manipulated in the console
-var xxx;
+// keep these outside of module scope so they can be manipulated in the console
+var cy;
+var igv;
 
 var TrenaVizModule = (function(){
 
@@ -74,17 +99,77 @@ function initializeCytoscape()
 
 } // initializeCytoscape
 //----------------------------------------------------------------------------------------------------
+function initializeCytoscapeButtons()
+{
+   $("#cyFitButton").click(function(){cy.fit(50)});
+   $("#cyFitSelectedButton").click(function(){cy.fit(cy.nodes(":selected"), 50)});
+   $("#cySFNButton").click(function(){cy.nodes(':selected').neighborhood().nodes().select()});
+   $("#cyHideUnselectedButton").click(function(){cy.nodes(":unselected").hide()});
+   $("#cyShowAllButton").click(function(){cy.nodes().show(); cy.edges().show()});
+
+} // initializeCytoscapeButtons
+//----------------------------------------------------------------------------------------------------
 function initializeUI()
 {
+   console.log("--- trenaViz, initializeUI");
    trenaVizDiv = $("#trenaVizDiv");
    trenaVizDiv.tabs();
    cyDiv = $("#cyDiv")
+   //setTimeout(function(){initializeIGV();}, 0);
+   initializeIGV();
    initializeCytoscape();
+   initializeCytoscapeButtons();
    $(window).resize(handleWindowResize);
    handleWindowResize();
+   console.log("--- trenaViz, initializeUI");
 
 } // initializeUI
 //----------------------------------------------------------------------------------------------------
+function initializeIGV()
+{
+   console.log("--- trenaViz, initializeIGV");
+
+   var igvOptions = {locus: "17:50,201,613-50,201,664", // COL1A1 promoter
+      reference: {id: "geneSymbols_hg38",
+         fastaURL: "http://pshannon.systemsbiology.net/genomes/hg38.fa",
+         cytobandURL: "http://pshannon.systemsbiology.net/genomes/cytoband.hg38.txt",
+         },
+     tracks: [
+        {name: 'Gencode v24',
+         url: "http://pshannon.systemsbiology.net/hg38/gencode.v24.annotation.sorted.gtf.gz",
+         indexURL: "http://pshannon.systemsbiology.net/hg38/gencode.v24.annotation.sorted.gtf.gz.tbi",
+         format: 'gtf',
+         visibilityWindow: 2000000,
+         displayMode: 'EXPANDED'
+         },
+        {name: 'geneSymbols_hg38',
+         url: 'http://pshannon.systemsbiology.net/hg38/geneSymbolSearch.bed',
+         indexed: false,
+         searchable: true,
+         visibilityWindow: 5000000,
+         displayMode: 'COLLAPSED',
+         color: "#448844"
+         },
+        {name: "skin hint fp",
+         format: "bed",
+         visibilityWindow: 100000,
+         displayMode: "SQUISHED",
+         indexed: true,
+         url: "http://pshannon.systemsbiology.net/annotations/skin_hint.bed.gz",
+         indexURL: "http://pshannon.systemsbiology.net/annotations/skin_hint.bed.gz.tbi",
+         },
+        ]
+     }; // igvOptions
+
+   console.log("--- trenaViz, igv:");
+   console.log(igv)
+   console.log("about to createBrowser");
+
+   window.igvBrowser = igv.createBrowser($("#igvDiv"), igvOptions);
+   console.log("after createBrowser");
+
+} // initializeIGV
+//-----------------------------------------------------------------------------------------------------
 function handleWindowResize ()
 {
    console.log("trenaViz.handleWindowResize");
@@ -93,8 +178,9 @@ function handleWindowResize ()
    trenaVizDiv.height(newHeight);
    trenaVizDiv.width(newWidth);
    var tabTitlesHeight = $(".ui-tabs-nav").height();
-   cyDiv.height(newHeight - (tabTitlesHeight + 42));
-   cyDiv.width(newWidth - 45);
+   var cyMenubarHeight = $("#cyMenubarDiv").height();
+   cyDiv.height(newHeight - (tabTitlesHeight + cyMenubarHeight + 10));
+   cyDiv.width(newWidth); // #  - 45);
 
 } // handleWindowResize
 //--------------------------------------------------------------------------------
@@ -1409,8 +1495,9 @@ function addGraph(msg)
   console.log(msg);
   cy.json(JSON.parse(msg.payload))
   cy.nodes().map(function(node){node.data({degree: node.degree()})});
-
+  handleWindowResize();
   return_msg = {cmd: msg.callback, status: "success", callback: "", payload: ""};
+   $("[href='#tab-1']").trigger("click");
   hub.send(return_msg);
 
 } // addGraph
@@ -1674,11 +1761,11 @@ return{
 }); // TrenaVizModule
 
 hub = BrowserViz();
-rcy = TrenaVizModule();
-rcy.setHub(hub);
-rcy.addMessageHandlers();
+trenaViz = TrenaVizModule();
+trenaViz.setHub(hub);
+trenaViz.addMessageHandlers();
 
-hub.addOnDocumentReadyFunction(rcy.initUI);
+hub.addOnDocumentReadyFunction(trenaViz.initUI);
 hub.start();
 
 </script>
@@ -1687,17 +1774,24 @@ hub.start();
 <body>
 <div id="trenaVizDiv">
   <ul>
-    <li><a href="#cyDiv">Network</a></li>
     <li><a href="#igvDiv">IGV</a></li>
+    <li><a href="#cyOuterDiv">Network</a></li>
     <li><a href="#modelDiv">Model</a></li>
   </ul>
 
 
-  <div id="cyDiv">
+  <div id="cyOuterDiv">
+     <div id="cyMenubarDiv">
+         <button id='cyFitButton' class="cyMenuButton">Fit</button>
+         <button id='cyFitSelectedButton'class="cyMenuButton">Fit Selected</button>
+         <button id='cySFNButton' class="cyMenuButton">SFN</button>
+         <button id='cyHideUnselectedButton' class="cyMenuButton">Hide Unselected</button>
+         <button id='cyShowAllButton' class="cyMenuButton">Show All</button>
+     </div>
+     <div id="cyDiv"></div>
   </div>
-  <div id="igvDiv">
-     genome track browser coming soon
-  </div>
+
+  <div id="igvDiv"> </div>
   <div id="modelDiv">
     tabular view coming soon
   </div>
