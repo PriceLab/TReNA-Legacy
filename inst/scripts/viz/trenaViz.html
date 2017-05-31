@@ -113,7 +113,26 @@ function initializeUI()
 {
    console.log("--- trenaViz, initializeUI");
    trenaVizDiv = $("#trenaVizDiv");
-   trenaVizDiv.tabs();
+
+   trenaVizDiv.tabs({
+     activate: function(event, ui){
+        if(ui.newPanel.is("#cyOuterDiv")){
+          console.log("cy!");
+          handleWindowResize();
+          cy.resize();
+          }
+        else if(ui.newPanel.is("#igvDiv")){
+          console.log("igv!");
+          }
+        else if(ui.newPanel.is("#modelDiv")){
+          console.log("model!");
+          }
+        else{
+          console.log("unrecognized tab activated");
+          }
+        }
+     });
+
    cyDiv = $("#cyDiv")
    //setTimeout(function(){initializeIGV();}, 0);
    initializeIGV();
@@ -129,7 +148,7 @@ function initializeIGV()
 {
    console.log("--- trenaViz, initializeIGV");
 
-   var igvOptions = {locus: "17:50,201,613-50,201,664", // COL1A1 promoter
+   var igvOptions = {locus: "chr18:26,827,369-26,890,488", // AQP4
       reference: {id: "geneSymbols_hg38",
          fastaURL: "http://pshannon.systemsbiology.net/genomes/hg38.fa",
          cytobandURL: "http://pshannon.systemsbiology.net/genomes/cytoband.hg38.txt",
@@ -150,14 +169,24 @@ function initializeIGV()
          displayMode: 'COLLAPSED',
          color: "#448844"
          },
-        {name: "skin hint fp",
+        {name: "brain hint fp",
          format: "bed",
          visibilityWindow: 100000,
          displayMode: "SQUISHED",
          indexed: true,
-         url: "http://pshannon.systemsbiology.net/annotations/skin_hint.bed.gz",
-         indexURL: "http://pshannon.systemsbiology.net/annotations/skin_hint.bed.gz.tbi",
+         url: "http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz",
+         indexURL: "http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz.tbi",
          },
+       {name: "EncodeDHSclustered",
+        type: "bed",
+        format: "bed",
+        min: 0,
+        max: 10,
+        color: "#AA00AA",
+        indexed: true,
+        url: "http://pshannon.systemsbiology.net/annotations/wgEncodeRegDnaseClustered-hg38.bed.gz",
+        indexURL: "http://pshannon.systemsbiology.net/annotations/wgEncodeRegDnaseClustered-hg38.bed.gz.tbi"
+        }
         ]
      }; // igvOptions
 

@@ -4,7 +4,7 @@
                             slots=list(genomeName="character",
                                        genome="BSgenome",
                                        encodeTableName="character",
-                                       pwmMatchPercentageThreshold="integer",
+                                       pwmMatchPercentageThreshold="numeric",
                                        geneInfoDatabase.uri="character",   # access to gtf database
                                        geneCenteredSpec="list",
                                        regionsSpec="character",
@@ -27,13 +27,12 @@ HumanDHSFilter <- function(genomeName,
                            #fimoDatabase.uri,
                            pwmMatchPercentageThreshold,
                            geneInfoDatabase.uri,
-                           geneCenteredSpec=c(),
-                           regionsSpec=c(),
+                           geneCenteredSpec=list(),
+                           regionsSpec=list(),
                            variants=NA_character_,
                            quiet=TRUE)
 {
-   regions <- c();   # one or more chromLoc strings: "chr5:88903257-88905257"
-
+    regions <- c();   # one or more chromLoc strings: "chr5:88903257-88905257"
 
     uri <- "http://jaspar.genereg.net/html/DOWNLOAD/JASPAR_CORE/pfm/nonredundant/pfm_vertebrates.txt"
     x <- .readRawJasparMatrices(uri)
@@ -52,7 +51,6 @@ HumanDHSFilter <- function(genomeName,
     else {
       stop(sprintf("HumanDHSFilter genome.name not in hg19, hg38: '%s'", genomeName))
        }
-
 
    .HumanDHSFilter(CandidateFilter(quiet = quiet),
                    genomeName=genomeName,

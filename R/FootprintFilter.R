@@ -33,7 +33,7 @@ printf <- function(...) print(noquote(sprintf(...)))
 #' @export
 #'
 #' @return An object of the FootprintFilter class
-#' 
+#'
 #' @family Filtering Objects
 #'
 #' @examples
@@ -106,9 +106,9 @@ setMethod("getCandidates", "FootprintFilter",
 
      function(obj){
 
-         # Create a FootprintFinder object and find the footprints         
-         fp <- FootprintFinder(obj@genomeDB, obj@footprintDB, quiet=TRUE)         
-         tbl.out <- data.frame()         
+         # Create a FootprintFinder object and find the footprints
+         fp <- FootprintFinder(obj@genomeDB, obj@footprintDB, quiet=TRUE)
+         tbl.out <- data.frame()
 
         for(region in obj@regions){
            chromLoc <- .parseChromLocString(region)
@@ -126,7 +126,9 @@ setMethod("getCandidates", "FootprintFilter",
 
         closeDatabaseConnections(fp)
                 # Intersect the footprints with the rows in the matrix
-        candidate.tfs <- sort(unique(unlist(strsplit(tbl.out$tf, ";"))))
+        candidate.tfs <- NA_character_
+        if(nrow(tbl.out) > 0)
+           candidate.tfs <- sort(unique(unlist(strsplit(tbl.out$tf, ";"))))
         return(list("tfs" = candidate.tfs, "tbl" = tbl.out))
         }) # getCandidates
 
