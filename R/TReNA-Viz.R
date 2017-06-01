@@ -27,14 +27,14 @@ TReNA.Viz = function(portRange=11000:11025, host="localhost", title="TReNA-Viz",
    model <- data.frame()
    obj <- .TReNA.Viz(BrowserViz(portRange=portRange, host=host, title=title,
                                 quiet=quiet, browserFile=cyjsBrowserFile,
-                                httpQueryProcessingFunction=NULL),
-                    model=model)
+                                httpQueryProcessingFunction=myQP),
+                     model=model)
 
   while (!browserResponseReady(obj)){
       Sys.sleep(.1)
       }
    if(!quiet) {
-      message(sprintf("BrowserViz ctor called from RCyjs ctor got browser response"))
+      message(sprintf("BrowserViz ctor called from TReNA-Viz ctor got browser response"))
       print(getBrowserResponse(obj))
       }
 
@@ -176,5 +176,44 @@ setMethod('layout', 'TReNA.Viz',
 
 } # .graphToJSON
 #------------------------------------------------------------------------------------------------------------------------
+myQP <- function(queryString)
+{
+   printf("=== TReNA-Viz::myQP");
+   #print(queryString)
+     # for reasons not quite clear, the query string comes in with extra characters
+     # following the expected filename:
+     #
+     #  "?sampleStyle.js&_=1443650062946"
+     #
+     # check for that, cleanup the string, then see if the file can be found
 
+   ampersand.loc <- as.integer(regexpr("&", queryString, fixed=TRUE))
+   #printf("ampersand.loc: %d", ampersand.loc)
+
+   if(ampersand.loc > 0){
+      queryString <- substring(queryString, 1, ampersand.loc - 1);
+      }
+
+   questionMark.loc <- as.integer(regexpr("?", queryString, fixed=TRUE));
+   #printf("questionMark.loc: %d", questionMark.loc)
+
+   if(questionMark.loc == 1)
+      queryString <- substring(queryString, 2, nchar(queryString))
+
+   filename <- queryString;
+   #printf("myQP filename: '%s'", filename)
+   #printf("       exists?  %s", file.exists(filename));
+
+   stopifnot(file.exists(filename))
+
+   printf("--- about to scan %s", filename);
+      # reconstitute linefeeds though collapsing file into one string, so json
+      # structure is intact, and any "//" comment tokens only affect one line
+   text <- paste(scan(filename, what=character(0), sep="\n", quiet=TRUE), collapse="\n")
+   printf("%d chars read from %s", nchar(text), filename);
+
+   return(text);
+
+} # myQP
+#----------------------------------------------------------------------------------------------------
 

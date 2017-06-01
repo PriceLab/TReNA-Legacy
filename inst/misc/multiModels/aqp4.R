@@ -113,7 +113,7 @@ getDHSCandidates <- function(target.gene, tssUpstream, tssDownstream)
 } # getDHSCandidates
 #------------------------------------------------------------------------------------------------------------------------
 #createModel <- function(target.gene, tssUpstream, tssDownstream)
-createModel <- function(target.gene, chrom, start, end)
+createModel <- function(target.gene, chrom, start, end, variants=NA_character_)
 {
    #geneCenteredSpec <- list(targetGene=target.gene, tssUpstream=tssUpstream, tssDownstream=tssDownstream)
    geneCenteredSpec <- list()
@@ -140,8 +140,7 @@ createModel <- function(target.gene, chrom, start, end)
    #regionsSpec <- NA_character_;
    #geneCenteredSpec <- list(targetGene=target.gene, tssUpstream=tssUpstream, tssDownstream=tssDownstream)
    #geneCenteredSpec <- list()
-   variants <- NA_character_
-   #variants <- "rs3875089"
+
 
    filterSpec <- list(filterType="EncodeDNaseClusters",
                       genomeName=genome,
@@ -158,6 +157,7 @@ createModel <- function(target.gene, chrom, start, end)
                                              geneInfoDatabase.uri=geneInfoDB,
                                              regionsSpec=regionsSpec,
                                              geneCenteredSpec=geneCenteredSpec,
+                                             variants=variants,
                                              quiet=FALSE))
 
    x.dhs <- getCandidates(filter)
@@ -186,20 +186,33 @@ createModel <- function(target.gene, chrom, start, end)
 #------------------------------------------------------------------------------------------------------------------------
 test.createModel <- function()
 {
-  m <- createModel("AQP4", "chr18", 26865450, 26865480) # around tbl.snp[2,]
-  head(m$model.fp$edges)
+    # chr18:26,860,742-26,882,685: includes all footprints and dhs clusters
+   start <- 26860742
+   end   <- 26882685
+   m1 <- createModel("AQP4", "chr18", start, end)
+   m1.mut <- createModel("AQP4", "chr18", start, end, variants="rs3875089")
 
-    #        IncNodePurity  gene.cor
-    # TEAD1      39.052237 0.7605383
-    # ATF7       19.679876 0.7163899
-    # SMAD9      15.450478 0.6694617
-    # SP3        13.706970 0.6837160
-    # NFE2L2      9.666957 0.6886920
-    # GLI2        9.514838 0.5750392
+    # chr18:26865450-26865480: 30 bases around rs3875089
+   start <- 26865450
+   end   <- 26865480
+   m2 <- createModel("AQP4", "chr18", start, end)
+   m2.mut <- createModel("AQP4", "chr18", start, end, variants="rs3875089")
 
-   m$candidates.fp$tbl[grep("TEAD", m$candidates.fp$tbl$tf),]
-    #      chrom    start      end motifName length strand score1  score2   score3                      tf
-    # 5851 chr18 26865890 26865897  MA0808.1      8      -      9 12.3265 6.51e-05 TEAD3;TEAD1;TEAD2;TEAD4
+  browser()
+  if(length(m$model.fp) > 0){
+     head(m$model.dhs$edges)
+      #        IncNodePurity  gene.cor
+      # TEAD1      39.052237 0.7605383
+      # ATF7       19.679876 0.7163899
+      # SMAD9      15.450478 0.6694617
+      # SP3        13.706970 0.6837160
+      # NFE2L2      9.666957 0.6886920
+      # GLI2        9.514838 0.5750392
+
+     m$candidates.dhs$tbl[grep("TEAD", m$candidates.fp$tbl$tf),]
+     #      chrom    start      end motifName length strand score1  score2   score3                      tf
+     # 5851 chr18 26865890 26865897  MA0808.1      8      -      9 12.3265 6.51e-05 TEAD3;TEAD1;TEAD2;TEAD4
+     } # if fp results
 
   head(m$model.dhs$edges)
   m$candidates.dhs$tbl[grep("TEAD", m$candidates.dhs$tbl$tf),]

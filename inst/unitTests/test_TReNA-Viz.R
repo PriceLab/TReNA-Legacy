@@ -25,7 +25,7 @@ test_addDemoGraph <- function()
    g <- addNode(c("A", "B"), g)
    g <- addEdge("A", "B", g)
 
-   tv <- TReNA.Viz()
+   tv <- TReNA.Viz(portRange=11011)
    TReNA:::addGraph(tv, g)
    layout(tv, "grid")
 

@@ -169,6 +169,15 @@ function initializeIGV()
          displayMode: 'COLLAPSED',
          color: "#448844"
          },
+        {name: "TEAD1 binding sites",
+         format: "bed",
+         visibilityWindow: 100000,
+         displayMode: "SQUISHED",
+         indexed: false,
+         url: "http://localhost:11011/?tead1-motifs.bed",
+         color: "red"
+         //url: "http://pshannon.systemsbiology.net/annotations/tead1-motifs.bed"
+         },
         {name: "brain hint fp",
          format: "bed",
          visibilityWindow: 100000,
@@ -220,6 +229,7 @@ function addMessageHandlers()
    hub.addMessageHandler("fitSelected",          fitSelected);
    hub.addMessageHandler("layoutStrategies",     layoutStrategies);
    hub.addMessageHandler("doLayout",             doLayout);
+   hub.addMessageHandler("addBedTrack",          addBedTrack);
 
    /****************
    hub.addMessageHandler("setGraph",             setGraph);
@@ -841,6 +851,14 @@ function doLayout(msg)
    hub.send({cmd: msg.callback, status: "success", callback: "", payload: ""});
 
 } // doLayout
+//----------------------------------------------------------------------------------------------------
+function addBedTrack(msg)
+{
+   console.log("=== addBedTrack");
+
+   hub.send({cmd: msg.callback, status: "success", callback: "", payload: ""});
+
+} // addBedTrack
 //----------------------------------------------------------------------------------------------------
 function layoutSelectionInGrid(msg)
 {
