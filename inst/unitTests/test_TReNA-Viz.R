@@ -25,13 +25,30 @@ test_addDemoGraph <- function()
    g <- addNode(c("A", "B"), g)
    g <- addEdge("A", "B", g)
 
-   tv <- TReNA.Viz(portRange=11011)
+   tv <- TReNA.Viz(portRange=12011)
    TReNA:::addGraph(tv, g)
    layout(tv, "grid")
 
    tv
 
 } # test_addDemoGraph
+#----------------------------------------------------------------------------------------------------
+test_addBedTrack <- function()
+{
+   printf("--- test_addBedTrack")
+
+   tv <- TReNA.Viz(portRange=11011:11051)
+
+   tbl.bed <- data.frame(chrom=rep("chr18", 3),
+                         start=c(26860880, 26860974, 26861152),
+                         end=c(26860887, 26860983, 26861161),
+                         name=c("MA0808.1", "MA0090.2", "MA0809.1"),
+                         score=c(0.8234864, 0.8221845, 0.8307060),
+                         stringsAsFactors=FALSE)
+    addBedTrack(tv, sprintf("test_%d", round(sample(1:100, 1))), tbl.bed)
+    tv
+
+} # test_addBedTrack
 #----------------------------------------------------------------------------------------------------
 test_.graphToJSON <- function()
 {

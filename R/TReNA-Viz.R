@@ -15,6 +15,7 @@ setGeneric('fit',              signature='obj', function(obj, padding=30) standa
 setGeneric('fitSelected',      signature='obj', function(obj, padding=30) standardGeneric('fitSelectedContent'))
 setGeneric('selectNodes',      signature='obj', function(obj, nodeIDs) standardGeneric('selectNodes'))
 setGeneric('sfn',              signature='obj', function(obj) standardGeneric('sfn'))
+setGeneric('addBedTrack',      signature='obj', function(obj, trackName, tbl.bed) standardGeneric('addBedTrack'))
 
 
 setGeneric('layout',              signature='obj', function(obj, strategy) standardGeneric('layout'))
@@ -51,6 +52,22 @@ setMethod('addGraph', 'TReNA.Viz',
      printf("about to send g.json: %d chars", nchar(g.json));
      send(obj, list(cmd="addGraph", callback="handleResponse", status="request",
                     payload=g.json))
+     while (!browserResponseReady(obj)){
+        Sys.sleep(.1)
+        }
+     printf("browserResponseReady")
+     getBrowserResponse(obj);
+     })
+
+#----------------------------------------------------------------------------------------------------
+setMethod('addBedTrack', 'TReNA.Viz',
+
+  function (obj, trackName, tbl.bed) {
+     printf("TReNA.Viz::addBedTrack");
+     temp.filename <- "tmp.bed"
+     write.table(tbl.bed, sep="\t", row.names=FALSE, col.names=FALSE, quote=FALSE, file=temp.filename)
+     payload <- list(name=trackName, bedFileName=temp.filename)
+     send(obj, list(cmd="addBedTrack", callback="handleResponse", status="request", payload=payload))
      while (!browserResponseReady(obj)){
         Sys.sleep(.1)
         }

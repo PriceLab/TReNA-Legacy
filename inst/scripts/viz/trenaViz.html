@@ -169,15 +169,17 @@ function initializeIGV()
          displayMode: 'COLLAPSED',
          color: "#448844"
          },
+        /***********
         {name: "TEAD1 binding sites",
          format: "bed",
          visibilityWindow: 100000,
          displayMode: "SQUISHED",
          indexed: false,
-         url: "http://localhost:11011/?tead1-motifs.bed",
+         url: "http://localhost:12011/?tead1-motifs.bed",
          color: "red"
          //url: "http://pshannon.systemsbiology.net/annotations/tead1-motifs.bed"
          },
+         **************/
         {name: "brain hint fp",
          format: "bed",
          visibilityWindow: 100000,
@@ -855,6 +857,20 @@ function doLayout(msg)
 function addBedTrack(msg)
 {
    console.log("=== addBedTrack");
+
+   var trackName = msg.payload.name;
+   var bedFileName = msg.payload.bedFileName
+   var url = window.location.href + "?" + bedFileName;
+
+    config = {format: "bed",
+              name: trackName,
+              url: url,
+              indexed:false,
+              displayMode: "EXPANDED",
+              sourceType: "file",
+              type: "annotation"};
+
+   window.igvBrowser.loadTrack(config);
 
    hub.send({cmd: msg.callback, status: "success", callback: "", payload: ""});
 
