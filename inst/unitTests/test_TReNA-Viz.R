@@ -45,7 +45,7 @@ test_addBedTrack <- function()
                          name=c("MA0808.1", "MA0090.2", "MA0809.1"),
                          score=c(0.8234864, 0.8221845, 0.8307060),
                          stringsAsFactors=FALSE)
-    addBedTrackFromLocalFile(tv, sprintf("test_%d", round(sample(1:100, 1))), tbl.bed)
+    addBedTrackFromDataFrame(tv, sprintf("test_%d", round(sample(1:100, 1))), tbl.bed)
     addBedTrackFromHostedFile(tv,
                               trackName="brain HINT",
                               uri="http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz",

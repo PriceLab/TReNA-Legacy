@@ -202,7 +202,7 @@ function addMessageHandlers()
    hub.addMessageHandler("fitSelected",               fitSelected);
    hub.addMessageHandler("layoutStrategies",          layoutStrategies);
    hub.addMessageHandler("doLayout",                  doLayout);
-   hub.addMessageHandler("addBedTrackFromLocalFile",  addBedTrackFromLocalFile);
+   hub.addMessageHandler("addBedTrackFromDataFrame",  addBedTrackFromDataFrame);
    hub.addMessageHandler("addBedTrackFromHostedFile",  addBedTrackFromHostedFile);
 
    /****************
@@ -826,9 +826,9 @@ function doLayout(msg)
 
 } // doLayout
 //----------------------------------------------------------------------------------------------------
-function addBedTrackFromLocalFile(msg)
+function addBedTrackFromDataFrame(msg)
 {
-   console.log("=== addBedTrack");
+   console.log("=== addBedTrackFromDataFrame");
 
    var trackName = msg.payload.name;
    var bedFileName = msg.payload.bedFileName
@@ -846,7 +846,7 @@ function addBedTrackFromLocalFile(msg)
 
    hub.send({cmd: msg.callback, status: "success", callback: "", payload: ""});
 
-} // addBedTrackFromLocalFile
+} // addBedTrackFromDataFrame
 //----------------------------------------------------------------------------------------------------
 function addBedTrackFromHostedFile(msg)
 {

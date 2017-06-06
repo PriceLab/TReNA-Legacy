@@ -43,7 +43,7 @@ export(
     run,
     TReNA.Viz,
     addGraph,
-    addBedTrackFromLocalFile,
+    addBedTrackFromDataFrame,
     addBedTrackFromHostedFile,
     fit,
     fitSelected,

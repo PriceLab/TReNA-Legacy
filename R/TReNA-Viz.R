@@ -15,8 +15,8 @@ setGeneric('fit',              signature='obj', function(obj, padding=30) standa
 setGeneric('fitSelected',      signature='obj', function(obj, padding=30) standardGeneric('fitSelectedContent'))
 setGeneric('selectNodes',      signature='obj', function(obj, nodeIDs) standardGeneric('selectNodes'))
 setGeneric('sfn',              signature='obj', function(obj) standardGeneric('sfn'))
-setGeneric('addBedTrackFromLocalFile',           signature='obj', function(obj, trackName, tbl.bed)
-                                  standardGeneric('addBedTrackFromLocalFile'))
+setGeneric('addBedTrackFromDataFrame',           signature='obj', function(obj, trackName, tbl.bed)
+                                  standardGeneric('addBedTrackFromDataFrame'))
 setGeneric('addBedTrackFromHostedFile',   signature='obj', function(obj, trackName, uri, index.uri=NA, displayMode="SQUISHED")
                                   standardGeneric('addBedTrackFromHostedFile'))
 setGeneric('layout',              signature='obj', function(obj, strategy) standardGeneric('layout'))
@@ -61,14 +61,14 @@ setMethod('addGraph', 'TReNA.Viz',
      })
 
 #----------------------------------------------------------------------------------------------------
-setMethod('addBedTrackFromLocalFile', 'TReNA.Viz',
+setMethod('addBedTrackFromDataFrame', 'TReNA.Viz',
 
   function (obj, trackName, tbl.bed) {
-     printf("TReNA.Viz::addBedTrackFromLocalFile");
+     printf("TReNA.Viz::addBedTrackFromDataFrame");
      temp.filename <- "tmp.bed"
      write.table(tbl.bed, sep="\t", row.names=FALSE, col.names=FALSE, quote=FALSE, file=temp.filename)
      payload <- list(name=trackName, bedFileName=temp.filename)
-     send(obj, list(cmd="addBedTrackFromLocalFile", callback="handleResponse", status="request", payload=payload))
+     send(obj, list(cmd="addBedTrackFromDataFrame", callback="handleResponse", status="request", payload=payload))
      while (!browserResponseReady(obj)){
         Sys.sleep(.1)
         }
