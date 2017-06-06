@@ -15,9 +15,10 @@ setGeneric('fit',              signature='obj', function(obj, padding=30) standa
 setGeneric('fitSelected',      signature='obj', function(obj, padding=30) standardGeneric('fitSelectedContent'))
 setGeneric('selectNodes',      signature='obj', function(obj, nodeIDs) standardGeneric('selectNodes'))
 setGeneric('sfn',              signature='obj', function(obj) standardGeneric('sfn'))
-setGeneric('addBedTrack',      signature='obj', function(obj, trackName, tbl.bed) standardGeneric('addBedTrack'))
-
-
+setGeneric('addBedTrackFromLocalFile',           signature='obj', function(obj, trackName, tbl.bed)
+                                  standardGeneric('addBedTrackFromLocalFile'))
+setGeneric('addBedTrackFromHostedFile',   signature='obj', function(obj, trackName, uri, index.uri=NA, displayMode="SQUISHED")
+                                  standardGeneric('addBedTrackFromHostedFile'))
 setGeneric('layout',              signature='obj', function(obj, strategy) standardGeneric('layout'))
 setGeneric('layoutStrategies',    signature='obj', function(obj) standardGeneric('layoutStrategies'))
 #----------------------------------------------------------------------------------------------------
@@ -60,14 +61,29 @@ setMethod('addGraph', 'TReNA.Viz',
      })
 
 #----------------------------------------------------------------------------------------------------
-setMethod('addBedTrack', 'TReNA.Viz',
+setMethod('addBedTrackFromLocalFile', 'TReNA.Viz',
 
   function (obj, trackName, tbl.bed) {
-     printf("TReNA.Viz::addBedTrack");
+     printf("TReNA.Viz::addBedTrackFromLocalFile");
      temp.filename <- "tmp.bed"
      write.table(tbl.bed, sep="\t", row.names=FALSE, col.names=FALSE, quote=FALSE, file=temp.filename)
      payload <- list(name=trackName, bedFileName=temp.filename)
-     send(obj, list(cmd="addBedTrack", callback="handleResponse", status="request", payload=payload))
+     send(obj, list(cmd="addBedTrackFromLocalFile", callback="handleResponse", status="request", payload=payload))
+     while (!browserResponseReady(obj)){
+        Sys.sleep(.1)
+        }
+     printf("browserResponseReady")
+     getBrowserResponse(obj);
+     })
+
+#----------------------------------------------------------------------------------------------------
+setMethod('addBedTrackFromHostedFile', 'TReNA.Viz',
+
+  function (obj, trackName, uri, index.uri, displayMode="SQUISHED") {
+     printf("TReNA.Viz::addBedTrackFromHostedFile");
+     payload <- list(name=trackName, uri=uri, indexUri=index.uri, displayMode=displayMode)
+     send(obj, list(cmd="addBedTrackFromHostedFile", callback="handleResponse",
+                    status="request", payload=payload))
      while (!browserResponseReady(obj)){
         Sys.sleep(.1)
         }

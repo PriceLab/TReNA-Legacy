@@ -45,7 +45,24 @@ test_addBedTrack <- function()
                          name=c("MA0808.1", "MA0090.2", "MA0809.1"),
                          score=c(0.8234864, 0.8221845, 0.8307060),
                          stringsAsFactors=FALSE)
-    addBedTrack(tv, sprintf("test_%d", round(sample(1:100, 1))), tbl.bed)
+    addBedTrackFromLocalFile(tv, sprintf("test_%d", round(sample(1:100, 1))), tbl.bed)
+    addBedTrackFromHostedFile(tv,
+                              trackName="brain HINT",
+                              uri="http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz",
+                              index.uri="http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz.tbi",
+                              displayMode="SQUISHED")
+    addBedTrackFromHostedFile(tv,
+                             trackName="EncodeDHSclustered",
+                             uri="http://pshannon.systemsbiology.net/annotations/dhsClusters_hg38.bed.gz",
+                             index.uri="http://pshannon.systemsbiology.net/annotations/dhsClusters_hg38.bed.gz.tbi",
+                             displayMode="SQUISHED")
+    addBedTrackFromHostedFile(tv,
+                             trackName="AQP4 snps",
+                             uri="http://pshannon.systemsbiology.net/annotations/aqp4-chr18-snps.bed",
+                             index.uri=NA,
+                             displayMode="SQUISHED")
+
+
     tv
 
 } # test_addBedTrack

@@ -187,8 +187,9 @@ createModel <- function(target.gene, chrom, start, end, variants=NA_character_)
 test.createModel <- function()
 {
     # chr18:26,860,742-26,882,685: includes all footprints and dhs clusters
-   start <- 26860742
-   end   <- 26882685
+    # chr18:26,860,992-26,870,492: a 10kb region enriched with brain hint footprints
+   start <- 26860992  #26860742
+   end   <- 26870492 # 26882685
    m1 <- createModel("AQP4", "chr18", start, end)
    m1.mut <- createModel("AQP4", "chr18", start, end, variants="rs3875089")
 
@@ -377,5 +378,4 @@ result.2k <- list()
 
 } # explore.aqp4
 #----------------------------------------------------------------------------------------------------
-
 tead1.motifs <- unique(subset(tbl.mg, tf.gene=="TEAD1")$motif)

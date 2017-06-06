@@ -168,36 +168,7 @@ function initializeIGV()
          visibilityWindow: 5000000,
          displayMode: 'COLLAPSED',
          color: "#448844"
-         },
-        /***********
-        {name: "TEAD1 binding sites",
-         format: "bed",
-         visibilityWindow: 100000,
-         displayMode: "SQUISHED",
-         indexed: false,
-         url: "http://localhost:12011/?tead1-motifs.bed",
-         color: "red"
-         //url: "http://pshannon.systemsbiology.net/annotations/tead1-motifs.bed"
-         },
-         **************/
-        {name: "brain hint fp",
-         format: "bed",
-         visibilityWindow: 100000,
-         displayMode: "SQUISHED",
-         indexed: true,
-         url: "http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz",
-         indexURL: "http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz.tbi",
-         },
-       {name: "EncodeDHSclustered",
-        type: "bed",
-        format: "bed",
-        min: 0,
-        max: 10,
-        color: "#AA00AA",
-        indexed: true,
-        url: "http://pshannon.systemsbiology.net/annotations/wgEncodeRegDnaseClustered-hg38.bed.gz",
-        indexURL: "http://pshannon.systemsbiology.net/annotations/wgEncodeRegDnaseClustered-hg38.bed.gz.tbi"
-        }
+         }
         ]
      }; // igvOptions
 
@@ -226,12 +197,13 @@ function handleWindowResize ()
 //--------------------------------------------------------------------------------
 function addMessageHandlers()
 {
-   hub.addMessageHandler("addGraph",             addGraph);
-   hub.addMessageHandler("fit",                  fit);
-   hub.addMessageHandler("fitSelected",          fitSelected);
-   hub.addMessageHandler("layoutStrategies",     layoutStrategies);
-   hub.addMessageHandler("doLayout",             doLayout);
-   hub.addMessageHandler("addBedTrack",          addBedTrack);
+   hub.addMessageHandler("addGraph",                  addGraph);
+   hub.addMessageHandler("fit",                       fit);
+   hub.addMessageHandler("fitSelected",               fitSelected);
+   hub.addMessageHandler("layoutStrategies",          layoutStrategies);
+   hub.addMessageHandler("doLayout",                  doLayout);
+   hub.addMessageHandler("addBedTrackFromLocalFile",  addBedTrackFromLocalFile);
+   hub.addMessageHandler("addBedTrackFromHostedFile",  addBedTrackFromHostedFile);
 
    /****************
    hub.addMessageHandler("setGraph",             setGraph);
@@ -854,7 +826,7 @@ function doLayout(msg)
 
 } // doLayout
 //----------------------------------------------------------------------------------------------------
-function addBedTrack(msg)
+function addBedTrackFromLocalFile(msg)
 {
    console.log("=== addBedTrack");
 
@@ -874,7 +846,38 @@ function addBedTrack(msg)
 
    hub.send({cmd: msg.callback, status: "success", callback: "", payload: ""});
 
-} // addBedTrack
+} // addBedTrackFromLocalFile
+//----------------------------------------------------------------------------------------------------
+function addBedTrackFromHostedFile(msg)
+{
+   console.log("=== addBedTrackFromFile");
+
+   var trackName = msg.payload.name;
+   var uri       = msg.payload.uri;
+   var indexUri  = msg.payload.indexUri;
+   var indexed = true;
+   if(indexUri==null){
+     indexed = false;
+     }
+
+   var displayMode = msg.payload.displayMode;
+
+   config = {format: "bed",
+             name: trackName,
+             url: uri,
+             indexed: indexed,
+             displayMode: displayMode,
+             type: "annotation"};
+
+   if(indexed){
+     config.indexURL = indexUri;
+     }
+
+   window.igvBrowser.loadTrack(config);
+
+   hub.send({cmd: msg.callback, status: "success", callback: "", payload: ""});
+
+} // addBedTrackFromHostedFile
 //----------------------------------------------------------------------------------------------------
 function layoutSelectionInGrid(msg)
 {
