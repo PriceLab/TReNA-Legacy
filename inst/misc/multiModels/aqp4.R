@@ -153,7 +153,7 @@ createModel <- function(target.gene, chrom, start, end, variants=NA_character_)
 
    filter <- with(filterSpec, HumanDHSFilter(genomeName,
                                              encodeTableName=encodeTableName,
-                                             pwmMatchPercentageThreshold=70L,
+                                             pwmMatchPercentageThreshold=90L,
                                              geneInfoDatabase.uri=geneInfoDB,
                                              regionsSpec=regionsSpec,
                                              geneCenteredSpec=geneCenteredSpec,
@@ -184,12 +184,51 @@ createModel <- function(target.gene, chrom, start, end, variants=NA_character_)
 
 } # createModel
 #------------------------------------------------------------------------------------------------------------------------
+createDHSModel <- function(target.gene, chrom, start, end, pwmMatchThreshold=80L, variants=NA_character_)
+{
+   regionsSpec <- sprintf("%s:%d-%d", chrom, start, end)
+   geneCenteredSpec <- list()
+   genome <- "hg38"
+
+   filterSpec <- list(filterType="EncodeDNaseClusters",
+                      genomeName=genome,
+                      encodeTableName="wgEncodeRegDnaseClustered",
+                      pwmMatchPercentageThreshold=pwmMatchThreshold,
+                      geneInfoDB="postgres://whovian/gtf",
+                      geneCenteredSpec=geneCenteredSpec,
+                      regionsSpec=regionsSpec,
+                      variants=variants)
+
+   filter <- with(filterSpec, HumanDHSFilter(genomeName,
+                                             encodeTableName=encodeTableName,
+                                             pwmMatchPercentageThreshold=90L,
+                                             geneInfoDatabase.uri=geneInfoDB,
+                                             regionsSpec=regionsSpec,
+                                             geneCenteredSpec=geneCenteredSpec,
+                                             variants=variants,
+                                             quiet=FALSE))
+
+   x.dhs <- getCandidates(filter)
+
+   tfs.dhs <- intersect(rownames(mtx), x.dhs$tfs)
+
+   solver.wt <- RandomForestSolver(mtx, targetGene=target.gene, candidateRegulators=tfs.dhs)
+   model.dhs <- run(solver.wt)
+
+   return(list(candidates=x.dhs, model=model.dhs))
+
+} # createDHSModel
+#------------------------------------------------------------------------------------------------------------------------
+# 18:26865469 A/G
 test.createModel <- function()
 {
     # chr18:26,860,742-26,882,685: includes all footprints and dhs clusters
     # chr18:26,860,992-26,870,492: a 10kb region enriched with brain hint footprints
-   start <- 26860992  #26860742
-   end   <- 26870492 # 26882685
+    # chr18:26,864,303-26,866,143: a 1.8kb region including tss
+   start <- 26864303 #26860992  #26860742
+   end   <- 26866143 #26870492 # 26882685
+
+
    m1 <- createModel("AQP4", "chr18", start, end)
    m1.mut <- createModel("AQP4", "chr18", start, end, variants="rs3875089")
 
@@ -316,64 +355,31 @@ createModels <- function(spec, mtx)
 #------------------------------------------------------------------------------------------------------------------------
 explore.aqp4 <- function()
 {
-   x <- createModel(target.gene, tssUpstream, tssDownstream)
+   start <- 26864303 #26860992  #26860742
+   end   <- 26866143 #26870492 # 26882685
+   m1 <- createDHSModel("AQP4", "chr18", start, end, 95L)
+   tv <- TReNA.Viz(portRange=11011:11051)
 
-   chrom <- "chr18"
-   start <- tss - 1000
-   end   <- tss + 1000
-   chromLoc <- sprintf("%s:%d-%d", chrom, start, end)
-
-   tbl.snp$loc - tss # [1]  -1474   -415 -10261 -10030 -15319
-   filterSpec <- list(genomeDB=genome.db.uri,
-                      footprintDB=footprint.db.uri,
-                      geneCenteredSpec=list(targetGene=target.gene,
-                         tssUpstream=500,
-                         tssDownstream=500),
-                     regionsSpec=list())
-
-   filter <- FootprintFilter(filterSpec$genomeDB,
-                             filterSpec$footprintDB,
-                             filterSpec$geneCenteredSpec,
-                             filterSpec$regionsSpec,
-                             quiet=TRUE)
-
-   list.out <- getCandidates(filter)
+   addBedTrackFromHostedFile(tv,
+                             trackName="brain HINT",
+                             uri="http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz",
+                             index.uri="http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz.tbi",
+                             displayMode="SQUISHED")
+    addBedTrackFromHostedFile(tv,
+                             trackName="EncodeDHSclustered",
+                             uri="http://pshannon.systemsbiology.net/annotations/dhsClusters_hg38.bed.gz",
+                             index.uri="http://pshannon.systemsbiology.net/annotations/dhsClusters_hg38.bed.gz.tbi",
+                             displayMode="SQUISHED")
 
 
+   addBedTrackFromHostedFile(tv,
+                            trackName="AQP4 snps",
+                            uri="http://pshannon.systemsbiology.net/annotations/aqp4-chr18-snps.bed",
+                            index.uri=NA,
+                            displayMode="SQUISHED")
 
-   # rs3763040: 18:26864410 A/C/T
-   # rs3875089: 18:26865469 A/G
-   # rs335929:  18:26855623 A/C/G
-   # rs3763043: 18:26855854 A/G
-   # rs9951307: 18:26850565 A/G
-
-
-browser()
-
-result.2k <- list()
-#for(r in 1:nrow(tbl.snp)){
-   r <- 2
-   gene <- tbl.snp$target.gene[r]
-   result.2k[[r]] <- createModels(as.list(tbl.snp[r,]), mtx)
-   printf("back from createModels, in main loop")
-   xyz <- 99
-#   }
-
-
-   recipe <- list(genomeDB=genome.db.uri,
-                  footprintDB=footprint.db.uri,
-                  geneCenteredSpec=list(),
-                  regionsSpec=c(chromLoc))
-
-   filter <- FootprintFilter(recipe$genomeDB,
-                             recipe$footprintDB,
-                             recipe$geneCenteredSpec,
-                             recipe$regionsSpec,
-                             quiet=TRUE)
-
-   list.out <- getCandidates(filter)
-   tbl.fp <- list.out$tbl
-   candidates <- list.out$tfs
+   tbl.bed <- m1$candidates$tbl[, c("chrom", "motifStart", "motifEnd", "motifName", "motifScore")]
+   addBedTrackFromDataFrame(tv, "DHS motifs", tbl.bed)
 
 
 } # explore.aqp4

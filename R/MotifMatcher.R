@@ -48,40 +48,47 @@ setMethod("show", "MotifMatcher",
      function(object){
         s <- sprintf("MotifMatcher...")
         cat(s, sep="\n")
-        })
+     })
+
 #----------------------------------------------------------------------------------------------------
 setMethod("findMatchesByChromosomalRegion", "MotifMatcher",
 
     function(obj, tbl.regions, pwmMatchMinimumAsPercentage, variants=NA_character_){
-       #stopifnot(nrow(tbl.regions) == 1)   # simplify our manipulations.
        x <- lapply(1:nrow(tbl.regions), function(r) getSequence(obj, tbl.regions[r,], variants))
        tbl.regions <- do.call(rbind, x)
-       colnames(tbl.regions) <- c("chrom", "chromStart", "chromEnd", "seq", "alt")   # preprend 'chrom' to start and end, to distinguish
-       tbl.motifs <- .getScoredMotifs(tbl.regions$seq, pwmMatchMinimumAsPercentage, obj@quiet)
-           # tbl.mg will soon come from MotifDb
-       tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE, header=TRUE)
+       tbl.motifs.list <- .getScoredMotifs(tbl.regions$seq, pwmMatchMinimumAsPercentage, obj@quiet)
+
        region.count <- nrow(tbl.regions)
        tbl.out <- data.frame()
        all.tfs <- c()
        for(i in seq_len(region.count)){
-         if(nrow(tbl.motifs[[i]]) > 0)
-            tbl.out <- rbind(tbl.out, cbind(tbl.motifs[[i]], tbl.regions[i,]))
-            } # for i
+         tbl.motifs <- tbl.motifs.list[[i]]
+         if(nrow(tbl.motifs) > 0){
+            colnames(tbl.motifs) <- c("motifStart", "motifEnd", "width", "motifScore", "maxScore", "motifRelativeScore",
+                                      "motifName", "match", "strand")
+            tbl.region <- tbl.regions[i,]
+            colnames(tbl.region) <- c("chrom", "chromStart", "chromEnd", "seq", "alt")
+            tbl.out <- rbind(tbl.out, cbind(tbl.motifs, tbl.region))
+            }
+         } # for i
        if(nrow(tbl.out) == 0)
           return(list(tbl=data.frame(), tfs=c()))
 
-       tbl.out$start <- tbl.out$start + tbl.out$chromStart - 1;
-       tbl.out$end <- tbl.out$end  + tbl.out$chromStart - 1;
+       tbl.out$motifStart <- tbl.out$motifStart + tbl.out$chromStart - 1;
+       tbl.out$motifEnd <- tbl.out$motifEnd  + tbl.out$chromStart - 1;
              # change some column names
-       colnames(tbl.out)[4] <- "motifscore"
-       colnames(tbl.out)[2] <- "endpos"
-       colnames(tbl.out)[7] <- "motifname"
+       #colnames(tbl.out)[4] <- "motifscore"
+       #colnames(tbl.out)[2] <- "endpos"
+       #colnames(tbl.out)[7] <- "motifname"
        tbl.out <- tbl.out[, -c(3,5)] # get rid of width and maxScore columns
-       desired.column.order <- c("motifname", "chrom", "start", "endpos", "strand", "motifscore", "relativeScore", "match",
+       desired.column.order <- c("motifName", "chrom", "motifStart", "motifEnd", "strand", "motifScore",
+                                 "motifRelativeScore", "match",
                                  "chromStart", "chromEnd", "seq", "alt") #, "count", "score")
        tbl.out <- tbl.out[, desired.column.order]
-       tbl.out <- tbl.out[order(tbl.out$motifscore, decreasing=TRUE),]
-       tfs.by.motif <- lapply(tbl.out$motifname, function(m) subset(tbl.mg, motif==m)$tf.gene)
+       tbl.out <- tbl.out[order(tbl.out$motifScore, decreasing=TRUE),]
+           # tbl.mg will soon come from MotifDb
+       tbl.mg <- read.table(system.file(package="TReNA", "extdata", "motifGenes.tsv"), sep="\t", as.is=TRUE, header=TRUE)
+       tfs.by.motif <- lapply(tbl.out$motifName, function(m) subset(tbl.mg, motif==m)$tf.gene)
        all.tfs <- sort(unique(unlist(tfs.by.motif)))
        tfs.by.motif.joined <- unlist(lapply(tfs.by.motif, function(m) paste(m, collapse=";")))
        tbl.out$tf <- tfs.by.motif.joined
@@ -142,6 +149,49 @@ setMethod("getPfms", "MotifMatcher",
 
 } # .matchPwmForwardAndReverse
 #----------------------------------------------------------------------------------------------------
+.findMotifs <- function(sequence, pfms, min.match.percentage=95, quiet=TRUE)
+{
+   min.match.as.string <- sprintf("%02d%%", min.match.percentage)
+
+   # search <- function(motifName, mtx, seq){
+   #    hits.fwd <- matchPWM(mtx, seq, with.score=TRUE, min.score=min.match.as.string)
+   #    seq.revcomp <- as.character(reverseComplement(DNAString(seq)))
+   #    hits.rev <- matchPWM(mtx, seq.revcomp, with.score=TRUE, min.score=min.match.as.string)
+   #    tbl <- data.frame()
+   #    if(length(hits.fwd) > 0){
+   #        if(!quiet) printf("%d +", length(hits.fwd))
+   #        match <- substring(as.character(subject(hits.fwd)), start(ranges(hits.fwd)), end(ranges(hits.fwd)))
+   #        tbl <- data.frame(ranges(hits.fwd), score=mcols(hits.fwd)$score, motif=motifName, match=match, strand="+")
+   #        }
+   #    if(length(hits.rev) > 0){
+   #        if(!quiet) printf("%d -", length(hits.rev))
+   #        match <- substring(as.character(subject(hits.rev)), start(ranges(hits.rev)), end(ranges(hits.rev)))
+   #        tbl.rev <- data.frame(ranges(hits.rev), score=mcols(hits.rev)$score, motif=motifName, match=match, strand="-")
+   #        tbl <- rbind(tbl, tbl.rev)
+   #        }
+   #     return(tbl)
+   #     }
+
+    count <- length(pfms)
+    #browser()
+    xx <- lapply(1:count, function(i) {
+       .matchPwmForwardAndReverse(sequence, pfms[[i]], names(pfms)[i], min.match.percentage, quiet)
+       })
+
+    tbl.result <- do.call("rbind", xx)
+    if(nrow(tbl.result) == 0){
+      return(data.frame())
+      }
+    else{
+      tbl.result$motif <- as.character(tbl.result$motif)
+      #tbl.result$seq <- as.character(tbl.result$seq)
+      tbl.result$match <- as.character(tbl.result$match)
+      tbl.result$strand <- as.character(tbl.result$strand)
+      return(tbl.result[order(tbl.result$score,decreasing=TRUE),])
+      }
+
+}  # .findMotifs
+#------------------------------------------------------------------------------------------------------------------------
 .getScoredMotifs <- function(seqs, min.match.percentage=95, quiet=TRUE)
 {
    parseLine <- function(textOfLine) {

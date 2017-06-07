@@ -565,7 +565,7 @@ test_getCandidates.vrk2.twoRegions <- function()
    cfSpec <- create.vrk2.candidateFilterSpec.twoRegions()
    hdf <- with(cfSpec, HumanDHSFilter(genomeName,
                                       encodeTableName=encodeTableName,
-                                      pwmMatchPercentageThreshold=85L,
+                                      pwmMatchPercentageThreshold=97L,
                                       geneInfoDatabase.uri=geneInfoDB,
                                       regionsSpec=regionsSpec,
                                       geneCenteredSpec=geneCenteredSpec,
