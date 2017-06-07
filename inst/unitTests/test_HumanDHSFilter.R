@@ -17,6 +17,7 @@ runTests <- function()
    test_checkSampleOfEncodeTables(quiet=FALSE)
 
    test_getRegulatoryRegions()
+   test_getCandidates.emptyRegion()
    test_getCandidates.vrk2.twoRegions()
    test_getCandidates.vrk2.rs13384219.variant()
    test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants()
@@ -361,6 +362,14 @@ test_getRegulatoryRegions <- function()
    checkEquals(tbl.regions$chromStart, start)
    checkEquals(tbl.regions$chromEnd, end)
 
+   # the regions around the AQP4 regulatory snps
+
+    loc <- c(26864410, 26865469, 26855623, 26855854, 26850565)
+    rsids <- c("rs3763040", "rs3875089", "rs335929", "rs3763043", "rs9951307")
+
+    tbl.snps <- data.frame(chrom=rep("chr18", 5), start=loc-1, end=loc+1, name=rsids, stringsAsFactors=FALSE)
+    x <- getRegulatoryRegions(hdf, table, "chr18",  min(loc), max(loc))
+
 } # test_getRegulatoryRegions
 #----------------------------------------------------------------------------------------------------
 # test_getRegulatoryRegions_hardCase <- function()
@@ -558,6 +567,20 @@ test_vrk2Promoter.incrementally <- function()
 
 } # test_vrk2Promoter.incrementally
 #----------------------------------------------------------------------------------------------------
+test_getCandidates.emptyRegion <- function()
+{
+   printf("--- test_getCandidates.emptyRegion")
+   hdf <-  HumanDHSFilter("hg38",
+                          encodeTableName="wgEncodeRegDnaseClustered",
+                          pwmMatchPercentageThreshold=80L,
+                          geneInfoDatabase.uri="postgres://whovian/gtf",
+                          regionsSpec=c("chr18:26850560-268505"),
+                          quiet=FALSE)
+   x <- getCandidates(hdf)
+   checkTrue(is.na(x))
+
+} # test_getCandidates.emptyRegion
+#----------------------------------------------------------------------------------------------------
 test_getCandidates.vrk2.twoRegions <- function()
 {
    printf("--- test_getCandidates.vrk2.twoRegions")
@@ -578,8 +601,19 @@ test_getCandidates.vrk2.twoRegions <- function()
                c("motifName", "chrom", "motifStart", "motifEnd", "strand", "motifScore", "motifRelativeScore", "match",
                  "regulatoryRegionStart", "regualtoryRegionEnd", "regulatorySequence", "variant", "tfs"))
 
-   checkTrue(nrow(x$tbl) > 150)    # 153 x 13
-   checkTrue(length(x$tfs) > 400)  # 422
+    # make sure all motifs fall within the specified restions
+    # cfSpec$regionsSpec: [1] "chr2:57906700-57906870" "chr2:57907740-57908150"
+   starts <- x$tbl$motifStart
+   ends   <- x$tbl$motifEnd
+   starts.in.region.1 <- intersect(which(starts >= 57906700), which(starts <= 57906870))
+   starts.in.region.2 <- intersect(which(starts >= 57907740), which(starts <= 57908150))
+     # did we find them all?
+   checkEquals(nrow(x$tbl), 9)
+   checkTrue(all(sort(c(starts.in.region.1, starts.in.region.2)) == 1:9))
+   checkTrue(all(ends[starts.in.region.1] <= 57906870))
+   checkTrue(all(ends[starts.in.region.2] <= 57908150))
+
+   checkTrue(length(x$tfs) > 100)  # 422
 
 } # test_getCandidates.vrk2.twoRegions
 #----------------------------------------------------------------------------------------------------

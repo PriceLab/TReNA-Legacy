@@ -153,6 +153,10 @@ setMethod("getCandidates", "HumanDHSFilter",
        if(!obj@quiet)
           printf("found %d DHS regions in %d requested regions", nrow(tbl.dhs), nrow(tbl.regions))
 
+       if(nrow(tbl.dhs) == 0){
+          return(NA)
+          }
+
        colnames(tbl.dhs) <- c("chrom", "start", "end", "count", "score")
        mm <- MotifMatcher(name="untitltedMotifMatcher", genomeName=obj@genomeName)
        x <- findMatchesByChromosomalRegion(mm, tbl.dhs,
@@ -171,7 +175,7 @@ setMethod("getCandidates", "HumanDHSFilter",
 #----------------------------------------------------------------------------------------------------
 setMethod("getRegulatoryRegions", "HumanDHSFilter",
 
-    function(obj, encode.table.name, chromosome, start, end, score.threshold=200) {
+    function(obj, encode.table.name, chromosome, start, end, score.threshold=0) {
 
        driver <- RMySQL::MySQL()
        host <- "genome-mysql.cse.ucsc.edu"
