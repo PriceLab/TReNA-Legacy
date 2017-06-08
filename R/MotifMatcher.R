@@ -6,7 +6,7 @@
                         )
 #------------------------------------------------------------------------------------------------------------------------
 setGeneric("getPfms",            signature="obj", function(obj) standardGeneric ("getPfms"))
-setGeneric("getSequence",        signature="obj", function(obj, tbl.regions, variant=NA_character_) standardGeneric ("getSequence"))
+setGeneric("getSequence",        signature="obj", function(obj, tbl.regions, variants=NA_character_) standardGeneric ("getSequence"))
 setGeneric("parseVariantString", signature="obj", function(obj, variantString) standardGeneric ("parseVariantString"))
 setGeneric("findMatchesByChromosomalRegion", signature="obj",
            function(obj, tbl.regions, pwmMatchMinimumAsPercentage, variants=NA_character_)
@@ -92,9 +92,8 @@ setMethod("findMatchesByChromosomalRegion", "MotifMatcher",
        all.tfs <- sort(unique(unlist(tfs.by.motif)))
        tfs.by.motif.joined <- unlist(lapply(tfs.by.motif, function(m) paste(m, collapse=";")))
        tbl.out$tf <- tfs.by.motif.joined
-             # tentative, empirically obtained cutoff
-          #upper.quartile.threshold <- fivenum(tbl.out$motifscore)[4]
-          #tbl.out <- subset(tbl.out, motifscore >= upper.quartile.threshold)
+       if(nchar(tbl.out$seq[1]) > 40)
+          tbl.out$seq <- paste(substring(tbl.out$seq, 1, 37), "...", sep="")
        list(tbl=tbl.out, tfs=all.tfs)
        })
 
@@ -311,15 +310,16 @@ setMethod("getPfms", "MotifMatcher",
 #------------------------------------------------------------------------------------------------------------------------
 setMethod("getSequence", "MotifMatcher",
 
-   function(obj, tbl.regions, variant=NA_character_){
+   function(obj, tbl.regions, variants=NA_character_){
         # either no variants are supplied, or a variant string is offered for each row
+     browser()
      stopifnot(nrow(tbl.regions) == 1)
-     stopifnot(is.na(variant) || nrow(tbl.regions) == length(variant))
+     stopifnot(is.na(variants) || nrow(tbl.regions) == length(variants))
      gr.regions <- with(tbl.regions, GRanges(seqnames=chrom, IRanges(start=start, end=end)))
      seqs <- as.character(getSeq(obj@genome, gr.regions))
      tbl.regions$seq <- seqs
      variant.column <- rep("wt", nrow(tbl.regions))
-     if(!is.na(variant)){
+     if(!is.na(variants)){
         tbl.variants <- parseVariantString(obj, variant)
         tbl.regions <- .injectSnp(tbl.regions, tbl.variants)
         } # !is.na(variants)
@@ -339,6 +339,7 @@ setMethod("getSequence", "MotifMatcher",
 #
 .injectSnp <- function(tbl.regions, tbl.variants)
 {
+   browser()
    gr.regions  <- with(tbl.regions,  GRanges(seqnames=chrom, IRanges(start=start, end=end)))
    gr.variants <- with(tbl.variants, GRanges(seqnames=chrom, IRanges(start=loc,   end=loc)))
    suppressWarnings(

@@ -169,6 +169,19 @@ test_.injectSnp <- function()
    checkEquals(tbl.regions.new$seq, c("CTAGCCCTTAG", "ACAGGAGGGTG", "ACAGGTGGGTG", "CTCTAGAGGAA"))
    checkEquals(tbl.regions.new$alt, c("wt", "chr18:26864410(G->A)", "chr18:26864410(G->T)", "wt"))
 
+      # now try two variants in one region
+
+
+   tbl.variants <- data.frame(chrom=c("chr18", "chr18"),
+                              loc=c(26865466, 26865469),
+                              wt=c("G", "T"),
+                              mut=c("C", "C"),
+                              stringsAsFactors=FALSE)
+   tbl.regions <- data.frame(chrom="chr18", start=26865463, end=26865472, stringsAsFactors=FALSE)
+   tbl.regions.new <- TReNA:::.injectSnp(tbl.regions, tbl.variants)
+
+
+
  } # test_.injectSnp
 #----------------------------------------------------------------------------------------------------
 #  rs13384219  A->G
@@ -209,6 +222,14 @@ test_getSequenceWithVariants <- function()
    checkEquals(dim(tbl.mut), c(2, 5))
    checkEquals(tbl.mut$seq, c("ACAGGAGGGTG", "ACAGGTGGGTG"))
    checkEquals(tbl.mut$alt, c("chr18:26864410(G->A)", "chr18:26864410(G->T)"))
+
+      # now provide two variants (at two locations), here just three bases apart
+      #  rs750694782: chr18:26865466
+      #  rs3875089:   chr18:26865469
+
+   variants <- c("rs750694782", "rs3875089")
+   tbl.regions <- data.frame(chrom="chr18", start=26865463, end=26865472, stringsAsFactors=FALSE)
+   tbl.mut <- getSequence(mm, tbl.regions, variants)
 
 } # test_getSequenceWithVariants
 #----------------------------------------------------------------------------------------------------

@@ -20,13 +20,17 @@
 #trenaVizDiv {
   margin: auto;
   width: 500px;
-  height: 500px;
+  height: 98%;
   border: 1px solid #444;
   border-radius:5px;
   display: block;
   z-index: 1;
   }
 
+#igvDiv{
+  height: 90%;
+  width: 95%;
+  }
 #cyOuterDiv{
   background-color: #F8F8F8;
   margin-top: 1px;
@@ -831,7 +835,8 @@ function addBedTrackFromDataFrame(msg)
    console.log("=== addBedTrackFromDataFrame");
 
    var trackName = msg.payload.name;
-   var bedFileName = msg.payload.bedFileName
+   var bedFileName = msg.payload.bedFileName;
+   var color = msg.payload.color;
    var url = window.location.href + "?" + bedFileName;
 
     config = {format: "bed",
@@ -840,6 +845,7 @@ function addBedTrackFromDataFrame(msg)
               indexed:false,
               displayMode: "EXPANDED",
               sourceType: "file",
+              color: color,
               type: "annotation"};
 
    window.igvBrowser.loadTrack(config);
@@ -853,10 +859,12 @@ function addBedTrackFromHostedFile(msg)
    console.log("=== addBedTrackFromFile");
 
    var trackName = msg.payload.name;
+   var color = msg.payload.color;
    var uri       = msg.payload.uri;
    var indexUri  = msg.payload.indexUri;
    var indexed = true;
-   if(indexUri==null){
+
+  if(indexUri==null){
      indexed = false;
      }
 
@@ -867,6 +875,7 @@ function addBedTrackFromHostedFile(msg)
              url: uri,
              indexed: indexed,
              displayMode: displayMode,
+             color: color,
              type: "annotation"};
 
    if(indexed){

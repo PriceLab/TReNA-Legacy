@@ -1,5 +1,6 @@
 library(TReNA)
 library(RSQLite)
+library(RPostgreSQL)
 #------------------------------------------------------------------------------------------------------------------------
 fp.file <- "/Users/paul/s/work/priceLab/ohsu-aquaporin/aqp4.sqlite"
 footprint.db.uri <- sprintf("sqlite://%s", fp.file);
@@ -360,28 +361,107 @@ explore.aqp4 <- function()
    m1 <- createDHSModel("AQP4", "chr18", start, end, 95L)
    tv <- TReNA.Viz(portRange=11011:11051)
 
-   addBedTrackFromHostedFile(tv,
-                             trackName="brain HINT",
-                             uri="http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz",
-                             index.uri="http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz.tbi",
-                             displayMode="SQUISHED")
+   # addBedTrackFromHostedFile(tv,
+   #                           trackName="brain HINT",
+   #                           uri="http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz",
+   #                           index.uri="http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz.tbi",
+   #                           displayMode="SQUISHED",
+   #                           color="blue")
+
+   # addBedTrackFromHostedFile(tv,
+   #                           trackName="skin HINT",
+   #                           uri="http://pshannon.systemsbiology.net/annotations/skin_hint.bed.gz",
+   #                           index.uri="http://pshannon.systemsbiology.net/annotations/skin_hint.bed.gz.tbi",
+   #                           displayMode="SQUISHED",
+   #                           color="blue")
+
     addBedTrackFromHostedFile(tv,
                              trackName="EncodeDHSclustered",
                              uri="http://pshannon.systemsbiology.net/annotations/dhsClusters_hg38.bed.gz",
                              index.uri="http://pshannon.systemsbiology.net/annotations/dhsClusters_hg38.bed.gz.tbi",
-                             displayMode="SQUISHED")
+                             displayMode="SQUISHED",
+                             color="blue")
 
 
    addBedTrackFromHostedFile(tv,
                             trackName="AQP4 snps",
                             uri="http://pshannon.systemsbiology.net/annotations/aqp4-chr18-snps.bed",
                             index.uri=NA,
-                            displayMode="SQUISHED")
+                            displayMode="SQUISHED",
+                            color="red")
 
-   tbl.bed <- m1$candidates$tbl[, c("chrom", "motifStart", "motifEnd", "motifName", "motifScore")]
-   addBedTrackFromDataFrame(tv, "DHS motifs", tbl.bed)
+   #tbl.bed <- m1$candidates$tbl[, c("chrom", "motifStart", "motifEnd", "motifName", "motifScore")]
+   #addBedTrackFromDataFrame(tv, "DHS motifs", tbl.bed, color="green")
 
+   tv
 
 } # explore.aqp4
+#----------------------------------------------------------------------------------------------------
+displayAllTracks <- function()
+{
+   if(!exists("tv"))
+      tv <<- explore.aqp4()
+
+   if(!exists("db"))
+      db <<- dbConnect(PostgreSQL(), user= "trena", password="trena", host="whovian")
+
+   dbNames <- c("brain_hint", "brain_wellington",
+                "lymphoblast_hint", "lymphoblast_wellington",
+                "skin_hint", "skin_wellington")
+
+   actual.dbNames <- grep("_", dbGetQuery(db, "select datname from pg_database")[, 1], value=TRUE)
+   dbNames <- intersect(dbNames, actual.dbNames)
+
+   genome.db.uri <- "postgres://whovian/hg38"
+   chrom <- "chr18"
+    # based on all 5 snps
+   start <- 26850565 - 100
+   end <- 26865469 + 100
+    # based on tss
+   start <- tss - 2000
+   end   <- tss + 2000
+   sprintf("%s:%d-%d", chrom, start, end)
+
+   tbl.regions <- data.frame();
+   for(dbName in dbNames){
+      fp.db.uri <- sprintf("postgres://whovian/%s", dbName)
+      fpf <- FootprintFinder(genome.db.uri, fp.db.uri)
+      tbl.fp <- getFootprintsInRegion(fpf, chrom, start, end)
+      printf("%40s: %5d footprints", dbName, nrow(tbl.fp))
+      if(nrow(tbl.fp) > 0){
+         tbl.bed <- tbl.fp[, c("chrom", "start", "endpos", "name", "score2")]
+         tbl.regions <- rbind(tbl.regions, tbl.bed)
+         addBedTrackFromDataFrame(tv, dbName, tbl.bed, color="green")
+         }
+      closeDatabaseConnections(fpf)
+      } # for dbName
+
+   addBedTrackFromDataFrame(tv, "fp.all", tbl.regions, color="orange")
+   invisible(tbl.regions)
+
+} # displayAllTracks
+#----------------------------------------------------------------------------------------------------
+getCandidates <- function(tbl.regions)
+{
+   i <- grep("endpos", colnames(tbl.regions))
+   if(length(i) > 0)
+      colnames(tbl.regions)[i] <- "end"
+   motifMatcher <- MotifMatcher(name="mm", genomeName="hg38", quiet=FALSE)
+   #x <- findMatchesByChromosomalRegion(motifMatcher, tbl.regions, pwmMatchMinimumAsPercentage=92)
+   tbl.regions.single <- data.frame(chrom="chr18", start=26863884, end=26867884, stringsAsFactors=FALSE)
+   x92 =  findMatchesByChromosomalRegion(motifMatcher, tbl.regions.single, pwmMatchMinimumAsPercentage=92)
+   x70 =  findMatchesByChromosomalRegion(motifMatcher, tbl.regions.single, pwmMatchMinimumAsPercentage=70)
+   print(system.time(x2 <- findMatchesByChromosomalRegion(motifMatcher, tbl.regions.single, pwmMatchMinimumAsPercentage=72)))
+
+   tfs <- intersect(rownames(mtx), x92$tfs)
+   solver.wt <- RandomForestSolver(mtx, targetGene="AQP4", candidateRegulators=tfs)
+   model.wt <- run(solver.wt)
+
+   snps <- tbl.snp$snp
+   x92.snps =  findMatchesByChromosomalRegion(motifMatcher, tbl.regions.single, pwmMatchMinimumAsPercentage=92, variants=snps)
+
+
+
+} # getCandidates
 #----------------------------------------------------------------------------------------------------
 tead1.motifs <- unique(subset(tbl.mg, tf.gene=="TEAD1")$motif)
