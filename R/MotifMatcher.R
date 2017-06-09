@@ -67,7 +67,7 @@ setMethod("findMatchesByChromosomalRegion", "MotifMatcher",
             colnames(tbl.motifs) <- c("motifStart", "motifEnd", "width", "motifScore", "maxScore", "motifRelativeScore",
                                       "motifName", "match", "strand")
             tbl.region <- tbl.regions[i,]
-            colnames(tbl.region) <- c("chrom", "chromStart", "chromEnd", "seq", "alt")
+            colnames(tbl.region) <- c("chrom", "chromStart", "chromEnd", "seq", "status")
             tbl.out <- rbind(tbl.out, cbind(tbl.motifs, tbl.region))
             }
          } # for i
@@ -83,7 +83,7 @@ setMethod("findMatchesByChromosomalRegion", "MotifMatcher",
        tbl.out <- tbl.out[, -c(3,5)] # get rid of width and maxScore columns
        desired.column.order <- c("motifName", "chrom", "motifStart", "motifEnd", "strand", "motifScore",
                                  "motifRelativeScore", "match",
-                                 "chromStart", "chromEnd", "seq", "alt") #, "count", "score")
+                                 "chromStart", "chromEnd", "seq", "status") #, "count", "score")
        tbl.out <- tbl.out[, desired.column.order]
        tbl.out <- tbl.out[order(tbl.out$motifScore, decreasing=TRUE),]
            # tbl.mg will soon come from MotifDb
@@ -312,19 +312,19 @@ setMethod("getSequence", "MotifMatcher",
 
    function(obj, tbl.regions, variants=NA_character_){
         # either no variants are supplied, or a variant string is offered for each row
-     browser()
      stopifnot(nrow(tbl.regions) == 1)
-     stopifnot(is.na(variants) || nrow(tbl.regions) == length(variants))
+     # stopifnot(is.na(variants) || nrow(tbl.regions) == length(variants))
      gr.regions <- with(tbl.regions, GRanges(seqnames=chrom, IRanges(start=start, end=end)))
      seqs <- as.character(getSeq(obj@genome, gr.regions))
      tbl.regions$seq <- seqs
-     variant.column <- rep("wt", nrow(tbl.regions))
-     if(!is.na(variants)){
-        tbl.variants <- .parseVariantString(obj, variant)
-        tbl.regions <- .injectSnp(tbl.regions, tbl.variants)
-        } # !is.na(variants)
+     if(!all(is.na(variants))){  # successively inject each variant
+        tbl.variants <- do.call(rbind, lapply(variants, function(variant) .parseVariantString(obj, variant)))
+        #browser()
+        for(rr in 1:nrow(tbl.variants))
+           tbl.regions <- .injectSnp(tbl.regions, tbl.variants[rr,])
+        } # !all(is.na(variants))
      else{
-         tbl.regions$alt <- rep("wt", nrow(tbl.regions))
+        tbl.regions$status <- rep("wt", nrow(tbl.regions))
         }
       tbl.regions
      })  # getSequence
@@ -332,7 +332,7 @@ setMethod("getSequence", "MotifMatcher",
 #----------------------------------------------------------------------------------------------------
 # return a new version of tbl.regions:
 #
-#  1) with an "alt" column added
+#  1) with a "status" column added
 #  2) in which regions with a variant have their sequence altered to include the alternate base.
 #  3) if there # are multpiole alternate alleles, then a separate row is created for each alternate;
 #  4) in which any regions without mutants  are returned as is (with the alt column left empty)
@@ -351,13 +351,13 @@ setMethod("getSequence", "MotifMatcher",
    if(nrow(tbl.overlaps) == 0)
       return(tbl.regions)
 
-   browser()
+   #browser()
    regions.without.snps <- setdiff(1:nrow(tbl.regions), tbl.overlaps$region)
    tbl.regions.out <- tbl.regions[regions.without.snps,]
-   tbl.regions.out$alt <- rep("wt", nrow(tbl.regions.out))
+   tbl.regions.out$status <- rep("wt", nrow(tbl.regions.out))
 
    new.sequence <- tbl.regions$seq
-   alt.string <- ""
+   status.string <- ""
 
    for(r in seq_len(nrow(tbl.overlaps))){
       wt  <- as.list(tbl.regions[tbl.overlaps$region[r],])
@@ -417,7 +417,7 @@ setMethod(".parseVariantString", "MotifMatcher",
                 }
              else{
                 chosen.row <- match(explicitly.specified.alternate.allele, tbl.out$mut)
-                if(is.na(chosen.row)) stop("alternate allele %s not in %s", tokens[2], variantString)
+                if(is.na(chosen.row)) stop(sprintf("alternate allele %s not in %s", tokens[2], variantString))
                 }
              tbl.out <- tbl.out[chosen.row,]
              } # variant.count > 1

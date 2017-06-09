@@ -80,17 +80,17 @@ test_getSequence <- function(indirect=FALSE)
    ends   <- c(88819710, 88820705, 88821000)
 
    for(i in 1:3){
-     tbl.regions <- data.frame(chrom=chroms[1], start=starts[1], end=ends[1], stringsAsFactors=FALSE)
-     tbl.regions <- getSequence(mm, tbl.regions)
-     checkEquals(colnames(tbl.regions), c("chrom", "start", "end", "seq", "alt"))
+     tbl.regions.noSeq <- data.frame(chrom=chroms[i], start=starts[i], end=ends[i], stringsAsFactors=FALSE)
+     tbl.regions <- getSequence(mm, tbl.regions.noSeq)
+     checkEquals(colnames(tbl.regions), c("chrom", "start", "end", "seq", "status"))
      seqs <- tbl.regions$seq
      checkEquals(length(seqs), 1)
      checkEquals(unlist(lapply(seqs, nchar)), 1 + tbl.regions$end - tbl.regions$start)
      }
 
         # --- how to get multiple sequences
-    tbl.regions <- data.frame(chrom=chroms, start=starts, end=ends, stringsAsFactors=FALSE)
-    x <- lapply(1:nrow(tbl.regions), function(r) getSequence(mm, tbl.regions[r,]))
+    tbl.regions.noSeq <- data.frame(chrom=chroms, start=starts, end=ends, stringsAsFactors=FALSE)
+    x <- lapply(1:nrow(tbl.regions.noSeq), function(r) getSequence(mm, tbl.regions.noSeq[r,]))
     tbl.regions <- do.call(rbind, x)
     invisible(tbl.regions$seq)
 
@@ -147,8 +147,11 @@ test_.injectSnp <- function()
 {
    printf("--- test_.injectSnp")
 
-   tbl.regions <- data.frame(chrom="chr2", start=57907318, end=57907328, seq="CATGCAAATTA", stringsAsFactors=FALSE)
-   checkEquals(dim(tbl.regions), c(1, 4))
+   mm <- MotifMatcher(genomeName="hg38")
+   tbl.regions.noSeq <- data.frame(chrom="chr2", start=57907318, end=57907328, stringsAsFactors=FALSE)
+   tbl.regions <- getSequence(mm, tbl.regions.noSeq)
+   checkEquals(tbl.regions$seq, "CATGCAAATTA")
+
    tbl.variants <- data.frame(chrom="chr2", loc=57907323, wt="A", mut="G", stringsAsFactors=FALSE)
    tbl.regions.new <- TReNA:::.injectSnp(tbl.regions, tbl.variants)
    checkEquals(dim(tbl.regions.new), c(1, 5))
@@ -158,39 +161,43 @@ test_.injectSnp <- function()
 
 
      #---- a snp with two alternate alleles: rs3763040
-   tbl.regions <- data.frame(chrom="chr18", start=26864405, end=26864415, seq="ACAGGGGGGTG",stringsAsFactors=FALSE)
-   tbl.variants <- data.frame(chrom=rep("chr18",2), loc=rep(26864410,2), wt=rep("G",2) , mut=c("A", "T"),stringsAsFactors=FALSE)
-   tbl.regions.new <- TReNA:::.injectSnp(tbl.regions, tbl.variants)
-   checkEquals(dim(tbl.regions.new), c(2, 5))
-     #                                      |
-   checkEquals(tbl.regions.new$seq, c("ACAGGAGGGTG",
-                                      "ACAGGTGGGTG"))
-   checkEquals(tbl.regions.new$alt, c("chr18:26864410(G->A)",
-                                      "chr18:26864410(G->T)"))
 
-      # that same snp but with a region that does not containt i
-   tbl.regions <- data.frame(chrom="chr2", start=26864405, end=26864415, seq="ACAGGGGGGTG",stringsAsFactors=FALSE)
-   tbl.variants <- data.frame(chrom=rep("chr18",2), loc=rep(26864410,2), wt=rep("G",2) , mut=c("A", "T"),stringsAsFactors=FALSE)
-   tbl.regions.new <- TReNA:::.injectSnp(tbl.regions, tbl.variants)
-   checkEquals(tbl.regions, tbl.regions.new)
+   #   tbl.regions.noSeq <- data.frame(chrom="chr18", start=26864405, end=26864415,  stringsAsFactors=FALSE)
+   #   tbl.regions <- getSequence(mm, tbl.regions.noSeq)
+   #   checkEquals(tbl.regions$seq, "ACAGGGGGGTG")
+   #   checkEquals(tbl.regions$status, "wt")
+   #
+   #   tbl.variants <- data.frame(chrom=rep("chr18",2), loc=rep(26864410,2), wt=rep("G",2) , mut=c("A", "T"),stringsAsFactors=FALSE)
+   #   tbl.regions.new <- TReNA:::.injectSnp(tbl.regions, tbl.variants)
+   #   checkEquals(dim(tbl.regions.new), c(2, 5))
+   #     #                                      |
+   #   checkEquals(tbl.regions.new$seq, c("ACAGGAGGGTG",
+   #                                      "ACAGGTGGGTG"))
+   #   checkEquals(tbl.regions.new$alt, c("chr18:26864410(G->A)",
+   #                                      "chr18:26864410(G->T)"))
+   #
+   #      # that same snp but with a region that does not containt it
+   #   tbl.regions <- data.frame(chrom="chr2", start=26864405, end=26864415, seq="ACAGGGGGGTG",stringsAsFactors=FALSE)
+   #   tbl.variants <- data.frame(chrom=rep("chr18",2), loc=rep(26864410,2), wt=rep("G",2) , mut=c("A", "T"),stringsAsFactors=FALSE)
+   #   tbl.regions.new <- TReNA:::.injectSnp(tbl.regions, tbl.variants)
+   #   checkEquals(tbl.regions, tbl.regions.new)
+   #
+   #      # now with one overlapping region, two non-overlapping
+   #   tbl.regions <- data.frame(chrom="chr18",
+   #                             start=c(26864305, 26864405, 26864505),
+   #                             end=  c(26864315, 26864415, 26864515),
+   #                             seq=c("CTAGCCCTTAG", "ACAGGGGGGTG","CTCTAGAGGAA"),
+   #                             stringsAsFactors=FALSE)
+   #   tbl.variants <- data.frame(chrom=rep("chr18",2), loc=rep(26864410,2), wt=rep("G",2) , mut=c("A", "T"),stringsAsFactors=FALSE)
+   #   tbl.regions.new <- TReNA:::.injectSnp(tbl.regions, tbl.variants)
+   #   checkEquals(dim(tbl.regions.new), c(4, 5))
+   #   checkEquals(tbl.regions.new$chrom, rep("chr18", 4))
+   #   checkEquals(tbl.regions.new$start, c(26864305, 26864405, 26864405, 26864505))
+   #   checkEquals(tbl.regions.new$end, c(26864315, 26864415, 26864415, 26864515))
+   #   checkEquals(tbl.regions.new$seq, c("CTAGCCCTTAG", "ACAGGAGGGTG", "ACAGGTGGGTG", "CTCTAGAGGAA"))
+   #   checkEquals(tbl.regions.new$alt, c("wt", "chr18:26864410(G->A)", "chr18:26864410(G->T)", "wt"))
 
-      # now with one overlapping region, two non-overlapping
-   tbl.regions <- data.frame(chrom="chr18",
-                             start=c(26864305, 26864405, 26864505),
-                             end=  c(26864315, 26864415, 26864515),
-                             seq=c("CTAGCCCTTAG", "ACAGGGGGGTG","CTCTAGAGGAA"),
-                             stringsAsFactors=FALSE)
-   tbl.variants <- data.frame(chrom=rep("chr18",2), loc=rep(26864410,2), wt=rep("G",2) , mut=c("A", "T"),stringsAsFactors=FALSE)
-   tbl.regions.new <- TReNA:::.injectSnp(tbl.regions, tbl.variants)
-   checkEquals(dim(tbl.regions.new), c(4, 5))
-   checkEquals(tbl.regions.new$chrom, rep("chr18", 4))
-   checkEquals(tbl.regions.new$start, c(26864305, 26864405, 26864405, 26864505))
-   checkEquals(tbl.regions.new$end, c(26864315, 26864415, 26864415, 26864515))
-   checkEquals(tbl.regions.new$seq, c("CTAGCCCTTAG", "ACAGGAGGGTG", "ACAGGTGGGTG", "CTCTAGAGGAA"))
-   checkEquals(tbl.regions.new$alt, c("wt", "chr18:26864410(G->A)", "chr18:26864410(G->T)", "wt"))
-
-      # now try two variants in one region
-
+      # now try two variants in one region, different locations
 
    mm <- MotifMatcher(genomeName="hg38")
    tbl.variants <- data.frame(chrom=c("chr18", "chr18"),
@@ -198,8 +205,8 @@ test_.injectSnp <- function()
                               wt=c("G", "T"),
                               mut=c("C", "C"),
                               stringsAsFactors=FALSE)
-   tbl.regions <- data.frame(chrom="chr18", start=26865463, end=26865472, stringsAsFactors=FALSE)
-   tbl.regions <- getSequence(mm, tbl.regions)
+   tbl.regions.noSeq <- data.frame(chrom="chr18", start=26865463, end=26865472, stringsAsFactors=FALSE)
+   tbl.regions <- getSequence(mm, tbl.regions.noSeq)
 
    tbl.regions.new <- TReNA:::.injectSnp(tbl.regions, tbl.variants)
       #                                 |  |
@@ -221,39 +228,52 @@ test_getSequenceWithVariants <- function()
    chroms <- "chr2"
    starts <- 57907318
    ends   <- 57907328
-   tbl.regions <- data.frame(chrom=chroms, start=starts, end=ends, stringsAsFactors=FALSE)
+   tbl.regions.noSeq <- data.frame(chrom=chroms, start=starts, end=ends, stringsAsFactors=FALSE)
 
-   tbl.wt <- getSequence(mm, tbl.regions)
-   tbl.mut <- getSequence(mm, tbl.regions, "rs13384219")
+   tbl.wt <- getSequence(mm, tbl.regions.noSeq)
+   tbl.mut <- getSequence(mm, tbl.regions.noSeq, "rs13384219")
 
-   checkEquals(tbl.wt$alt, "wt")
-   checkEquals(tbl.mut$alt, "chr2:57907323(A->G)")
+   checkEquals(tbl.wt$status, "wt")
+   checkEquals(tbl.mut$status, "mut") #"chr2:57907323(A->G)")
    checkEquals(tbl.wt$seq,  "CATGCAAATTA")
    checkEquals(tbl.mut$seq, "CATGCGAATTA")
 
     # now a snp with two variants
    chromosome <- "chr18"
    loc <- 26864410
-   tbl.regions <- data.frame(chrom=chromosome, start=loc-5, end=loc+5, stringsAsFactors=FALSE)
+   tbl.regions.noSeq <- data.frame(chrom=chromosome, start=loc-5, end=loc+5, stringsAsFactors=FALSE)
    rsid <- "rs3763040"
 
-   tbl.wt <- getSequence(mm, tbl.regions)
+   tbl.wt <- getSequence(mm, tbl.regions.noSeq)
    checkEquals(dim(tbl.wt), c(1, 5))
    checkEquals(tbl.wt$seq, "ACAGGGGGGTG")
-   checkEquals(tbl.wt$alt, "wt")
+   checkEquals(tbl.wt$status, "wt")
 
-   tbl.mut <- getSequence(mm, tbl.regions, rsid)
-   checkEquals(dim(tbl.mut), c(2, 5))
-   checkEquals(tbl.mut$seq, c("ACAGGAGGGTG", "ACAGGTGGGTG"))
-   checkEquals(tbl.mut$alt, c("chr18:26864410(G->A)", "chr18:26864410(G->T)"))
+   tbl.mut <- getSequence(mm, tbl.regions.noSeq, rsid)
+   checkEquals(dim(tbl.mut), c(1, 5))
+   checkEquals(tbl.mut$seq, "ACAGGAGGGTG")
+   checkEquals(tbl.mut$status, "mut")    # c("chr18:26864410(G->A)", "chr18:26864410(G->T)"))
+
+   tbl.mut <- getSequence(mm, tbl.regions.noSeq, "rs3763040:A")
+   checkEquals(dim(tbl.mut), c(1, 5))
+   checkEquals(tbl.mut$seq, "ACAGGAGGGTG")
+   checkEquals(tbl.mut$status, "mut")    # c("chr18:26864410(G->A)", "chr18:26864410(G->T)"))
+
+   tbl.mut <- getSequence(mm, tbl.regions.noSeq, "rs3763040:T")
+   checkEquals(dim(tbl.mut), c(1, 5))
+   checkEquals(tbl.mut$seq, "ACAGGTGGGTG")
+   checkEquals(tbl.mut$status, "mut")    # c("chr18:26864410(G->A)", "chr18:26864410(G->T)"))
 
       # now provide two variants (at two locations), here just three bases apart
       #  rs750694782: chr18:26865466
       #  rs3875089:   chr18:26865469
 
    variants <- c("rs750694782", "rs3875089")
-   tbl.regions <- data.frame(chrom="chr18", start=26865463, end=26865472, stringsAsFactors=FALSE)
-   tbl.mut <- getSequence(mm, tbl.regions, variants)
+   tbl.regions.noSeq <- data.frame(chrom="chr18", start=26865463, end=26865472, stringsAsFactors=FALSE)
+   tbl.wt <- getSequence(mm, tbl.regions.noSeq)
+   checkEquals(as.list(tbl.wt[, c("seq", "status")]),  list(seq="AAAGCATCCC", status="wt"))
+   tbl.mut <- getSequence(mm, tbl.regions.noSeq, variants) #        |  |
+   checkEquals(as.list(tbl.mut[, c("seq", "status")]), list(seq="AAACCACCCC", status="mut"))
 
 } # test_getSequenceWithVariants
 #----------------------------------------------------------------------------------------------------
@@ -268,7 +288,7 @@ test_findMatchesByChromosomalRegion <- function()
    x <- findMatchesByChromosomalRegion(motifMatcher, tbl.regions, pwmMatchMinimumAsPercentage=92)
    checkEquals(sort(names(x)), c("tbl", "tfs"))
    checkEquals(dim(x$tbl), c(7, 13))
-   checkEquals(unique(x$tbl$alt), "wt")
+   checkEquals(unique(x$tbl$status), "wt")
    checkTrue(length(x$tfs) > 50)
 
       # the best match (longest, all bases in agreement with the motif:
@@ -286,7 +306,7 @@ test_findMatchesByChromosomalRegion <- function()
    checkEquals(best$chromStart, 57907313)
    checkEquals(best$chromEnd, 57907333)
    checkEquals(best$seq, "ACCAGCATGCAAATTAGACAA")
-   checkEquals(best$alt, "wt")
+   checkEquals(best$status, "wt")
    checkEquals(best$tf, "POU5F1B")
 
 } # test_findMatchesByChromosomalRegion
@@ -450,21 +470,6 @@ test_findMatchesByChromosomalRegion.twoAlternateAlleles <- function()
       #          CAGGTG
    checkEquals(length(grep("CAGGAG", x1$tbl$match)), nrow(x1$tbl))
 
-     # now find both results from one call.  MotifMatcher looksup the rsid,
-     # learns of three alleles expressed in an ambiguity code (D: AGT) then
-     # subtracts out the reference (G) returning a table which combines motifs matching
-     # the A and T injected motifs
-
-   x2 <- findMatchesByChromosomalRegion(mm, tbl.regions, pwmMatchMinimumAsPercentage=80L, "rs3763040")
-      # make sure both of the previously calculated, snp-injected results are in this combined rsid call
-   checkTrue(all(xmut$tbl$motifName %in% x2$tbl$motifName))
-   checkTrue(all(x1$tbl$motifName %in% x2$tbl$motifName))
-   checkTrue(all(sort(unique(c(x1$tbl$motifName, xmut$tbl$motifName))) == sort(unique(x2$tbl$motifName))))
-
-   checkTrue(all(x2$tbl$chrom == chromosome))
-   checkEquals(sort(names(x2)), c("tbl", "tfs"))
-   checkEquals(length(grep("CAGGTG", x2$tbl$match)), nrow(xmut$tbl))
-   checkEquals(length(grep("CAGGAG", x2$tbl$match)), nrow(x1$tbl))
 
 } # test_findMatchesByChromosomalRegion.twoAlternateAlleles
 #----------------------------------------------------------------------------------------------------
