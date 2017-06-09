@@ -11,7 +11,7 @@ runTests <- function()
    test_basicConstructor()
    test_getSequence()
    test_.matchPwmForwardAndReverse()
-   test_parseVariantString()
+   test_.parseVariantString()
    test_.injectSnp()
    test_getSequenceWithVariants()
    test_.getScoredMotifs()
@@ -96,11 +96,11 @@ test_getSequence <- function(indirect=FALSE)
 
 } # test_getSequence
 #----------------------------------------------------------------------------------------------------
-test_parseVariantString <- function()
+test_.parseVariantString <- function()
 {
    mm <- MotifMatcher(name="rs13384219.neighborhood", genomeName="hg38")
 
-   tbl.variant <- TReNA:::parseVariantString(mm, "rs13384219")
+   tbl.variant <- TReNA:::.parseVariantString(mm, "rs13384219")
    checkEquals(dim(tbl.variant), c(1, 4))
    checkEquals(tbl.variant$chrom, "chr2")
    checkEquals(tbl.variant$loc, 57907323)
@@ -108,21 +108,40 @@ test_parseVariantString <- function()
    checkEquals(tbl.variant$mut, "G")
 
        # the same snp, but here expressed as a string (not an rsid)
-   tbl.v2 <- TReNA:::parseVariantString(mm, "chr2:57907323:A:G")
+   tbl.v2 <- TReNA:::.parseVariantString(mm, "chr2:57907323:A:G")
    checkEquals(dim(tbl.v2), c(1, 4))
    checkEquals(tbl.v2$chrom, "chr2")
    checkEquals(tbl.v2$loc, 57907323)
    checkEquals(tbl.v2$wt, "A")
    checkEquals(tbl.v2$mut, "G")
 
-   tbl.2vars <- TReNA:::parseVariantString(mm, "rs3763040")  # snp with two variant alleles
-   checkEquals(dim(tbl.2vars), c(2,4))
-   checkEquals(tbl.2vars$chrom, rep("chr18", 2))
-   checkEquals(tbl.2vars$loc, rep(26864410, 2))
-   checkEquals(tbl.2vars$wt, rep("G", 2))
-   checkEquals(tbl.2vars$mut, c("A", "T"))
+   tbl.2vars <- TReNA:::.parseVariantString(mm, "rs3763040:A")  # snp with two variant alleles; one must be specified
+   checkEquals(dim(tbl.2vars), c(1,4))
+   checkEquals(tbl.2vars$chrom, "chr18")
+   checkEquals(tbl.2vars$loc, 26864410)
+   checkEquals(tbl.2vars$wt, "G")
+   checkEquals(tbl.2vars$mut, "A")
 
-} # test_parseVariantString
+   tbl.2vars <- TReNA:::.parseVariantString(mm, "rs3763040:T")  # snp with two variant alleles; one must be specified
+   checkEquals(dim(tbl.2vars), c(1,4))
+   checkEquals(tbl.2vars$chrom, "chr18")
+   checkEquals(tbl.2vars$loc, 26864410)
+   checkEquals(tbl.2vars$wt, "G")
+   checkEquals(tbl.2vars$mut, "T")
+
+   tbl.2vars <- TReNA:::.parseVariantString(mm, "rs3763040")  # snp with two variant alleles; first is chosen by default
+   checkEquals(dim(tbl.2vars), c(1,4))
+   checkEquals(tbl.2vars$chrom, "chr18")
+   checkEquals(tbl.2vars$loc, 26864410)
+   checkEquals(tbl.2vars$wt, "G")
+   checkEquals(tbl.2vars$mut, "A")
+
+      # now fail on purpose, explictly specifying an alt allele not include in the snp
+   checkException(
+      tbl.2vars <- TReNA:::.parseVariantString(mm, "rs3763040:C"),
+      "caught!", silent=TRUE)
+
+} # test_.parseVariantString
 #----------------------------------------------------------------------------------------------------
 test_.injectSnp <- function()
 {
@@ -134,7 +153,8 @@ test_.injectSnp <- function()
    tbl.regions.new <- TReNA:::.injectSnp(tbl.regions, tbl.variants)
    checkEquals(dim(tbl.regions.new), c(1, 5))
    checkEquals(tbl.regions.new$seq, "CATGCGAATTA")
-   checkEquals(tbl.regions.new$alt, "chr2:57907323(A->G)")
+   checkEquals(tbl.regions.new$status, "mut")
+   #checkEquals(tbl.regions.new$alt, "chr2:57907323(A->G)")
 
 
      #---- a snp with two alternate alleles: rs3763040
@@ -172,15 +192,19 @@ test_.injectSnp <- function()
       # now try two variants in one region
 
 
+   mm <- MotifMatcher(genomeName="hg38")
    tbl.variants <- data.frame(chrom=c("chr18", "chr18"),
                               loc=c(26865466, 26865469),
                               wt=c("G", "T"),
                               mut=c("C", "C"),
                               stringsAsFactors=FALSE)
    tbl.regions <- data.frame(chrom="chr18", start=26865463, end=26865472, stringsAsFactors=FALSE)
+   tbl.regions <- getSequence(mm, tbl.regions)
+
    tbl.regions.new <- TReNA:::.injectSnp(tbl.regions, tbl.variants)
-
-
+      #                                 |  |
+   checkEquals(tbl.regions$seq,     "AAAGCATCCC")
+   checkEquals(tbl.regions.new$seq, "AAACCACCCC")
 
  } # test_.injectSnp
 #----------------------------------------------------------------------------------------------------

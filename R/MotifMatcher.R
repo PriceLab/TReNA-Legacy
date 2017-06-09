@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------------------------------------------------
 setGeneric("getPfms",            signature="obj", function(obj) standardGeneric ("getPfms"))
 setGeneric("getSequence",        signature="obj", function(obj, tbl.regions, variants=NA_character_) standardGeneric ("getSequence"))
-setGeneric("parseVariantString", signature="obj", function(obj, variantString) standardGeneric ("parseVariantString"))
+setGeneric(".parseVariantString", signature="obj", function(obj, variantString) standardGeneric (".parseVariantString"))
 setGeneric("findMatchesByChromosomalRegion", signature="obj",
            function(obj, tbl.regions, pwmMatchMinimumAsPercentage, variants=NA_character_)
               standardGeneric ("findMatchesByChromosomalRegion"))
@@ -320,7 +320,7 @@ setMethod("getSequence", "MotifMatcher",
      tbl.regions$seq <- seqs
      variant.column <- rep("wt", nrow(tbl.regions))
      if(!is.na(variants)){
-        tbl.variants <- parseVariantString(obj, variant)
+        tbl.variants <- .parseVariantString(obj, variant)
         tbl.regions <- .injectSnp(tbl.regions, tbl.variants)
         } # !is.na(variants)
      else{
@@ -339,7 +339,8 @@ setMethod("getSequence", "MotifMatcher",
 #
 .injectSnp <- function(tbl.regions, tbl.variants)
 {
-   browser()
+   stopifnot(nrow(tbl.regions) == 1)
+   stopifnot(all(c("chrom", "start", "end", "seq") %in% colnames(tbl.regions)))
    gr.regions  <- with(tbl.regions,  GRanges(seqnames=chrom, IRanges(start=start, end=end)))
    gr.variants <- with(tbl.variants, GRanges(seqnames=chrom, IRanges(start=loc,   end=loc)))
    suppressWarnings(
@@ -350,32 +351,45 @@ setMethod("getSequence", "MotifMatcher",
    if(nrow(tbl.overlaps) == 0)
       return(tbl.regions)
 
+   browser()
    regions.without.snps <- setdiff(1:nrow(tbl.regions), tbl.overlaps$region)
    tbl.regions.out <- tbl.regions[regions.without.snps,]
    tbl.regions.out$alt <- rep("wt", nrow(tbl.regions.out))
+
+   new.sequence <- tbl.regions$seq
+   alt.string <- ""
 
    for(r in seq_len(nrow(tbl.overlaps))){
       wt  <- as.list(tbl.regions[tbl.overlaps$region[r],])
       alt <- as.list(tbl.variants[tbl.overlaps$variant[r],])
       offset <- 1 + alt$loc - wt$start
       mut.loc <- wt$start + offset
-      wt.base <- substring(wt$seq, offset, offset)
-      mutant.seq <- sprintf("%s%s%s", substr(wt$seq, 1, (offset-1)), alt$mut,
-                            substr(wt$seq, offset+1, nchar(wt$seq)))
-      alt.string <- sprintf("%s:%d(%s->%s)", alt$chrom, alt$loc, alt$wt, alt$mut)
-      mutant.region <- data.frame(chrom=wt$chrom, start=wt$start, end=wt$end, seq=mutant.seq, alt=alt.string,
-                                  stringsAsFactors=FALSE)
-      tbl.regions.out <- rbind(tbl.regions.out, mutant.region)
+      wt.base <- substring(new.sequence, offset, offset)
+      new.sequence <- sprintf("%s%s%s", substr(new.sequence, 1, (offset-1)), alt$mut,
+                            substr(new.sequence, offset+1, nchar(new.sequence)))
+      #alt.string <- sprintf("%s:%d(%s->%s)", alt$chrom, alt$loc, alt$wt, alt$mut)
       }
 
-    tbl.regions.out[order(tbl.regions.out$start, decreasing=FALSE),]
+   tbl.regions.out <- tbl.regions
+   tbl.regions.out$seq <- new.sequence
+   tbl.regions.out$status <- "mut"
+   tbl.regions.out
+
+   #tbl.regions.out[order(tbl.regions.out$start, decreasing=FALSE),]
 
 } # .injectSnp
 #----------------------------------------------------------------------------------------------------
-setMethod("parseVariantString", "MotifMatcher",
+# going obsolete.   see function .parseVariantString
+setMethod(".parseVariantString", "MotifMatcher",
 
     function(obj, variantString) {
        if(grepl("^rs", variantString)){
+          explicitly.specified.alternate.allele <- NA
+          tokens <- strsplit(variantString, ":")[[1]]
+          if(length(tokens) == 2){  # eg, "rs3763040:A" when the snp includes multiple alternate alleles
+            variantString <- tokens[1]
+            explicitly.specified.alternate.allele <- tokens[2]
+            }
           require(SNPlocs.Hsapiens.dbSNP144.GRCh38)
           snp.info <- as.data.frame(snpsById(SNPlocs.Hsapiens.dbSNP144.GRCh38, variantString))[1,]
           chrom <- as.character(snp.info$seqnames)
@@ -395,8 +409,20 @@ setMethod("parseVariantString", "MotifMatcher",
              result[[v]]$mut <- snp$mut[v]
              } # for v
           tbl.out <- do.call(rbind.data.frame, result)
+          if(variant.count > 1){
+             chosen.row <- 1  # the default if alternate allele not specified explicitly
+             if(is.na(explicitly.specified.alternate.allele)){
+                warning(sprintf("alternate allele of %d options not specified, choosing first: %s",
+                                variant.count, tbl.out[chosen.row, "mut"]))
+                }
+             else{
+                chosen.row <- match(explicitly.specified.alternate.allele, tbl.out$mut)
+                if(is.na(chosen.row)) stop("alternate allele %s not in %s", tokens[2], variantString)
+                }
+             tbl.out <- tbl.out[chosen.row,]
+             } # variant.count > 1
           } # if rsid
-       else{
+       else{  # no rsid string supplied: instead, an explicit chrom:loc:wt:mut string ("chr2:57907323:A:G")
           tokens <- strsplit(variantString, ":")[[1]]
           stopifnot(length(tokens) == 4)
           tbl.out <- data.frame(chrom=tokens[1], loc=as.numeric(tokens[2]), wt=tokens[3], mut=tokens[4])
@@ -407,4 +433,40 @@ setMethod("parseVariantString", "MotifMatcher",
        tbl.out
     })
 
+#----------------------------------------------------------------------------------------------------
+.UnusedparseVariantString <- function(genomeName, variantString)
+{
+   if(grepl("^rs", variantString)){
+      stopifnot(genomeName == "hg38")  # support for other coming
+      require(SNPlocs.Hsapiens.dbSNP144.GRCh38)
+      snp.info <- as.data.frame(snpsById(SNPlocs.Hsapiens.dbSNP144.GRCh38, variantString))[1,]
+      chrom <- as.character(snp.info$seqnames)
+      if(!grepl("chr", chrom))
+         chrom <- sub("ch", "chr", chrom)
+      start <- as.numeric(snp.info$pos)
+      ambiguity.code <- snp.info$alleles_as_ambig
+      elements.string <- IUPAC_CODE_MAP[[ambiguity.code]]
+      elements <- strsplit(elements.string,'')[[1]]
+      wt <- as.character(getSeq(genomeName, chrom, start, start))
+      mut <- setdiff(elements, wt)
+      snp <- list(chrom=chrom, loc=start, wt=wt, mut=mut)
+      variant.count <- length(snp$mut)
+      result <- vector(mode="list", length=variant.count)
+      for(v in 1:variant.count){
+         result[[v]] <- snp
+         result[[v]]$mut <- snp$mut[v]
+         } # for v
+      tbl.out <- do.call(rbind.data.frame, result)
+      } # if rsid
+   else{
+      tokens <- strsplit(variantString, ":")[[1]]
+      stopifnot(length(tokens) == 4)
+      tbl.out <- data.frame(chrom=tokens[1], loc=as.numeric(tokens[2]), wt=tokens[3], mut=tokens[4])
+      }
+   tbl.out$chrom <- as.character(tbl.out$chrom)
+   tbl.out$wt <- as.character(tbl.out$wt)
+   tbl.out$mut <- as.character(tbl.out$mut)
+   tbl.out
+
+} # .UnusedparseVariantString
 #----------------------------------------------------------------------------------------------------
