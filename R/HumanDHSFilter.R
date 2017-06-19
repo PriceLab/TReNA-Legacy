@@ -476,6 +476,7 @@ setMethod("getSequence_tmp", "HumanDHSFilter",
 # TODO: move this duplicated code to the base class, or to R/utils.R
 .parseChromLocString <- function(chromLocString)
 {
+   chromLocString <- gsub(",", "", chromLocString);
    tokens.0 <- strsplit(chromLocString, ":", fixed=TRUE)[[1]]
    stopifnot(length(tokens.0) == 2)
    chrom <- tokens.0[1]

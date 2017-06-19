@@ -32,11 +32,12 @@ if(!exists("mtx")){
   }
 #------------------------------------------------------------------------------------------------------------------------
 genome.name <- "hg38"
+# rs3763043 disrupts MA0090.2
 tbl.snp <- data.frame(target.gene=rep("AQP4", 5),
                       chromosome=rep("chr18", 5),
                       loc=c(26864410, 26865469, 26855623, 26855854, 26850565),
                       snp=c("rs3763040", "rs3875089", "rs335929", "rs3763043", "rs9951307"),
-                      shoulder=rep(2000, 5),
+                      #shoulder=rep(2000, 5),
                       genome=rep(genome.name, 5),
                       stringsAsFactors=FALSE)
 #------------------------------------------------------------------------------------------------------------------------
@@ -407,11 +408,8 @@ explore.aqp4 <- function()
 
 } # explore.aqp4
 #----------------------------------------------------------------------------------------------------
-displayAllTracks <- function(chrom, start, end)
+displayAllTracks <- function(tv, chrom, start, end)
 {
-   if(!exists("tv"))
-      tv <<- explore.aqp4()
-
    if(!exists("db"))
       db <<- dbConnect(PostgreSQL(), user= "trena", password="trena", host="whovian")
 
@@ -421,6 +419,7 @@ displayAllTracks <- function(chrom, start, end)
 
    actual.dbNames <- grep("_", dbGetQuery(db, "select datname from pg_database")[, 1], value=TRUE)
    dbNames <- intersect(dbNames, actual.dbNames)
+   dbNames <- list()
 
    genome.db.uri <- "postgres://whovian/hg38"
    # chrom <- "chr18"
@@ -441,14 +440,13 @@ displayAllTracks <- function(chrom, start, end)
    # start <- start.81kb
    # end   <- end.81kb
 
-   showRegion(tv, sprintf("%s:%d-%d", chrom, start, end))
+   showGenomicRegion(tv, sprintf("%s:%d-%d", chrom, start, end))
 
    tbl.regions <- data.frame();
    load("aqp4_fp.RData")
-   tbl.cory <- fp$AQP4$tbl[, c(3, 4, 5, 1, 15)]
+   tbl.cory <- subset(fp$AQP4$tbl, start >= start & endpos <= end)[, c(3, 4, 5, 1, 15)]
    tbl.cory$source <- "cory"
    tbl.regions <- rbind(tbl.regions, tbl.cory)
-
    addBedTrackFromDataFrame(tv, "coryFP", tbl.cory, displayMode="COLLAPSED", color="cyan")
 
    for(dbName in dbNames){
@@ -514,13 +512,14 @@ newFriday.rs3875089 <- function()
 
 } # newFriday.rs3875089
 #----------------------------------------------------------------------------------------------------
-identifyMotifs <- function(chrom="chr18", start=26865324, end=26866747)
+identifyPerturbedMotifs <- function(chrom="chr18", start=26850565, end=26865469)
 {
    mm <- MotifMatcher(name="mm", genomeName="hg38", quiet=FALSE)
    tbl.regions.noSeq <- data.frame(chrom=chrom,
-                                   start=start, # min(tbl.snp$loc) - 100,
-                                   end=end, #max(tbl.snp$loc) + 5000,
+                                   start=min(tbl.snp$loc) - 100,
+                                   end=max(tbl.snp$loc) + 5000,
                                    stringsAsFactors=FALSE)
+   browser()
    tbl.wt <- getSequence(mm, tbl.regions.noSeq)
    tbl.mut <- getSequence(mm, tbl.regions.noSeq, tbl.snp$snp)
    checkEquals(nchar(tbl.wt$seq), nchar(tbl.mut$seq))
@@ -531,8 +530,8 @@ identifyMotifs <- function(chrom="chr18", start=26865324, end=26866747)
         printf("variant at position %d: %s -> %s", i, wt.base, mut.base)
      } # for i
 
-   x.wt <- findMatchesByChromosomalRegion(mm, tbl.regions.noSeq, pwmMatchMinimumAsPercentage=80)
-   x.mut <- findMatchesByChromosomalRegion(mm, tbl.regions.noSeq, pwmMatchMinimumAsPercentage=80, variants=tbl.snp$snp)
+   x.wt <- findMatchesByChromosomalRegion(mm, tbl.regions.noSeq, pwmMatchMinimumAsPercentage=70)
+   x.mut <- findMatchesByChromosomalRegion(mm, tbl.regions.noSeq, pwmMatchMinimumAsPercentage=70, variants=tbl.snp$snp)
 
    tbl.wt.freq <- as.data.frame(table(x.wt$tbl$motifName))
    tbl.wt.freq <- tbl.wt.freq[order(tbl.wt.freq$Freq, decreasing=TRUE),]
@@ -560,6 +559,7 @@ identifyMotifs <- function(chrom="chr18", start=26865324, end=26866747)
       }
    mdb.tfs <- unlist(lapply((tbl.counts$motif), mapMotifToTF))
    tbl.counts$motifDB.tfs <- mdb.tfs
+
    save(tbl.counts, file="aqp4.tbl.counts.5kbUpstream.RData")
 
    wt.ma0090.locs <- unique(with(subset(x.wt$tbl, motifName=="MA0090.2"), sprintf("%s:%d-%d", chrom, motifStart, motifEnd)))
@@ -567,6 +567,7 @@ identifyMotifs <- function(chrom="chr18", start=26865324, end=26866747)
    setdiff(wt.ma0090.locs, mut.ma0090.locs) # [1] "chr18:26855847-26855856" "chr18:26865465-26865474"
 
    subset(x.wt$tbl, (motifStart==26855847 | motifStart==26865465) & motifName=="MA0090.2")
+   subset(x.mut$tbl, (motifStart==26855847 | motifStart==26865465) & motifName=="MA0090.2")
     #      motifName chrom motifStart motifEnd strand motifScore motifRelativeScore      match chromStart chromEnd                                      seq status                      tf
     #                                                                                      |
     # 3462  MA0090.2 chr18   26855847 26855856      +   5.734231          0.8292111 AATATTCCAG   26850465 26865569 CCCATATATATGCTCACAATTGATAATTATTCTAATG...     wt TEAD1;TEAD2;TEAD3;TEAD4
@@ -580,7 +581,7 @@ identifyMotifs <- function(chrom="chr18", start=26865324, end=26866747)
     #  T  [ 314   51   18   32 1132  867   24  291  511  367 ]
 
    browser()
-   tbl.snp
+  tbl.snp
 
     # target.gene chromosome      loc       snp shoulder genome
     #        AQP4      chr18 26864410 rs3763040     2000   hg38
@@ -589,8 +590,7 @@ identifyMotifs <- function(chrom="chr18", start=26865324, end=26866747)
     #        AQP4      chr18 26855854 rs3763043     2000   hg38  A->G (reverse?)
     #        AQP4      chr18 26850565 rs9951307     2000   hg38
 
-
-} # identifyMotifs
+} # identifyPerturbedMotifs
 #----------------------------------------------------------------------------------------------------
 buildModel <- function()
 {
@@ -613,24 +613,25 @@ init.tv <- function(all.tracks=FALSE)
 {
    tv <- TReNA.Viz(portRange=11011:11051)
 
-    addBedTrackFromHostedFile(tv,
-                             trackName="EncodeDHSclustered",
-                             uri="http://pshannon.systemsbiology.net/annotations/dhsClusters_hg38.bed.gz",
-                             index.uri="http://pshannon.systemsbiology.net/annotations/dhsClusters_hg38.bed.gz.tbi",
-                             displayMode="SQUISHED",
-                             color="blue")
-
-
-   addBedTrackFromHostedFile(tv,
-                            trackName="AQP4 snps",
-                            uri="http://pshannon.systemsbiology.net/annotations/aqp4-chr18-snps.bed",
-                            index.uri=NA,
-                            displayMode="SQUISHED",
-                            color="red")
-   showRegion(tv, "chr18:26,865,340-26,865,658")
-   if(all.tracks){
-      displayAllTracks()
-      } # all.tracks
+   #
+   # addBedTrackFromHostedFile(tv,
+   #                          trackName="EncodeDHSclustered",
+   #                          uri="http://pshannon.systemsbiology.net/annotations/dhsClusters_hg38.bed.gz",
+   #                          index.uri="http://pshannon.systemsbiology.net/annotations/dhsClusters_hg38.bed.gz.tbi",
+   #                          displayMode="SQUISHED",
+   #                          color="blue")
+#
+#
+#   addBedTrackFromHostedFile(tv,
+#                            trackName="AQP4 snps",
+#                            uri="http://pshannon.systemsbiology.net/annotations/aqp4-chr18-snps.bed",
+#                            index.uri=NA,
+#                            displayMode="SQUISHED",
+#                            color="red")
+#   showGenomicRegion(tv, "chr18:26,865,340-26,865,658")
+#   if(all.tracks){
+#      displayAllTracks()
+#      } # all.tracks
 
    tv
 
@@ -661,7 +662,7 @@ runBasic <- function(chrom="chr18", start=26865462, end=26865867, min.motif.scor
    model.wt <- run(solver.wt)
    tfs.strong <- rownames(subset(model.wt$edges, IncNodePurity > 2))
 
-   showRegion(tv, sprintf("%s:%d-%d", chrom, start, end))
+   showGenomicRegion(tv, sprintf("%s:%d-%d", chrom, start, end))
    #addBedTrackFromDataFrame(tv, "all motifs", x.wt$tbl[, c(2,3,4,1, 6)], color="grey", displayMode="COLLAPSED")
    for(tf.strong in tfs.strong){
       trackName <- sprintf("%s motifs", tf.strong)
@@ -716,12 +717,11 @@ runWithAugmentedFootprints <- function()
    start.300bp <- 26865352
    end.300bp   <- 26865619
 
-
    start.1425bp <- 26864212
    end.1425bp <- 26865636
 
-   start <- start.1425bp
-   end <- end.1425bp
+   start <- tbl.snp$loc[2] - 10
+   end <- tbl.snp$loc[2] + 10
 
    tbl.regions <- displayAllTracks(chrom, start, end)
    dim(tbl.regions)  # 88938 x 5
@@ -734,10 +734,333 @@ runWithAugmentedFootprints <- function()
 
    tbl.wt <- getSequence(mm, tbl.regions.noSeq)
    printf("findMatchesByChromosomalRegion, size: %d", 1 + end - start);
-   x.wt <- findMatchesByChromosomalRegion(mm, tbl.regions.noSeq, pwmMatchMinimumAsPercentage=75)
-   #colnames(tbl.regions) <- c("chrom", "start", "endpos",
-   x.fp <- findMatchesByChromosomalRegion(mm, tbl.regions, pwmMatchMinimumAsPercentage=75)
+   x.wt <- findMatchesByChromosomalRegion(mm, tbl.regions.noSeq, pwmMatchMinimumAsPercentage=83)
+   #x.fp <- findMatchesByChromosomalRegion(mm, tbl.regions, pwmMatchMinimumAsPercentage=75)
+
+   tbl.trimmed <- subset(x.wt$tbl, nchar(tf) != 0)
+   tfs.split <- strsplit(tbl.trimmed$tf, ";")
+   length(tfs.split) # [1] 36929
+   counts <- unlist(lapply(tfs.split, length))
+   tfs.split.vec <- unlist(tfs.split)
+   tbl.motifs <- expandRows(tbl.trimmed, counts, count.is.col=FALSE, drop=FALSE)
+   checkEquals(length(tfs.split.vec), nrow(tbl.motifs))
+   tbl.motifs$tf <- tfs.split.vec
+
+   tfs <- intersect(rownames(mtx), unique(tbl.motifs$tf))
+   solver.wt <- RandomForestSolver(mtx, targetGene="AQP4", candidateRegulators=tfs)
+   printf("calling randomForestSolver");
+   model.wt <- run(solver.wt)
+   tfs.strong <- rownames(subset(model.wt$edges, IncNodePurity > 2))
+
+
+   tbl.motifs <- subset(tbl.motifs, tf %in% tfs.strong)
+   tbl.motifs$distance.from.tss <- tss - tbl.motifs$motifStart
+   printf("----- expanding tfs, done")
+
+   count <- nrow(model.wt$edges)
+   tbl.model <- data.frame(tf=rownames(model.wt$edges),
+                           randomForest=model.wt$edges$IncNodePurity,
+                           pearson=model.wt$edges$gene.cor,
+                           spearman=rep(0, count),
+                           betaLasso=rep(0, count),
+                           pcaMax=rep(0, count),
+                           concordance=rep(0, count),
+                           stringsAsFactors=FALSE)
+   tbl.model <- subset(tbl.model, randomForest >= 2)
+
+   tv <- init.tv()
+
+
+   system.time(g <- geneRegulatoryModelToGraph(tv, "AQP4", tbl.model, tbl.motifs))
+   printf("adding model layout");
+   system.time(g.lo <- TReNA:::addGeneModelLayout(g))
+   printf("addGraph")
+   addGraph(tv, g.lo)
+   loadStyle(tv, "style.js")
+
+
+      #--- now remove TEAD1 motifs, rebuild model
+
+   printf("findMatchesByChromosomalRegion, size: %d", 1 + end - start);
+   x.mut <- findMatchesByChromosomalRegion(mm, tbl.regions.noSeq, pwmMatchMinimumAsPercentage=75, variants="rs3875089")
+   #x.fp <- findMatchesByChromosomalRegion(mm, tbl.regions, pwmMatchMinimumAsPercentage=75)
+
+   tbl.trimmed <- subset(x.mut$tbl, nchar(tf) != 0)
+   tfs.split <- strsplit(tbl.trimmed$tf, ";")
+   length(tfs.split) # [1] 36929
+   counts <- unlist(lapply(tfs.split, length))
+   tfs.split.vec <- unlist(tfs.split)
+   tbl.motifs <- expandRows(tbl.trimmed, counts, count.is.col=FALSE, drop=FALSE)
+   checkEquals(length(tfs.split.vec), nrow(tbl.motifs))
+   tbl.motifs$tf <- tfs.split.vec
+
+   tfs <- intersect(rownames(mtx), unique(tbl.motifs$tf))
+   solver.mut <- RandomForestSolver(mtx, targetGene="AQP4", candidateRegulators=tfs)
+   printf("calling randomForestSolver");
+   model.mut <- run(solver.mut)
+   tfs.strong <- rownames(subset(model.mut$edges, IncNodePurity > 2))
+
+
+   tbl.motifs <- subset(tbl.motifs, tf %in% tfs.strong)
+   tbl.motifs$distance.from.tss <- tss - tbl.motifs$motifStart
+   printf("----- expanding tfs, done")
+
+   count <- nrow(model.mut$edges)
+   tbl.model <- data.frame(tf=rownames(model.mut$edges),
+                           randomForest=model.mut$edges$IncNodePurity,
+                           pearson=model.mut$edges$gene.cor,
+                           spearman=rep(0, count),
+                           betaLasso=rep(0, count),
+                           pcaMax=rep(0, count),
+                           concordance=rep(0, count),
+                           stringsAsFactors=FALSE)
+   tbl.model <- subset(tbl.model, randomForest >= 2)
+
+
+
+   tbl.model2 <- subset(tbl.model, tf != "TEAD1")
+   tbl.motifs2 <- subset(tbl.motifs, tf != "TEAD1")
+
+   system.time(g2 <- geneRegulatoryModelToGraph(tv, "AQP4", tbl.model2, tbl.motifs2))
+   printf("adding model layout");
+   system.time(g2.lo <- TReNA:::addGeneModelLayout(g2))
+   printf("addGraph")
+   addGraph(tv, g2.lo)
+   loadStyle(tv, "style.js")
+
+   save(tbl.model, tbl.motifs, tbl.model2, tbl.motifs2, g.lo, g2.lo, file="aqp4.300bp.modelAndGraph.RData")
 
 } # runWithAugmentedFootprints
 #----------------------------------------------------------------------------------------------------
+# AQP4.fp.upstream.00207.L10.MA0090.2: 26865677 26865686      -   5.651008          0.8171764 TTGGAGTGTT
+# AQP4.fp.upstream.00199.L10.MA0090.2: 26865685 26865694      +   5.562714          0.8044084 CTCATGCCTT
+quick <- function()
+{
+   chrom <- "chr18"
+   start.300bp <- 26865450
+   end.300bp   <- 26865480
+
+   start.tss.m300 <- tss - 300
+   end.tss <- tss
+
+   start <- start.tss.m300
+   end   <- end.tss
+
+   start <- tbl.snp$loc[2] - 10
+   end <- tbl.snp$loc[2] + 10
+
+   tv <- init.tv(all.tracks=FALSE)
+   # tbl.regions <- displayAllTracks(tv, chrom, start, end)
+   showGenomicRegion(tv, sprintf("%s:%d-%d", chrom, start, end))
+   dim(tbl.regions)  # 88938 x 5
+
+   mm <- MotifMatcher(name="mm", genomeName="hg38", quiet=TRUE)
+   tbl.regions.noSeq <- data.frame(chrom=chrom,
+                                   start=start,   # min(tbl.snp$loc) - 100,
+                                   end=end,       #max(tbl.snp$loc) + 5000,
+                                   stringsAsFactors=FALSE)
+
+   tbl.wt <- getSequence(mm, tbl.regions.noSeq)
+   printf("findMatchesByChromosomalRegion, size: %d", 1 + end - start);
+   x.wt <- findMatchesByChromosomalRegion(mm, tbl.regions.noSeq, pwmMatchMinimumAsPercentage=80)
+   #x.fp <- findMatchesByChromosomalRegion(mm, tbl.regions, pwmMatchMinimumAsPercentage=75)
+
+   tbl.trimmed <- subset(x.wt$tbl, nchar(tf) != 0)
+   tfs.split <- strsplit(tbl.trimmed$tf, ";")
+   length(tfs.split) # [1] 36929
+   counts <- unlist(lapply(tfs.split, length))
+   tfs.split.vec <- unlist(tfs.split)
+   tbl.motifs <- expandRows(tbl.trimmed, counts, count.is.col=FALSE, drop=FALSE)
+   checkEquals(length(tfs.split.vec), nrow(tbl.motifs))
+   tbl.motifs$tf <- tfs.split.vec
+
+   tfs <- intersect(rownames(mtx), unique(tbl.motifs$tf))
+   solver.wt <- RandomForestSolver(mtx, targetGene="AQP4", candidateRegulators=tfs)
+   printf("calling randomForestSolver");
+   model.wt <- run(solver.wt)
+   tfs.strong <- rownames(subset(model.wt$edges, IncNodePurity > 2))
+
+
+   tbl.motifs <- subset(tbl.motifs, tf %in% tfs.strong)
+   tbl.motifs$distance.from.tss <- tss - tbl.motifs$motifStart
+   printf("----- expanding tfs, done")
+
+   count <- nrow(model.wt$edges)
+   tbl.model <- data.frame(tf=rownames(model.wt$edges),
+                           randomForest=model.wt$edges$IncNodePurity,
+                           pearson=model.wt$edges$gene.cor,
+                           spearman=rep(0, count),
+                           betaLasso=rep(0, count),
+                           pcaMax=rep(0, count),
+                           concordance=rep(0, count),
+                           stringsAsFactors=FALSE)
+   tbl.model <- subset(tbl.model, randomForest >= 2)
+
+   system.time(g <- geneRegulatoryModelToGraph(tv, "AQP4", tbl.model, tbl.motifs))
+   printf("adding model layout");
+   system.time(g.lo <- TReNA:::addGeneModelLayout(g))
+   printf("addGraph")
+   addGraph(tv, g.lo)
+   loadStyle(tv, "style.js")
+
+   browser();
+
+   chrom <- "chr18"
+   start <- tbl.snp$loc[2] - 10
+   end <- tbl.snp$loc[2] + 10
+   tv2 <- init.tv(all.tracks=FALSE)
+   #tbl.regions <- displayAllTracks(tv2, chrom, start, end)
+   showGenomicRegion(tv2, sprintf("%s:%d-%d", chrom, start, end))
+
+   mm <- MotifMatcher(name="mm", genomeName="hg38", quiet=TRUE)
+   tbl.regions.noSeq <- data.frame(chrom=chrom,
+                                   start=start,   # min(tbl.snp$loc) - 100,
+                                   end=end,       #max(tbl.snp$loc) + 5000,
+                                   stringsAsFactors=FALSE)
+
+   x.mut <- findMatchesByChromosomalRegion(mm, tbl.regions.noSeq, pwmMatchMinimumAsPercentage=75, variants="rs3875089")
+
+   tbl.trimmed <- subset(x.mut$tbl, nchar(tf) != 0)
+   tfs.split <- strsplit(tbl.trimmed$tf, ";")
+   length(tfs.split) # [1] 36929
+   counts <- unlist(lapply(tfs.split, length))
+   tfs.split.vec <- unlist(tfs.split)
+   tbl.motifs <- expandRows(tbl.trimmed, counts, count.is.col=FALSE, drop=FALSE)
+   checkEquals(length(tfs.split.vec), nrow(tbl.motifs))
+   tbl.motifs$tf <- tfs.split.vec
+
+   tfs <- intersect(rownames(mtx), unique(tbl.motifs$tf))
+   solver.mut <- RandomForestSolver(mtx, targetGene="AQP4", candidateRegulators=tfs)
+   printf("calling randomForestSolver");
+   model.wt <- run(solver.mut)
+   tfs.strong <- rownames(subset(model.wt$edges, IncNodePurity > 2))
+
+
+   tbl.motifs <- subset(tbl.motifs, tf %in% tfs.strong)
+   tbl.motifs$distance.from.tss <- tss - tbl.motifs$motifStart
+   printf("----- expanding tfs, done")
+
+   count <- nrow(model.wt$edges)
+   tbl.model <- data.frame(tf=rownames(model.wt$edges),
+                           randomForest=model.wt$edges$IncNodePurity,
+                           pearson=model.wt$edges$gene.cor,
+                           spearman=rep(0, count),
+                           betaLasso=rep(0, count),
+                           pcaMax=rep(0, count),
+                           concordance=rep(0, count),
+                           stringsAsFactors=FALSE)
+   tbl.model <- subset(tbl.model, randomForest >= 2)
+
+   system.time(g <- geneRegulatoryModelToGraph(tv, "AQP4", tbl.model, tbl.motifs))
+   printf("adding model layout");
+   system.time(g.lo <- TReNA:::addGeneModelLayout(g))
+   printf("addGraph")
+   addGraph(tv2, g.lo)
+   loadStyle(tv2, "style.js")
+
+
+
+
+
+   #tbl.model2 <- subset(tbl.model, tf != "TEAD1")
+   #tbl.motifs2 <- subset(tbl.motifs, tf != "TEAD1")
+
+   system.time(g2 <- geneRegulatoryModelToGraph(tv2, "AQP4", tbl.model2, tbl.motifs2))
+   printf("adding model layout");
+   system.time(g2.lo <- TReNA:::addGeneModelLayout(g2))
+   printf("addGraph")
+   addGraph(tv2, g2.lo)
+   loadStyle(tv2, "style.js")
+
+
+
+
+
+   xyz <- 99
+
+
+} # quick
+#------------------------------------------------------------------------------------------------------------------------
+buildModelForRegion <- function(chrom, start, end, variants=NA)
+{
+   #tv <- init.tv(all.tracks=FALSE)
+   #showGenomicRegion(tv, sprintf("%s:%d-%d", chrom, start, end))
+
+   mm <- MotifMatcher(name="mm", genomeName="hg38", quiet=TRUE)
+   tbl.regions.noSeq <- data.frame(chrom=chrom,
+                                   start=start,   # min(tbl.snp$loc) - 100,
+                                   end=end,       #max(tbl.snp$loc) + 5000,
+                                   stringsAsFactors=FALSE)
+
+   x <- findMatchesByChromosomalRegion(mm, tbl.regions.noSeq, pwmMatchMinimumAsPercentage=75, variants=variants)
+
+   tbl.trimmed <- subset(x$tbl, nchar(tf) != 0)
+   tfs.split <- strsplit(tbl.trimmed$tf, ";")
+   length(tfs.split) # [1] 36929
+   counts <- unlist(lapply(tfs.split, length))
+   tfs.split.vec <- unlist(tfs.split)
+   tbl.regulatoryRegions <- expandRows(tbl.trimmed, counts, count.is.col=FALSE, drop=FALSE)
+   checkEquals(length(tfs.split.vec), nrow(tbl.regulatoryRegions))
+   tbl.regulatoryRegions$tf <- tfs.split.vec
+
+   tfs <- intersect(rownames(mtx), unique(tbl.regulatoryRegions$tf))
+   solver.mut <- RandomForestSolver(mtx, targetGene="AQP4", candidateRegulators=tfs)
+   printf("calling randomForestSolver");
+   model.wt <- run(solver.mut)
+   tfs.strong <- rownames(subset(model.wt$edges, IncNodePurity > 2))
+
+
+   tbl.regulatoryRegions <- subset(tbl.regulatoryRegions, tf %in% tfs.strong)
+   tbl.regulatoryRegions$distance.from.tss <- tss - tbl.regulatoryRegions$motifStart
+
+   regulatoryRegion.names <- unlist(lapply(1:nrow(tbl.regulatoryRegions), function(i){
+         distance.from.tss <- tbl.regulatoryRegions$distance.from.tss[i]
+         region.size <- nchar(tbl.regulatoryRegions$match[i])
+         motif.name <- tbl.regulatoryRegions$motifName[i]
+         if(distance.from.tss < 0)
+            sprintf("%s.fp.downstream.%05d.L%d.%s", target.gene, abs(distance.from.tss), region.size, motif.name)
+          else
+            sprintf("%s.fp.upstream.%05d.L%d.%s", target.gene, abs(distance.from.tss), region.size, motif.name)
+         }))
+
+    tbl.regulatoryRegions$regionName <- regulatoryRegion.names
+
+
+   printf("----- expanding tfs, done")
+
+   count <- nrow(model.wt$edges)
+   tbl.model <- data.frame(tf=rownames(model.wt$edges),
+                           randomForest=model.wt$edges$IncNodePurity,
+                           pearson=model.wt$edges$gene.cor,
+                           spearman=rep(0, count),
+                           betaLasso=rep(0, count),
+                           pcaMax=rep(0, count),
+                           concordance=rep(0, count),
+                           stringsAsFactors=FALSE)
+   tbl.model <- subset(tbl.model, randomForest >= 2)
+
+   list(tbl.model=tbl.model, tbl.regulatoryRegions=tbl.regulatoryRegions)
+
+} # buildModelForRegion
+#------------------------------------------------------------------------------------------------------------------------
+demo <- function()
+{
+  pad<-8
+  i<-2
+  x.wt <- buildModelForRegion("chr18", tbl.snp$loc[i] - pad, tbl.snp$loc[i] + pad)
+  x.mut <- buildModelForRegion("chr18", tbl.snp$loc[i] - pad, tbl.snp$loc[i] + pad, tbl.snp$snp[2])
+
+  save(x.wt, x.mut, file="../../extdata/twoAQP4modelsForTesting.RData")
+
+   system.time(g <- geneRegulatoryModelToGraph(tv, "AQP4", tbl.model, tbl.regulatoryRegions))
+   printf("adding model layout");
+   system.time(g.lo <- TReNA:::addGeneModelLayout(g))
+   printf("addGraph")
+   addGraph(tv, g.lo)
+   loadStyle(tv, "style.js")
+
+
+} # demo
+#------------------------------------------------------------------------------------------------------------------------
+# wt <-
 tead1.motifs <- unique(subset(tbl.mg, tf.gene=="TEAD1")$motif)
