@@ -13,6 +13,7 @@ runTests <- function()
    test_getChromLoc()
    test_getGenePromoterRegion()
    test_getFootprintsInRegion()
+   test_getFootprintsInRegionWithVariants()
    test_getFootprintsForGene()
    test_mapMotifsToTFsMergeIntoTable()
 
@@ -22,9 +23,9 @@ test_.parseDatabaseUri <- function()
 {
    printf("--- test_.parseDatabaseUri")
    db.address <- system.file(package="TReNA", "extdata")
-   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
    project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
-   
+
    x <- TReNA:::.parseDatabaseUri(genome.db.uri)
    checkEquals(x$brand, "sqlite")
    checkEquals(x$host,  db.address)
@@ -42,8 +43,8 @@ test_constructor <- function()
    printf("--- test_constructor")
 
    db.address <- system.file(package="TReNA", "extdata")
-   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
-   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")   
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
 
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
    closeDatabaseConnections(fp)
@@ -55,7 +56,7 @@ test_getGtfGeneBioTypes <- function()
    printf("--- test_getGtfGeneBioTypes")
 
    db.address <- system.file(package="TReNA", "extdata")
-   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
    project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
 
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
@@ -73,9 +74,9 @@ test_getGtfMoleculeTypes <- function()
    printf("--- test_getGtfMoleculeTypes")
 
    db.address <- system.file(package="TReNA", "extdata")
-   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
    project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
-   
+
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
    types <- getGtfMoleculeTypes(fp)
 
@@ -93,9 +94,9 @@ test_getChromLoc <- function()
    printf("--- test_getChromLoc")
 
    db.address <- system.file(package="TReNA", "extdata")
-   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
    project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
-   
+
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
    tbl.loc <- getChromLoc(fp, "MEF2C", biotype="protein_coding", moleculetype="gene")
    checkEquals(dim(tbl.loc), c(1, 6))
@@ -124,9 +125,9 @@ test_getGenePromoterRegion <- function()
    printf("--- test_getGenePromoterRegion")
 
    db.address <- system.file(package="TReNA", "extdata")
-   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
    project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
-   
+
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
 
       # TREM2: prepare for test of both gene symbol and ensembl gene id
@@ -184,7 +185,7 @@ test_getFootprintsForGene <- function()
    printf("--- test_getFootprintsForGene")
 
    db.address <- system.file(package="TReNA", "extdata")
-   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
    project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
 
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
@@ -219,7 +220,7 @@ test_getFootprintsInRegion <- function()
    printf("--- test_getFootprintsInRegion")
 
    db.address <- system.file(package="TReNA", "extdata")
-   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
    project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
 
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
@@ -239,12 +240,58 @@ test_getFootprintsInRegion <- function()
 
 } # test_getFootprintsInRegion
 #----------------------------------------------------------------------------------------------------
+test_getFootprintsInRegionWithVariants <- function()
+{
+   printf("--- test_getFootprintsInRegionWithVariants")
+
+   db.address <- system.file(package="TReNA", "extdata")
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
+   project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
+
+   fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)
+
+      # use MEF2C and the hg38 assembly
+   chromosome <- "chr5"
+   region.start <-  88894577 - 10
+   region.end   <-  88894583 + 10
+
+       # a region of size 1.  no footprints here
+   tbl.fp <- getFootprintsInRegion(fp, chromosome, region.start, region.end)
+   checkEquals(dim(tbl.fp), c(2, 17))
+   checkTrue("MA0152.1" %in% tbl.fp$name)
+
+   tbl.regions.noSeq <- data.frame(chrom="chr5", start=region.start, end=region.end, stringsAsFactors=FALSE)
+   mm <- MotifMatcher("tester", "hg38")
+   tbl.regions <- getSequence(mm, tbl.regions.noSeq)
+   checkEquals(tbl.regions$seq,  "AGGATGAATTTTTTCCAAAAGTAAATC")
+
+   mm.wt <- findMatchesByChromosomalRegion(mm, tbl.regions, pwmMatchMinimumAsPercentage=80)
+      # perfect match:
+   checkEquals(subset(mm.wt$tbl, motifName=="MA0152.1")$motifRelativeScore, 1)
+      # what other motifs are reported by MotifMatcher (which uses the bioc matchPWM, different from FIMO)?
+   motifs.wt.strong <- sort(subset(mm.wt$tbl, motifRelativeScore > .90)$motifName)
+   checkEquals(motifs.wt.strong, c("MA0109.1", "MA0152.1", "MA0606.1", "MA0624.1", "MA0625.1"))
+
+   mm.mut <- findMatchesByChromosomalRegion(mm, tbl.regions, pwmMatchMinimumAsPercentage=90, "chr5:88894580:T:G")
+                                         # c("chr5:88894577:T:A", "chr5:88894580:T:G"))
+   motifs.mut.strong <- sort(subset(mm.mut$tbl, motifRelativeScore > .90)$motifName)
+
+   motifs.lost <- sort(setdiff(motifs.wt.strong, motifs.mut.strong))
+   motifs.gained <- sort(setdiff(motifs.mut.strong, motifs.wt.strong))
+   motifs.preserved <- sort(intersect(motifs.mut.strong, motifs.wt.strong))
+
+   checkEquals(motifs.lost, c("MA0152.1", "MA0606.1", "MA0624.1", "MA0625.1"))
+   checkEquals(motifs.gained, c("MA0161.1", "MA0670.1", "MA0671.1"))
+   checkEquals(motifs.preserved, "MA0109.1")
+
+} # test_getFootprintsInRegionWithVariants
+#----------------------------------------------------------------------------------------------------
 test_mapMotifsToTFsMergeIntoTable <- function()
 {
     printf("--- test_mapMotifsToTFsMergeIntoTable")
-    
+
    db.address <- system.file(package="TReNA", "extdata")
-   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")   
+   genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
    project.db.uri <- paste("sqlite:/",db.address,"project.sub.db", sep = "/")
 
    fp <- FootprintFinder(genome.db.uri, project.db.uri, quiet=TRUE)

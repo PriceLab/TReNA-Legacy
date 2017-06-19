@@ -23,6 +23,7 @@ runTests <- function()
    test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants()
    test_getCandidates.twoAlternateAllelesInVariant()
 
+   test_apq4.5snps <- function()
    #test_getRegulatoryRegions_hardCase()
    #test_.matchForwardAndReverse()
    #test_.getScoredMotifs()
@@ -203,8 +204,8 @@ test_checkSampleOfEncodeTables <- function(quiet=TRUE)
 {
    printf("--- test_checkSampleOfEncodeTables")
 
-   candidateFilterSpec <- create.vrk2.candidateFilterSpec()
-   #candidateFilterSpec <- create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
+   #candidateFilterSpec <- create.vrk2.candidateFilterSpec()
+   candidateFilterSpec <- create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
 
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
