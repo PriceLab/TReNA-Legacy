@@ -64,6 +64,7 @@ var igv;
 
 var TrenaVizModule = (function(){
 
+  var chromLocString = "chr1:0-0";
   var trenaVizDiv;
   var cyDiv;
   var vizmaps = [];
@@ -100,16 +101,18 @@ function initializeCytoscape()
              };
 
    cy = cytoscape(options);
+   return(this)
 
 } // initializeCytoscape
 //----------------------------------------------------------------------------------------------------
-function initializeCytoscapeButtons()
+function initializeCytoscapeButtons(self)
 {
    $("#cyFitButton").click(function(){cy.fit(50)});
    $("#cyFitSelectedButton").click(function(){cy.fit(cy.nodes(":selected"), 50)});
    $("#cySFNButton").click(function(){cy.nodes(':selected').neighborhood().nodes().select()});
    $("#cyHideUnselectedButton").click(function(){cy.nodes(":unselected").hide()});
    $("#cyShowAllButton").click(function(){cy.nodes().show(); cy.edges().show()});
+   $("#cyCycleThroughModelsButton").click(function(){nextCyModel("rs3875089")});
 
 } // initializeCytoscapeButtons
 //----------------------------------------------------------------------------------------------------
@@ -139,14 +142,33 @@ function initializeUI()
 
    cyDiv = $("#cyDiv")
    //setTimeout(function(){initializeIGV();}, 0);
-   initializeIGV();
-   initializeCytoscape();
-   initializeCytoscapeButtons();
+   //initializeIGV();
+   self = initializeCytoscape();
+   initializeCytoscapeButtons(self);
    $(window).resize(handleWindowResize);
    handleWindowResize();
    console.log("--- trenaViz, initializeUI");
 
 } // initializeUI
+//----------------------------------------------------------------------------------------------------
+function nextCyModel(modelName)
+{
+   console.log("--- nextCyModel: " + modelName);
+
+   cy.nodes().show()
+   cy.nodes().filter(function(node){return node.data("type") == "TF"}).map(function(node){node.data({"randomForest": 0})})
+   cy.nodes().filter(function(node){return node.data("type") == "TF"}).map(function(node){node.data({"pearson": 0})})
+
+   var noaName = modelName + "." + "randomForest";
+   cy.nodes("[type='TF']").map(function(node){node.data({"randomForest":  node.data(noaName)})})
+
+   noaName = modelName + "." + "pearson";
+   cy.nodes("[type='TF']").map(function(node){node.data({"pearson":       node.data(noaName)})})
+
+     // now hide all the 0 randomForest TF nodes
+   cy.nodes().filter(function(node){return(node.data("randomForest") == 0 && node.data("type") == "TF")}).hide()
+
+} // nextCyModel
 //----------------------------------------------------------------------------------------------------
 function initializeIGV()
 {
@@ -181,6 +203,9 @@ function initializeIGV()
    console.log("about to createBrowser");
 
    window.igvBrowser = igv.createBrowser($("#igvDiv"), igvOptions);
+   window.igvBrowser.on("locusChange", function(referenceFrame, chromLocString){
+           console.log("chromLocString: " + chromLocString);
+            });
    console.log("after createBrowser");
 
 } // initializeIGV
@@ -202,19 +227,26 @@ function handleWindowResize ()
 function addMessageHandlers()
 {
    hub.addMessageHandler("addGraph",                  addGraph);
+   hub.addMessageHandler("httpAddGraph",              httpAddGraph);
    hub.addMessageHandler("fit",                       fit);
    hub.addMessageHandler("fitSelected",               fitSelected);
+   hub.addMessageHandler("selectNodes",               selectNodes);
+   hub.addMessageHandler("getSelectedNodes",          getSelectedNodes);
+   hub.addMessageHandler("clearSelection",            clearSelection);
+   hub.addMessageHandler("sfn",                       sfn);
    hub.addMessageHandler("layoutStrategies",          layoutStrategies);
    hub.addMessageHandler("doLayout",                  doLayout);
    hub.addMessageHandler("addBedTrackFromDataFrame",  addBedTrackFromDataFrame);
-   hub.addMessageHandler("addBedTrackFromHostedFile",  addBedTrackFromHostedFile);
+   hub.addMessageHandler("addBedTrackFromHostedFile", addBedTrackFromHostedFile);
+   hub.addMessageHandler("showGenomicRegion",         showGenomicRegion);
+   hub.addMessageHandler("getGenomicRegion",          getGenomicRegion);
+   hub.addMessageHandler("httpSetStyle",              httpSetStyle);
 
    /****************
    hub.addMessageHandler("setGraph",             setGraph);
    hub.addMessageHandler("setNodeAttributes",    setNodeAttributes);
    hub.addMessageHandler("setEdgeAttributes",    setEdgeAttributes);
    hub.addMessageHandler("httpAddGraph",         httpAddGraph);
-   hub.addMessageHandler("httpSetStyle",         httpSetStyle);
    hub.addMessageHandler("getNodeCount",         getNodeCount);
    hub.addMessageHandler("getEdgeCount",         getEdgeCount);
    hub.addMessageHandler("getNodes",             getNodes);
@@ -836,6 +868,7 @@ function addBedTrackFromDataFrame(msg)
 
    var trackName = msg.payload.name;
    var bedFileName = msg.payload.bedFileName;
+   var displayMode = msg.payload.displayMode;
    var color = msg.payload.color;
    var url = window.location.href + "?" + bedFileName;
 
@@ -843,7 +876,7 @@ function addBedTrackFromDataFrame(msg)
               name: trackName,
               url: url,
               indexed:false,
-              displayMode: "EXPANDED",
+              displayMode: displayMode,
               sourceType: "file",
               color: color,
               type: "annotation"};
@@ -859,16 +892,15 @@ function addBedTrackFromHostedFile(msg)
    console.log("=== addBedTrackFromFile");
 
    var trackName = msg.payload.name;
+   var displayMode = msg.payload.displayMode;
    var color = msg.payload.color;
    var uri       = msg.payload.uri;
    var indexUri  = msg.payload.indexUri;
    var indexed = true;
 
-  if(indexUri==null){
+   if(indexUri==null){
      indexed = false;
      }
-
-   var displayMode = msg.payload.displayMode;
 
    config = {format: "bed",
              name: trackName,
@@ -887,6 +919,23 @@ function addBedTrackFromHostedFile(msg)
    hub.send({cmd: msg.callback, status: "success", callback: "", payload: ""});
 
 } // addBedTrackFromHostedFile
+//----------------------------------------------------------------------------------------------------
+function showGenomicRegion(msg)
+{
+   console.log("=== showGenomicRegion");
+   var regionString = msg.payload.regionString;
+   window.igvBrowser.search(regionString)
+
+   hub.send({cmd: msg.callback, status: "success", callback: "", payload: ""});
+
+} // getGenomicRegion
+//----------------------------------------------------------------------------------------------------
+function getGenomicRegion(msg)
+{
+   console.log("=== getGenomicRegion");
+   hub.send({cmd: msg.callback, status: "success", callback: "", payload: "chr1:0-0"});
+
+} // getGenomicRegion
 //----------------------------------------------------------------------------------------------------
 function layoutSelectionInGrid(msg)
 {
@@ -1320,7 +1369,7 @@ function selectNodes(msg)
 {
    console.log("==== selectNodes");
    console.log(msg.payload);
-   var nodeIDs = msg.payload;
+   var nodeIDs = msg.payload.nodeIDs;
 
    if(typeof(nodeIDs) == "string")
       nodeIDs = [nodeIDs];
@@ -1563,13 +1612,44 @@ function addEdge(nodeA_id, nodeB_id)
 
 } // addEdge
 //----------------------------------------------------------------------------------------------------
+function createModelNamesMenu(modelNames)
+{
+   if(modelNames.length < 1){
+     return;
+     }
+
+  $("#cyModelSelector").remove()
+
+   html = "<select id='cyModelSelector'>"
+   for(var i=0; i < modelNames.length; i++){
+      html += "<option value='" + modelNames[i] + "'> " + modelNames[i]  + "</option>";
+      } // for i
+   html += "</select>"
+
+   $("#cyMenubarDiv").append(html);
+   $("#cyModelSelector").change(function(){
+     var modelName =$(this).find("option:selected").val();
+     nextCyModel(modelName);
+     });
+
+   nextCyModel(modelNames[0]);
+
+} // createModelNamesMenu
+//----------------------------------------------------------------------------------------------------
 function addGraph(msg)
 {
   console.log("=== entering addGraph");
-  var network = JSON.parse(msg.payload);
-  console.log(msg);
-  cy.json(JSON.parse(msg.payload))
+  var network = JSON.parse(msg.payload.graph);
+
+  var modelNames = msg.payload.modelNames;
+  console.log("    modelNames: " + modelNames.length);
+  if(modelNames.length > 1){
+     createModelNamesMenu(modelNames);
+     }
+
+  cy.json(network);
   cy.nodes().map(function(node){node.data({degree: node.degree()})});
+  cy.nodes().map(function(node){node.position({x:node.data("xPos"), y:node.data("yPos")})});
   handleWindowResize();
   return_msg = {cmd: msg.callback, status: "success", callback: "", payload: ""};
    $("[href='#tab-1']").trigger("click");
@@ -1761,7 +1841,6 @@ function qtipOptions()
 
 } // qtipOptions
 //----------------------------------------------------------------------------------------------------
-// requires an http server at localhost:8000, started in the directory where filename is found
 // expected file contents:  vizmap = [{selector:"node",css: {...
 function loadStyle(filename)
 {
@@ -1829,7 +1908,8 @@ return{
    addMessageHandlers: addMessageHandlers,
    initUI: initializeUI,
    setEdgeRenderingMethod: setEdgeRenderingMethod,
-   loadStyle: loadStyle
+   loadStyle: loadStyle,
+   nextCyModel: nextCyModel
    };
 
 //----------------------------------------------------------------------------------------------------
@@ -1862,6 +1942,7 @@ hub.start();
          <button id='cySFNButton' class="cyMenuButton">SFN</button>
          <button id='cyHideUnselectedButton' class="cyMenuButton">Hide Unselected</button>
          <button id='cyShowAllButton' class="cyMenuButton">Show All</button>
+         <button id='cyCycleThroughModelsButton' class="cyMenuButton">Cycle Models</button>
      </div>
      <div id="cyDiv"></div>
   </div>

@@ -82,7 +82,7 @@ setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
 #' The FootprintFinder class is designed to query 2 supplied footprint databases (a genome database
 #' and a project database) for supplied genes or regions. Within the TReNA package, the
 #' FootprintFinder class is mainly used by the FootprintFilter class, but the FootprintFinder class
-#' offers more flexibility in constructing queries. 
+#' offers more flexibility in constructing queries.
 #'
 #' @param genome.database.uri The address of a genome database for use in filtering. This database
 #' must contain the tables "gtf" and "motifsgenes" at a minimum. The URI format is as follows:
@@ -95,7 +95,7 @@ setGeneric("mapMotifsToTFsMergeIntoTable",signature="obj",
 #' @return An object of the FootprintFinder class
 #'
 #' @export
-#' 
+#'
 #' @seealso \code{\link{FootprintFilter}}
 #'
 #' @family FootprintFinder methods
@@ -185,10 +185,10 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
 #'
 #' This method takes a FootprintFinder object and closes connections to the footprint databases
 #' if they are currently open.
-#' 
+#'
 #' @rdname closeDatabaseConnections
 #' @aliases closeDatabaseConnections
-#' 
+#'
 #' @param obj An object of class FootprintFinder
 #'
 #' @family FootprintFinder methods
@@ -198,10 +198,15 @@ FootprintFinder <- function(genome.database.uri, project.database.uri, quiet=TRU
 setMethod("closeDatabaseConnections", "FootprintFinder",
 
      function(obj){
-        if("DBIConnection" %in% is(obj@genome.db))
-          DBI::dbDisconnect(obj@genome.db)
-        if("DBIConnection" %in% is(obj@project.db))
-          DBI::dbDisconnect(obj@project.db)
+        printf("-- FootprintFinder::closeDataConnections")
+        if("DBIConnection" %in% is(obj@genome.db)){
+           printf("closing genome.db")
+           DBI::dbDisconnect(obj@genome.db)
+           }
+        if("DBIConnection" %in% is(obj@project.db)){
+           printf("closing project.db")
+           DBI::dbDisconnect(obj@project.db)
+           }
           })
 
 #----------------------------------------------------------------------------------------------------
@@ -218,7 +223,7 @@ setMethod("closeDatabaseConnections", "FootprintFinder",
 #' @export
 #'
 #' @family FootprintFinder methods
-#' 
+#'
 #' @return A sorted list of the types of biological units contained in the gtf table of the genome
 #' database.
 #'
@@ -250,7 +255,7 @@ setMethod("getGtfGeneBioTypes", "FootprintFinder",
 #' @export
 #'
 #' @family FootprintFinder methods
-#' 
+#'
 #' @return A sorted list of the types of molecules contained in the gtf table of the genome
 #' database.
 #'
@@ -285,7 +290,7 @@ setMethod("getGtfMoleculeTypes", "FootprintFinder",
 #' @export
 #'
 #' @family FootprintFinder methods
-#' 
+#'
 #' @return A dataframe containing the results of a database query pertaining to the specified name,
 #' biotype, and molecule type. This dataframe contains the following columns: gene_id, gene_name,
 #' chr, start, endpos, strand
@@ -392,7 +397,7 @@ setMethod("getGenePromoterRegion", "FootprintFinder",
 #' @return A dataframe containing all footprints for the specified gene and accompanying parameters
 #'
 #' @export
-#' 
+#'
 #' @family FootprintFinder methods
 #'
 #' @examples
@@ -431,7 +436,7 @@ setMethod("getFootprintsForGene", "FootprintFinder",
 #' @export
 #'
 #' @family FootprintFinder methods
-#' 
+#'
 #' @return A dataframe containing all footprints for the specified region
 #'
 #' @examples
@@ -490,7 +495,7 @@ setMethod("getFootprintsInRegion", "FootprintFinder",
 #' @export
 #'
 #' @family FootprintFinder methods
-#' 
+#'
 #' @examples
 #' db.address <- system.file(package="TReNA", "extdata")
 #' genome.db.uri <- paste("sqlite:/",db.address,"genome.sub.db", sep = "/")
@@ -558,7 +563,7 @@ setMethod("getPromoterRegionsAllGenes","FootprintFinder",
 #' factors they map to
 #'
 #' @export
-#' 
+#'
 #' @family FootprintFinder methods
 #'
 #' @examples
