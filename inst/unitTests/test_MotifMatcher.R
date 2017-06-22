@@ -16,6 +16,7 @@ runTests <- function()
    test_getSequenceWithVariants()
    test_.getScoredMotifs()
    test_findMatchesByChromosomalRegion()
+   test_findMatchesByChromosomalRegion_contrastReferenceWithVariant()
    test_findMatchesByChromosomalRegion.twoAlternateAlleles()
 
 } # runTests
@@ -310,6 +311,46 @@ test_findMatchesByChromosomalRegion <- function()
    checkEquals(best$tf, "POU5F1B")
 
 } # test_findMatchesByChromosomalRegion
+#----------------------------------------------------------------------------------------------------
+test_findMatchesByChromosomalRegion_contrastReferenceWithVariant <- function()
+{
+   printf("--- test_findMatchesByChromosomalRegion_contrastReferenceWithVariant")
+
+     # the vrk2 promoter snp,  chr2:57907313-57907333
+
+   motifMatcher <- MotifMatcher(name="rs13384219.neighborhood", genomeName="hg38", quiet=TRUE)
+
+   tbl.regions <- data.frame(chrom="chr2", start=57907313, end=57907333, stringsAsFactors=FALSE)
+   x.wt <- findMatchesByChromosomalRegion(motifMatcher, tbl.regions, pwmMatchMinimumAsPercentage=92)
+   x.mut <- findMatchesByChromosomalRegion(motifMatcher, tbl.regions, pwmMatchMinimumAsPercentage=92, "rs13384219")
+
+   tbl <- rbind(x.wt$tbl[, c(1,12, 2,3,4,5,7,8,13)], x.mut$tbl[, c(1,12, 2,3,4,5,7,8,13)])
+   tbl <- tbl[order(tbl$motifName, tbl$motifRelativeScore, decreasing=TRUE),]
+   motifs.in.both <- tbl$motifName[which(duplicated(tbl$motifName))]
+   tbl.summary <- subset(tbl, !motifName %in% motifs.in.both)
+      # three wt motifs lost: MA0792.1, MA0701.1, MA0075.2
+   checkTrue(all(c("MA0792.1", "MA0701.1", "MA0075.2") %in% tbl.summary$motifName))
+   checkEquals(unique(tbl.summary$status), "wt")
+
+      # now try again with a more permissive matching threshold
+   x.wt <- findMatchesByChromosomalRegion(motifMatcher, tbl.regions, pwmMatchMinimumAsPercentage=80)
+   x.mut <- findMatchesByChromosomalRegion(motifMatcher, tbl.regions, pwmMatchMinimumAsPercentage=80, "rs13384219")
+   tbl <- rbind(x.wt$tbl[, c(1,12, 2,3,4,5,7,8,13)], x.mut$tbl[, c(1,12, 2,3,4,5,7,8,13)])
+   tbl <- tbl[order(tbl$motifName, tbl$motifRelativeScore, decreasing=TRUE),]
+
+     # the POU5F1B motif MA0792.1 drops from a 92% to an 83% match.
+     # assessing the relevance of this will be up to the biologist...
+
+   checkEqualsNumeric(subset(tbl, motifName=="MA0792.1")$motifRelativeScore, c(0.92, 0.83), tol=1e-2)
+   motifs.in.both <- tbl$motifName[which(duplicated(tbl$motifName))]
+   tbl.summary <- subset(tbl, !motifName %in% motifs.in.both)
+
+   # two possible new binding motifs: MA0891.1, MA0648.1
+   tbl.deNovoMut <- subset(tbl.summary, motifRelativeScore > 0.85)
+   checkEquals(sort(tbl.deNovoMut$motifName), c("MA0648.1", "MA0891.1"))
+   checkEquals(unique(tbl.deNovoMut$status), "mut")
+
+} # test_findMatchesByChromosomalRegion_contrastReferenceWithVariant
 #----------------------------------------------------------------------------------------------------
 test_findMatchesByMultipleChromosomalRegions <- function()
 {
