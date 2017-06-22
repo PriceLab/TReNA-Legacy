@@ -294,6 +294,7 @@ setMethod("run", "EnsembleSolver",
 
                # Compute the scaled "concordance score"
                pca <- stats::prcomp(tbl.scale, center=FALSE, scale.=FALSE)
+               pca$x <- pca$x / sqrt(length(which(pca$sdev > 0.1)))
                concordance <- apply(pca$x[, pca$sdev > 0.1], 1,
                              function(x) {sqrt(mean((2*atan(x)/pi)^2))})
                concordance <- as.data.frame(concordance)
