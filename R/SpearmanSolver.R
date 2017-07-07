@@ -2,7 +2,6 @@
 #' An S4 class to represent a Spearman solver
 #'
 #' @include Solver.R
-#'
 #' @import methods
 #' 
 #' @name SpearmanSolver-class
@@ -13,6 +12,9 @@
 #' Create a Solver class object using Spearman correlation coefficients as the solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
+#' @param target.gene A designated target gene that should be part of the mtx.assay data
+#' @param candidateRegulators The designated set of transcription factors that could be associated
+#' with the target gene
 #' @param quiet A logical denoting whether or not the solver should print output
 #' 
 #' @return A Solver class object with Spearman correlation coefficients as the solver
@@ -26,9 +28,22 @@
 #' @examples
 #' solver <- SpearmanSolver()
 
-SpearmanSolver <- function(mtx.assay = matrix(), quiet=TRUE)
+SpearmanSolver <- function(mtx.assay = matrix(), targetGene, candidateRegulators, quiet=TRUE)
 {
-    obj <- .SpearmanSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
+    # Remove the targetGene from candidateRegulators
+    if(any(grepl(targetGene, candidateRegulators)))        
+        candidateRegulators <- candidateRegulators[-grep(targetGene, candidateRegulators)]
+    
+
+
+    # Check to make sure the matrix contains some of the candidates
+    candidateRegulators <- intersect(candidateRegulators, rownames(mtx.assay))    
+    stopifnot(length(candidateRegulators) > 0)
+    
+    obj <- .SpearmanSolver(Solver(mtx.assay=mtx.assay,
+                                  quiet=quiet,                          
+                                  targetGene=targetGene,                          
+                                  candidateRegulators=candidateRegulators))
 
     # Send a warning if there's a row of zeros
     if(!is.na(max(mtx.assay)) & any(rowSums(mtx.assay) == 0))
@@ -63,10 +78,10 @@ SpearmanSolver <- function(mtx.assay = matrix(), quiet=TRUE)
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-#' trena <- TReNA(mtx.assay = mtx.sub, solver = "pearson")
 #' target.gene <- "MEF2C"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
-#' tbl <- solve(trena, target.gene, tfs)
+#' spearman.solver <- SpearmanSolver(mtx.sub, target.gene, tfs)
+#' tbl <- run(spearman.solver)
 
 setMethod("run", "SpearmanSolver",
 
@@ -78,6 +93,9 @@ setMethod("run", "SpearmanSolver",
               }              
               
               mtx <- getAssayData(obj)
+              target.gene <- getTarget(obj)
+              tfs <- getRegulators(obj)
+              
               # Check that target gene and tfs are all part of the matrix
               stopifnot(target.gene %in% rownames(mtx))
               stopifnot(all(tfs %in% rownames(mtx)))

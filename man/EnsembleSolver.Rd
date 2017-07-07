@@ -4,7 +4,7 @@
 \alias{EnsembleSolver}
 \title{Create a Solver class object using an ensemble of solvers}
 \usage{
-EnsembleSolver(mtx.assay = matrix(), quiet = TRUE)
+EnsembleSolver(mtx.assay = matrix(), solverName, quiet = TRUE)
 }
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}

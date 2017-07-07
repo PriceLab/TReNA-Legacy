@@ -23,8 +23,8 @@ The filtering step, while optional, can constrain the solution space and reduce 
 
 Starting off, we'll load the TReNA library.
 
-```{r}
-suppressMessages(library(TReNA))
+```{r message = FALSE}
+library(TReNA)
 ```
 
 ## Creating a TReNA Object
@@ -43,8 +43,8 @@ hist(mtx.sub, main = "Expression Matrix Data")
 
 The skewed nature of the matrix may profoundly affect our results. To overcome this, we will transform our matrix using the *voom* function in the *limma* package.
 
-```{r}
-suppressMessages(library(limma))
+```{r message = FALSE}
+library(limma)
 mtx.voom <- voom(mtx.sub)$E
 ```
 

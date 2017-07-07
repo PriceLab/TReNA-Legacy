@@ -1,4 +1,3 @@
-#----------------------------------------------------------------------------------------------------
 #' Class LassoSolver
 #'
 #' @import glmnet
@@ -7,7 +6,13 @@
 #' 
 #' @name LassoSolver-class
 
-.LassoSolver <- setClass ("LassoSolver", contains="Solver")
+.LassoSolver <- setClass ("LassoSolver",
+                          contains="Solver",
+                          slots = c(regulatorWeights="numeric",
+                                    alpha = "numeric",
+                                    lambda = "numeric",
+                                    keep.metrics = "logical")
+                          )
 #----------------------------------------------------------------------------------------------------
 #' Create a Solver class object using the LASSO solver
 #'
@@ -25,10 +30,26 @@
 #' @examples
 #' solver <- LassoSolver()
 
-LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
+LassoSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulators,
+                        regulatorWeights=rep(1, length(candidateRegulators)),
+                        alpha = 0.9, lambda = numeric(0),
+                        keep.metrics = FALSE, quiet=TRUE)
 {
-    obj <- .LassoSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
+   if(any(grepl(targetGene, candidateRegulators)))
+      candidateRegulators <- candidateRegulators[-grep(targetGene, candidateRegulators)]
 
+   candidateRegulators <- intersect(candidateRegulators, rownames(mtx.assay))
+   stopifnot(length(candidateRegulators) > 0)
+
+   obj <- .LassoSolver(mtx.assay=mtx.assay,
+                              quiet=quiet,
+                              targetGene=targetGene,
+                              candidateRegulators=candidateRegulators,
+                              regulatorWeights=regulatorWeights,
+                              alpha = alpha,
+                              lambda = lambda,
+                              keep.metrics = keep.metrics
+                       )
     obj
 
 } # LassoSolver, the constructor
@@ -44,7 +65,7 @@ LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' appropriate TReNA object.
 #'
 #' @param obj An object of class Solver with "lasso" as the solver string
-#' @param target.gene A designated target gene that should be part of the mtx.assay data
+
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
 #' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
 #' @param extraArgs Modifiers to the LASSO solver
@@ -65,28 +86,22 @@ LassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 
 setMethod("run", "LassoSolver",
 
-  function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
+  function (obj){
 
+      mtx <- getAssayData(obj)
+      target.gene <- getTarget(obj)
+      tfs <- getRegulators(obj)
+      
       # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
-      if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){          
+      if(rowMeans(mtx)[target.gene] < stats::quantile(rowMeans(mtx), probs = 0.1)){          
           warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")          
       }      
-
-      # Run the ElasticNetSolver function with alpha = 0.9 as default
-      alpha = 0.9
-      lambda <- NULL
-      keep.metrics = FALSE
-
-      if("alpha" %in% names(extraArgs))
-          alpha <- extraArgs[["alpha"]]
-
-      if("lambda" %in% names(extraArgs))
-          lambda <- extraArgs[["lambda"]]
-
-      if("keep.metrics" %in% names(extraArgs))
-          keep.metrics <- extraArgs[["keep.metrics"]]
       
-      mtx.beta <- .elasticNetSolver(obj, target.gene, tfs, tf.weights, alpha, lambda, keep.metrics)
+      mtx.beta <- .elasticNetSolver(obj, target.gene, tfs,
+                                    obj@regulatorWeights,
+                                    obj@alpha,
+                                    obj@lambda,
+                                    obj@keep.metrics)
 
       return(mtx.beta)
      })

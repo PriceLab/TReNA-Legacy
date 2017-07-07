@@ -4,7 +4,7 @@
 \alias{getCandidates}
 \title{Get candidate genes using a CandidateFilter object}
 \usage{
-getCandidates(obj, extraArgs)
+getCandidates(obj, ...)
 }
 \arguments{
 \item{obj}{An object of a CandidateFilter class}
