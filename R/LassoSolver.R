@@ -17,6 +17,18 @@
 #' Create a Solver class object using the LASSO solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
+#' @param target.gene A designated target gene that should be part of the mtx.assay data
+#' @param candidateRegulators The designated set of transcription factors that could be associated
+#' with the target gene
+#' @param regulatorWeights A set of weights on the transcription factors
+#' (default = rep(1, length(tfs)))
+#' @param alpha A parameter from 0-1 that determines the proportion of LASSO to ridge used in the
+#' elastic net solver, with 0 being fully ridge and 1 being fully LASSO (default = 0.9)
+#' @param lambda A tuning parameter that determines the severity of the penalty function imposed
+#' on the elastic net regression. If unspecified, lambda will be determined via
+#' permutation testing (default = numeric(0)).
+#' @param keep.metrics A logical denoting whether or not to keep the initial supplied metrics
+#' versus determining new ones
 #' @param quiet A logical denoting whether or not the solver should print output
 #'
 #' @return A Solver class object with LASSO as the solver
@@ -54,6 +66,23 @@ LassoSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulators,
 
 } # LassoSolver, the constructor
 #----------------------------------------------------------------------------------------------------
+setMethod('show', 'LassoSolver',
+
+    function(obj) {
+       regulator.count <- length(getRegulators(obj))
+       if(regulator.count > 10){
+          regulatorString <- paste(getRegulators(obj)[1:10], collapse=",")
+          regulatorString <- sprintf("%s...", regulatorString);
+          }
+       else
+          regulatorString <- paste(getRegulators(obj), collapse=",")
+
+       msg = sprintf("LassoSolver with mtx.assay (%d, %d), targetGene %s, %d candidate regulators %s, alpha = %f",
+                     nrow(getAssayData(obj)), ncol(getAssayData(obj)),
+                     getTarget(obj), regulator.count, regulatorString, obj@alpha)
+       cat (msg, '\n', sep='')
+    })
+#----------------------------------------------------------------------------------------------------
 #' Run the LASSO Solver
 #'
 #' @rdname solve.Lasso
@@ -61,14 +90,9 @@ LassoSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulators,
 #' 
 #' @description Given a TReNA object with LASSO as the solver, use the \code{\link{glmnet}} function
 #' to estimate coefficients for each transcription factor as a predictor of the target gene's
-#' expression level. This method should be called using the \code{\link{solve}} method on an
-#' appropriate TReNA object.
+#' expression level.
 #'
-#' @param obj An object of class Solver with "lasso" as the solver string
-
-#' @param tfs The designated set of transcription factors that could be associated with the target gene.
-#' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
-#' @param extraArgs Modifiers to the LASSO solver
+#' @param obj An object of class LassoSolver
 #'
 #' @return A data frame containing the coefficients relating the target gene to each transcription factor, plus other fit parameters.
 #'
@@ -79,10 +103,10 @@ LassoSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulators,
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with LASSO as solver, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-#' trena <- TReNA(mtx.assay = mtx.sub, solver = "lasso")
 #' target.gene <- "MEF2C"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
-#' tbl <- solve(trena, target.gene, tfs)
+#' lasso.solver <- LassoSolver(mtx.sub, target.gene, tfs)
+#' tbl <- run(lasso.solver)
 
 setMethod("run", "LassoSolver",
 
@@ -102,7 +126,6 @@ setMethod("run", "LassoSolver",
                                     obj@alpha,
                                     obj@lambda,
                                     obj@keep.metrics)
-
       return(mtx.beta)
      })
 #----------------------------------------------------------------------------------------------------

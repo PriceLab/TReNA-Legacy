@@ -32,9 +32,7 @@ PearsonSolver <- function(mtx.assay = matrix(), targetGene, candidateRegulators,
 {
     # Remove the targetGene from candidateRegulators
     if(any(grepl(targetGene, candidateRegulators)))        
-        candidateRegulators <- candidateRegulators[-grep(targetGene, candidateRegulators)]
-    
-
+        candidateRegulators <- candidateRegulators[-grep(targetGene, candidateRegulators)]    
 
     # Check to make sure the matrix contains some of the candidates
     candidateRegulators <- intersect(candidateRegulators, rownames(mtx.assay))    
@@ -53,6 +51,23 @@ PearsonSolver <- function(mtx.assay = matrix(), targetGene, candidateRegulators,
 
 } #PearsonSolver, the constructor
 #----------------------------------------------------------------------------------------------------
+setMethod('show', 'PearsonSolver',
+
+    function(obj) {
+       regulator.count <- length(getRegulators(obj))
+       if(regulator.count > 10){
+          regulatorString <- paste(getRegulators(obj)[1:10], collapse=",")
+          regulatorString <- sprintf("%s...", regulatorString);
+          }
+       else
+          regulatorString <- paste(getRegulators(obj), collapse=",")
+
+       msg = sprintf("PearsonSolver with mtx.assay (%d, %d), targetGene %s, %d candidate regulators %s",
+                     nrow(getAssayData(obj)), ncol(getAssayData(obj)),
+                     getTarget(obj), regulator.count, regulatorString)
+       cat (msg, '\n', sep='')
+    })
+#----------------------------------------------------------------------------------------------------
 #' Run the Pearson Solver
 #'
 #' @rdname solve.Pearson
@@ -60,15 +75,10 @@ PearsonSolver <- function(mtx.assay = matrix(), targetGene, candidateRegulators,
 #'
 #' @description Given a TReNA object with Pearson as the solver, use the \code{\link{cor}} function
 #' to estimate coefficients for each transcription factor as a perdictor of the target gene's
-#' expression level. This method should be called using the \code{\link{solve}} method on an
-#' appropriate TReNA object.
+#' expression level. 
 #'
-#' @param obj An object of class Solver with "pearson" as the solver string
-#' @param target.gene A designated target gene that should be part of the mtx.assay data
-#' @param tfs The designated set of transcription factors that could be associated with the target gene.
-#' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
-#' @param extraArgs Modifiers to the Pearson solver
-#'
+#' @param obj An object of class PearsonSolver
+#' 
 #' @return The set of Pearson Correlation Coefficients between each transcription factor and the target gene.
 #'
 #' @seealso \code{\link{cor}}, \code{\link{PearsonSolver}}

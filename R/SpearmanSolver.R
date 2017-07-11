@@ -53,6 +53,23 @@ SpearmanSolver <- function(mtx.assay = matrix(), targetGene, candidateRegulators
 
 } #SpearmanSolver, the constructor
 #----------------------------------------------------------------------------------------------------
+setMethod('show', 'SpearmanSolver',
+
+    function(obj) {
+       regulator.count <- length(getRegulators(obj))
+       if(regulator.count > 10){
+          regulatorString <- paste(getRegulators(obj)[1:10], collapse=",")
+          regulatorString <- sprintf("%s...", regulatorString);
+          }
+       else
+          regulatorString <- paste(getRegulators(obj), collapse=",")
+
+       msg = sprintf("SpearmanSolver with mtx.assay (%d, %d), targetGene %s, %d candidate regulators %s",
+                     nrow(getAssayData(obj)), ncol(getAssayData(obj)),
+                     getTarget(obj), regulator.count, regulatorString)
+       cat (msg, '\n', sep='')
+    })
+#----------------------------------------------------------------------------------------------------
 #' Run the Spearman Solver
 #'
 #' @rdname solve.Spearman
@@ -61,14 +78,9 @@ SpearmanSolver <- function(mtx.assay = matrix(), targetGene, candidateRegulators
 #' @description Given a TReNA object with Spearman as the solver, use the \code{\link{cor}}
 #' function with \code{method = "spearman"} to esimate coefficients for each transcription factor
 #' as a predictor of the target gene's expression level.
-#' This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 #' 
-#' @param obj An object of class Solver with "spearman" as the solver string
-#' @param target.gene A designated target gene that should be part of the mtx.assay data
-#' @param tfs The designated set of transcription factors that could be associated with the target gene.
-#' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
-#' @param extraArgs Modifiers to the Spearman solver
-#'
+#' @param obj An object of class SpearmanSolver
+#' 
 #' @return The set of Spearman Correlation Coefficients between each transcription factor and the target gene.
 #'
 #' @seealso \code{\link{cor}}, \code{\link{SpearmanSolver}}

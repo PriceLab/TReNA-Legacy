@@ -191,23 +191,7 @@ setMethod("getRegulators", "Solver",
    function (obj){
       obj@candidateRegulators
    })
-#----------------------------------------------------------------------------------------------------
-setMethod('show', 'Solver',
 
-    function(obj) {
-       regulator.count <- length(getRegulators(obj))
-       if(regulator.count > 10){
-          regulatorString <- paste(getRegulators(obj)[1:10], collapse=",")
-          regulatorString <- sprintf("%s...", regulatorString);
-          }
-       else
-          regulatorString <- paste(getRegulators(obj), collapse=",")
-
-       msg = sprintf("RandomForestSolver with mtx.assay (%d, %d), targetGene %s, %d candidate regulators %s",
-                     nrow(getAssayData(obj)), ncol(getAssayData(obj)),
-                     getTarget(obj), regulator.count, regulatorString)
-       cat (msg, '\n', sep='')
-       })
 #----------------------------------------------------------------------------------------------------
 #' Rescale the Predictor Weights
 #'
