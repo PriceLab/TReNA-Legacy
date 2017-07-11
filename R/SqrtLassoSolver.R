@@ -165,7 +165,7 @@ setMethod("run", "SqrtLassoSolver",
 
               # If no lambda, run a binary search for the best lasso using permutation of the data set
               if(length(lambda) == 0){
-                  #set.seed(101010)
+
                   target.mixed <- sample(target)
                   threshold <- 1E-15
                   lambda.change <- 10^(-4)
@@ -195,12 +195,11 @@ setMethod("run", "SqrtLassoSolver",
                       }
                       lambda
                   }
-                  
-              }
-
-              lambda.list <- unlist(lambda.list)
-              parallel::stopCluster(cl)
-              lambda <- mean(lambda.list) + (stats::sd(lambda.list)/sqrt(length(lambda.list)))
+                  # Grab the lambdas and average them
+                  lambda.list <- unlist(lambda.list)                  
+                  parallel::stopCluster(cl)                  
+                  lambda <- mean(lambda.list) + (stats::sd(lambda.list)/sqrt(length(lambda.list)))                                 
+              }              
 
               # Run square root lasso and return an object of class "slim"              
               fit <- slim(features, target, method = "lq", lambda = lambda, verbose=FALSE)

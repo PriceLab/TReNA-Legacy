@@ -85,6 +85,24 @@ EnsembleSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulators,
 
 } # EnsembleSolver, the constructor
 #----------------------------------------------------------------------------------------------------
+setMethod('show', 'EnsembleSolver',
+
+    function(obj) {
+       regulator.count <- length(getRegulators(obj))
+       if(regulator.count > 10){
+          regulatorString <- paste(getRegulators(obj)[1:10], collapse=",")
+          regulatorString <- sprintf("%s...", regulatorString);
+          }
+       else
+          regulatorString <- paste(getRegulators(obj), collapse=",")
+
+       msg = sprintf("EnsembleSolver with mtx.assay (%d, %d), targetGene %s, %d candidate regulators %s,  solvers: %s",
+                     nrow(getAssayData(obj)), ncol(getAssayData(obj)),
+                     getTarget(obj), regulator.count, regulatorString,
+                     paste(ensemble.solver@solverNames,collapse = ", "))
+       cat (msg, '\n', sep='')
+    })
+#----------------------------------------------------------------------------------------------------
 #' Run the Ensemble Solver
 #'
 #' @name run,EnsembleSolver-method
