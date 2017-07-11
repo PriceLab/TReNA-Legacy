@@ -9,7 +9,7 @@
 
 .BayesSpikeSolver <- setClass ("BayesSpikeSolver",
                                contains="Solver",
-                               slots = c(nOrderings = "integer")
+                               slots = c(nOrderings = "numeric")
                                )
 #----------------------------------------------------------------------------------------------------
 #' Create a Solver class object using the Bayes Spike Solver
@@ -46,7 +46,7 @@ BayesSpikeSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulators
                              targetGene = targetGene,
                              candidateRegulators = candidateRegulators,
                              nOrderings = nOrderings,
-                             quiet=quiet))
+                             quiet=quiet)
 
     # Send a warning if there's a row of zeros
     if(!is.na(max(mtx.assay)) & any(rowSums(mtx.assay) == 0))
@@ -107,8 +107,14 @@ setMethod("run", "BayesSpikeSolver",
 
   function (obj){
 
+      mtx <- getAssayData(obj)    
+      target.gene <- getTarget(obj)
+      tfs <- getRegulators(obj)
+      stopifnot(target.gene %in% rownames(mtx))      
+      stopifnot(all(tfs %in% rownames(mtx)))
+            
       # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning      
-      if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){                   
+      if(rowMeans(mtx)[target.gene] < stats::quantile(rowMeans(mtx), probs = 0.1)){                   
           warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")         
       }           
       
@@ -118,17 +124,10 @@ setMethod("run", "BayesSpikeSolver",
           tfs <- tfs[-deleters]          
            message(sprintf("BayesSpikeSolver removing target.gene from candidate regulators: %s", target.gene))          
       }      
-
-      # Get the solver parameters
-      mtx <- getAssayData(obj)
-      target.gene <- getTarget(obj)
-      tfs <- getRegulators(obj)
-      stopifnot(target.gene %in% rownames(mtx))      
-      stopifnot(all(tfs %in% rownames(mtx)))
-      
+          
       features <- t(mtx[tfs, ])      
       target <- as.numeric(mtx[target.gene,])      
-      result <- vbsr(target, features, family='normal', n_orderings = obj@n_orderings)
+      result <- vbsr(target, features, family='normal', n_orderings = obj@nOrderings)
 
       # Add Pearson coefficient and add a "score"
       tbl.out <- data.frame(beta=result$beta, pval=result$pval, z=result$z, post=result$post)      

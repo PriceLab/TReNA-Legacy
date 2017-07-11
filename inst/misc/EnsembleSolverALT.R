@@ -7,27 +7,15 @@
 #' @name EnsembleSolver-class
 #'
 .EnsembleSolver <- setClass("EnsembleSolver",
-                            contains="Solver",
-                            slots = c(solverNames = "character",
+                            slots = c(solverList = "list",
                                       geneCutoff = "numeric",
-                                      alpha.lasso = "numeric",
-                                      alpha.ridge = "numeric",
-                                      lambda.lasso = "numeric",
-                                      lambda.ridge = "numeric",
-                                      lambda.sqrt = "numeric",
-                                      nCores.sqrt = "integer",
-                                      nOrderings.bayes = "integer"
-                                      )
+                                      quiet = "logical")
                             )
-
 #----------------------------------------------------------------------------------------------------
 #' Create a Solver class object using an ensemble of solvers
 #'
-#' @param mtx.assay An assay matrix of gene expression data
-#' @param targetGene A designated target gene that should be part of the mtx.assay data
-#' @param candidateRegulators The designated set of transcription factors that could be associated
-#' with the target gene
-#' @param solverNames A character vector of strings denoting 
+#' @param solverList A list object containing objects of the Solver class
+#' @param geneCutoff A decimal indicating the fraction of genes to use from each solver object
 #' @param quiet A logical denoting whether or not the solver should print output
 #'
 #' @return A Solver class object with Ensemble as the solver
@@ -41,45 +29,12 @@
 #' @examples
 #' solver <- EnsembleSolver()
 
-EnsembleSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulators,
-                           solverNames = c("lasso",
-                                           "lassopv",
-                                           "pearson",
-                                           "randomForest",
-                                           "ridge",
-                                           "spearman"),
+EnsembleSolver <- function(solverList,
                            geneCutoff = 0.1,
-                           alpha.lasso = 0.9,
-                           alpha.ridge = 0.0,
-                           lambda.lasso = numeric(0),
-                           lambda.ridge = numeric(0),
-                           lambda.sqrt = numeric(0),
-                           nCores.sqrt = 4,
-                           nOrderings.bayes = 10,
                            quiet=TRUE)
-{
-    if(any(grepl(targetGene, candidateRegulators)))        
-        candidateRegulators <- candidateRegulators[-grep(targetGene, candidateRegulators)]    
-
-    candidateRegulators <- intersect(candidateRegulators, rownames(mtx.assay))    
-    stopifnot(length(candidateRegulators) > 0)    
-
-    # Send a warning if there's a row of zeros
-    if(!is.na(max(mtx.assay)) & any(rowSums(mtx.assay) == 0))
-        warning("One or more gene has zero expression; this may cause difficulty when using Bayes Spike. You may want to try 'lasso' or 'ridge' instead.")
-
-    obj <- .EnsembleSolver(mtx.assay = mtx.assay,
-                           targetGene = targetGene,
-                           candidateRegulators = candidateRegulators,
-                           solverNames = solverNames,
-                           geneCutoff = geneCutoff,
-                           alpha.lasso = alpha.lasso,
-                           alpha.ridge = alpha.ridge,
-                           lambda.lasso = lambda.lasso,
-                           lambda.ridge = lambda.ridge,
-                           lambda.sqrt = lambda.sqrt,
-                           nCores.sqrt = nCores.sqrt,
-                           nOrderings.bayes = nOrderings.bayes,
+{ 
+    obj <- .EnsembleSolver(solverList = solverList
+                           geneCutoff = geneCutoff,               
                            quiet=quiet)
     obj
 
@@ -97,7 +52,7 @@ EnsembleSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulators,
 #' method combine all specified solvers to create a composite score for each transcription factor.
 #' This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 #'
-#' @param obj An object of class Solver with "ensemble" as the solver string
+#' @param obj An object of class EnsembleSolver
 #'
 #' @return A data frame containing the scores for all solvers and two composite scores
 #' relating the target gene to each transcription factor. The two new scores are:
@@ -113,36 +68,56 @@ EnsembleSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulators,
 #' @family solver methods
 #'
 #' @examples
-#' # Load included Alzheimer's data, create a TReNA object with LASSO as solver, and solve
+#' # Load included Alzheimer's data, create 3 solver objects, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-#' trena <- TReNA(mtx.assay = mtx.sub, solver = "ensemble")
 #' target.gene <- "MEF2C"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
-#' tbl <- solve(trena, target.gene, tfs)
+#' lasso.solver <- LassoSolver(mtx.sub, target.gene, tfs)
+#' rf.solver <- RandomForestSolver(mtx.sub, target.gene, tfs)
+#' bayes.solver <- BayesSpikeSolver(mtx.sub, target.gene, tfs)
+#' ensemble.solver <- EnsembleSolver(list(lasso.solver, rf.solver, bayes.solver))
+#' tbl <- run(ensemble.solver)
 #'
-#' # Solve the same problem, but supply extra arguments that change alpha for LASSO to 0.8 and also
-#' # Change the gene cutoff from 10% to 20%
-#' tbl <- solve(trena, target.gene, tfs, extraArgs = list("gene.cutoff" = 0.2, "lasso" = list("alpha" = 0.8)))
-#'
-#' # Solve the original problem with default cutoff and solver parameters, but use only 4 solvers
-#' tbl <- solve(trena, target.gene, tfs, extraArgs = list("solver.list" = c("lasso", "randomForest", "pearson", "bayesSpike")))
 
 setMethod("run", "EnsembleSolver",
 
           function(obj){
 
-              mtx <- getAssayData(obj)
-              target.gene <- getTarget(obj)
-              tfs <- getRegulators(obj)
-
+              solver.list <- obj@solverList
+              mtx <- getAssayData(solver.list[[1]])
+              target.gene <- getTarget(solver.list[[1]])
+              tfs <- getRegulators(solver.list[[1]])
+          
                # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
-               if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){
+               if(rowMeans(mtx)[target.gene] < stats::quantile(rowMeans(mtx), probs = 0.1)){
                    warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
                }
 
-              out.list <- list()              
-              solver.list <- obj@solverNames
+              # Check to make sure matrices are the same
+              
 
+              
+              # Check to make sure targets are all the same; send a warning if not
+              all.targets <- vapply(solver.list, getTarget, FUN.VALUE = "character")
+              if(!all(all.targets == target.gene)){
+                  warning("One or more of the supplied target genes does not match")
+              }
+              
+              # Check to make sure regulators are all the same; send a warning if not
+              all.tfs <- sapply(solver.list, getRegulators)
+              tf.compare <- sapply(all.tfs, setequal, tfs)
+              if(!all(tf.compare)){
+                  warning("One or more of the supplied candidate regulator sets do not match")
+              }
+
+              # Pick out the solvers present
+              all.solvers <- sapply(solver.list, class)
+
+              # Weed out any duplicate solvers
+
+              
+              out.list <- list()
+              
               solver <- switch(requested.solver.root,
                      "lasso" = LassoSolver(mtx.assay, solverName),
                      "randomForest" = RandomForestSolver(mtx.assay, solverName),

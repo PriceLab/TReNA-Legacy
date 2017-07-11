@@ -97,14 +97,14 @@ setMethod("run", "PearsonSolver",
 
           function (obj){
 
-              # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning              
-              if(rowMeans(getAssayData(obj))[getTarget(obj)] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){                  
-                  warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")                  
-              }
-              
               mtx <- getAssayData(obj)
               target.gene <- getTarget(obj)
               tfs <- getRegulators(obj)
+              
+              # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning              
+              if(rowMeans(mtx)[target.gene] < stats::quantile(rowMeans(mtx), probs = 0.1)){                  
+                  warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")                  
+              }                            
               
               # Check that target gene and tfs are all part of the matrix
               stopifnot(target.gene %in% rownames(mtx))

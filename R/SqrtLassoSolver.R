@@ -14,7 +14,7 @@
                               contains="Solver",
                               slots = c(regulatorWeights="numeric",
                                         lambda = "numeric",
-                                        nCores = "integer")
+                                        nCores = "numeric")
                               )
 #----------------------------------------------------------------------------------------------------
 #' Create a Solver class object using the Square Root LASSO solver
@@ -127,6 +127,8 @@ setMethod("run", "SqrtLassoSolver",
               mtx <- getAssayData(obj)
               target.gene <- getTarget(obj)
               tfs <- getRegulators(obj)
+              lambda <- obj@lambda
+              nCores <- obj@nCores
               
               if(length(tfs) == 0)                  
                   return(data.frame())              

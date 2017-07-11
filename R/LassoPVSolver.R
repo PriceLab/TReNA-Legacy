@@ -98,10 +98,12 @@ setMethod("run", "LassoPVSolver",
 
           function (obj){
               
-                           
+              mtx <- getAssayData(obj)
+              target.gene <- getTarget(obj)
+              tfs <- getRegulators(obj)             
 
               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning         
-              if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){                 
+              if(rowMeans(mtx)[target.gene] < stats::quantile(rowMeans(mtx), probs = 0.1)){                 
                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")            
               }
               
@@ -111,11 +113,7 @@ setMethod("run", "LassoPVSolver",
                   tfs <- tfs[-deleters]                  
                   if(!obj@quiet)                   
                       message(sprintf("LassoPVSolver removing target.gene from candidate regulators: %s", target.gene))                  
-              }
-              
-              mtx <- getAssayData(obj)
-              target.gene <- getTarget(obj)
-              tfs <- getRegulators(obj)
+              }                          
               
               if(length(tfs) == 0)                  
                   return(data.frame()) 

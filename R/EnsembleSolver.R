@@ -7,15 +7,27 @@
 #' @name EnsembleSolver-class
 #'
 .EnsembleSolver <- setClass("EnsembleSolver",
-                            slots = c(solverList = "list",
+                            contains="Solver",
+                            slots = c(solverNames = "character",
                                       geneCutoff = "numeric",
-                                      quiet = "logical")
+                                      alpha.lasso = "numeric",
+                                      alpha.ridge = "numeric",
+                                      lambda.lasso = "numeric",
+                                      lambda.ridge = "numeric",
+                                      lambda.sqrt = "numeric",
+                                      nCores.sqrt = "numeric",
+                                      nOrderings.bayes = "numeric"
+                                      )
                             )
+
 #----------------------------------------------------------------------------------------------------
 #' Create a Solver class object using an ensemble of solvers
 #'
-#' @param solverList A list object containing objects of the Solver class
-#' @param geneCutoff A decimal indicating the fraction of genes to use from each solver object
+#' @param mtx.assay An assay matrix of gene expression data
+#' @param targetGene A designated target gene that should be part of the mtx.assay data
+#' @param candidateRegulators The designated set of transcription factors that could be associated
+#' with the target gene
+#' @param solverNames A character vector of strings denoting 
 #' @param quiet A logical denoting whether or not the solver should print output
 #'
 #' @return A Solver class object with Ensemble as the solver
@@ -29,12 +41,45 @@
 #' @examples
 #' solver <- EnsembleSolver()
 
-EnsembleSolver <- function(solverList,
+EnsembleSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulators,
+                           solverNames = c("lasso",
+                                           "lassopv",
+                                           "pearson",
+                                           "randomForest",
+                                           "ridge",
+                                           "spearman"),
                            geneCutoff = 0.1,
+                           alpha.lasso = 0.9,
+                           alpha.ridge = 0.0,
+                           lambda.lasso = numeric(0),
+                           lambda.ridge = numeric(0),
+                           lambda.sqrt = numeric(0),
+                           nCores.sqrt = 4,
+                           nOrderings.bayes = 10,
                            quiet=TRUE)
-{ 
-    obj <- .EnsembleSolver(solverList = solverList
-                           geneCutoff = geneCutoff,               
+{
+    if(any(grepl(targetGene, candidateRegulators)))        
+        candidateRegulators <- candidateRegulators[-grep(targetGene, candidateRegulators)]    
+
+    candidateRegulators <- intersect(candidateRegulators, rownames(mtx.assay))    
+    stopifnot(length(candidateRegulators) > 0)    
+
+    # Send a warning if there's a row of zeros
+    if(!is.na(max(mtx.assay)) & any(rowSums(mtx.assay) == 0))
+        warning("One or more gene has zero expression; this may cause difficulty when using Bayes Spike. You may want to try 'lasso' or 'ridge' instead.")
+
+    obj <- .EnsembleSolver(mtx.assay = mtx.assay,
+                           targetGene = targetGene,
+                           candidateRegulators = candidateRegulators,
+                           solverNames = solverNames,
+                           geneCutoff = geneCutoff,
+                           alpha.lasso = alpha.lasso,
+                           alpha.ridge = alpha.ridge,
+                           lambda.lasso = lambda.lasso,
+                           lambda.ridge = lambda.ridge,
+                           lambda.sqrt = lambda.sqrt,
+                           nCores.sqrt = nCores.sqrt,
+                           nOrderings.bayes = nOrderings.bayes,
                            quiet=quiet)
     obj
 
@@ -52,7 +97,7 @@ EnsembleSolver <- function(solverList,
 #' method combine all specified solvers to create a composite score for each transcription factor.
 #' This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 #'
-#' @param obj An object of class EnsembleSolver
+#' @param obj An object of class Solver with "ensemble" as the solver string
 #'
 #' @return A data frame containing the scores for all solvers and two composite scores
 #' relating the target gene to each transcription factor. The two new scores are:
@@ -68,72 +113,64 @@ EnsembleSolver <- function(solverList,
 #' @family solver methods
 #'
 #' @examples
-#' # Load included Alzheimer's data, create 3 solver objects, and solve
+#' # Load included Alzheimer's data, create an Ensemble object with default solvers, and solve
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 #' target.gene <- "MEF2C"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
-#' lasso.solver <- LassoSolver(mtx.sub, target.gene, tfs)
-#' rf.solver <- RandomForestSolver(mtx.sub, target.gene, tfs)
-#' bayes.solver <- BayesSpikeSolver(mtx.sub, target.gene, tfs)
-#' ensemble.solver <- EnsembleSolver(list(lasso.solver, rf.solver, bayes.solver))
+#' ensemble.solver <- EnsembleSolver(mtx.sub, target.gene, tfs)
 #' tbl <- run(ensemble.solver)
 #'
+#' # Solve the same problem, but supply extra arguments that change alpha for LASSO to 0.8 and also
+#' # Change the gene cutoff from 10% to 20%
+#' ensemble.solver <- EnsembleSolve(mtx.sub, target.gene, tfs, gene.cutoff = 0.2, alpha.lasso = 0.8)))
+#' tbl <- run(ensemble.solver)
+#'
+#' # Solve the original problem with default cutoff and solver parameters, but use only 4 solvers
+#' ensemble.solver <- EnsembleSolver(mtx.sub, target.gene, tfs,
+#' solverNames = c("lasso", "randomForest", "pearson", "bayesSpike"))
+#' tbl <- run(ensemble.solver)
 
 setMethod("run", "EnsembleSolver",
 
           function(obj){
 
-              solver.list <- obj@solverList
-              mtx <- getAssayData(solver.list[[1]])
-              target.gene <- getTarget(solver.list[[1]])
-              tfs <- getRegulators(solver.list[[1]])
-              
+              mtx <- getAssayData(obj)
+              target.gene <- getTarget(obj)
+              tfs <- getRegulators(obj)
+              gene.cutoff <- obj@geneCutoff
+
                # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
                if(rowMeans(mtx)[target.gene] < stats::quantile(rowMeans(mtx), probs = 0.1)){
                    warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
                }
 
-              # Check to make sure targets are all the same; send a warning if not
-              all.targets <- vapply(solver.list, getTarget, FUN.VALUE = "character")
-              if(!all(all.targets == target.gene)){
-                  warning("One or more of the supplied target genes does not match")
+              # Create a list of solvers and a list for solutions
+              out.list <- list()              
+              solver.list <- obj@solverNames
+
+              for(i in 1:length(solver.list)){
+                  # Find the correct solver
+                  solver <- switch(tolower(solver.list[i]),
+                                   "lasso" = LassoSolver(mtx, target.gene, tfs,
+                                                         alpha = obj@alpha.lasso, lambda = obj@lambda.lasso),
+                                   "randomforest" = RandomForestSolver(mtx, target.gene, tfs),
+                                   "bayesspike" = BayesSpikeSolver(mtx, target.gene, tfs,
+                                                                   nOrderings = obj@nOrderings.bayes),           
+                                   "pearson" = PearsonSolver(mtx, target.gene, tfs),                                   
+                                   "spearman" = SpearmanSolver(mtx, target.gene, tfs),                                   
+                                   "sqrtlasso" = SqrtLassoSolver(mtx, target.gene, tfs,
+                                                                 lambda = obj@lambda.sqrt, nCores = obj@nCores.sqrt),             
+                                   "lassopv" = LassoPVSolver(mtx, target.gene, tfs),                           
+                                   "ridge" = RidgeSolver(mtx, target.gene, tfs,
+                                                         alpha = obj@alpha.ridge, lambda = obj@lambda.ridge))
+                  
+                  # Solve each Solver object and save it to the output list                  
+                  out.list[[i]] <- run(solver)
+                  names(out.list)[i] <- paste("out",tolower(solver.list[[i]]),sep=".")                  
               }
-              
-              # Check to make sure regulators are all the same; send a warning if not
-              all.tfs <- sapply(solver.list, getRegulators)
-              tf.compare <- sapply(all.tfs, setequal, tfs)
-              if(!all(tf.compare)){
-                  warning("One or more of the supplied candidate regulator sets do not match")
-              }
 
-              # Pick out the solvers present
-              all.solvers <- sapply(solver.list, class)
-
-              # Weed out any duplicate solvers
-
-              
-              out.list <- list()
-              
-              solver <- switch(requested.solver.root,
-                     "lasso" = LassoSolver(mtx.assay, solverName),
-                     "randomForest" = RandomForestSolver(mtx.assay, solverName),
-                     "bayesSpike" = BayesSpikeSolver(mtx.assay, solverName),
-                     "pearson" = PearsonSolver(mtx.assay, solverName),
-                     "spearman" = SpearmanSolver(mtx.assay, solverName),
-                     "sqrtlasso" = SqrtLassoSolver(mtx.assay, solverName),
-                     "lassopv" = LassoPVSolver(mtx.assay, solverName),
-                     "ridge" = RidgeSolver(mtx.assay, solverName),
-                     "ensemble" = EnsembleSolver(mtx.assay, solverName))
-
-              for(i in 1:length(solver.list)){                  
-                  # Create and solve the TReNA object for each solver                  
-                  trena <- TReNA(getAssayData(obj), solver = solver.list[[i]] )                  
-                  out.list[[i]] <- solve(trena, target.gene, tfs, tf.weights, extraArgs = extraParams)                  
-                  names(out.list)[i] <- paste("out",solver.list[[i]],sep=".")                  
-              }
-              
                # Output lasso with beta
-               if("lasso" %in% solver.list){
+               if("lasso" %in% tolower(solver.list)){
                    out.list$out.lasso$gene <- rownames(out.list$out.lasso)
                    out.list$out.lasso <- out.list$out.lasso[, c("beta","gene")]
                    rownames(out.list$out.lasso) <- NULL
@@ -142,30 +179,30 @@ setMethod("run", "EnsembleSolver",
                    lasso.scale <- stats::mad(out.list$out.lasso$beta.lasso)
                }
 
-               # Output randomForest IncNodePurity
-               if("randomForest" %in% solver.list){
-                   out.list$out.randomForest <- out.list$out.randomForest$edges
-                   out.list$out.randomForest$gene <- rownames(out.list$out.randomForest)
-                   out.list$out.randomForest <- out.list$out.randomForest[, c("IncNodePurity","gene")]
-                   rownames(out.list$out.randomForest) <- NULL
-                   names(out.list$out.randomForest) <- c("rf.score", "gene")
-                   randomForest.med <- stats::median(out.list$out.randomForest$rf.score)
-                   randomForest.scale <- sqrt(mean(
-                       out.list$out.randomForest$rf.score*out.list$out.randomForest$rf.score))
+               # Output randomforest IncNodePurity
+               if("randomforest" %in% tolower(solver.list)){
+                   out.list$out.randomforest <- out.list$out.randomforest$edges
+                   out.list$out.randomforest$gene <- rownames(out.list$out.randomforest)
+                   out.list$out.randomforest <- out.list$out.randomforest[, c("IncNodePurity","gene")]
+                   rownames(out.list$out.randomforest) <- NULL
+                   names(out.list$out.randomforest) <- c("rf.score", "gene")
+                   randomforest.med <- stats::median(out.list$out.randomforest$rf.score)
+                   randomforest.scale <- sqrt(mean(
+                       out.list$out.randomforest$rf.score*out.list$out.randomforest$rf.score))
                }
 
-               # Output the z-score from bayesSpike
-               if("bayesSpike" %in% solver.list){
-                   out.list$out.bayesSpike$gene <- rownames(out.list$out.bayesSpike)
-                   rownames(out.list$out.bayesSpike) <- NULL
-                   out.list$out.bayesSpike <- out.list$out.bayesSpike[, c("z", "gene")]
-                   names(out.list$out.bayesSpike) <- c("bayes.z", "gene")
-                   bayesSpike.med <- stats::median(out.list$out.bayesSpike$bayes.z)
-                   bayesSpike.scale <- stats::mad(out.list$out.bayesSpike$bayes.z)
+               # Output the z-score from bayesspike
+               if("bayesspike" %in% tolower(solver.list)){
+                   out.list$out.bayesspike$gene <- rownames(out.list$out.bayesspike)
+                   rownames(out.list$out.bayesspike) <- NULL
+                   out.list$out.bayesspike <- out.list$out.bayesspike[, c("z", "gene")]
+                   names(out.list$out.bayesspike) <- c("bayes.z", "gene")
+                   bayesspike.med <- stats::median(out.list$out.bayesspike$bayes.z)
+                   bayesspike.scale <- stats::mad(out.list$out.bayesspike$bayes.z)
                }
 
                # Pearson
-               if("pearson" %in% solver.list){
+               if("pearson" %in% tolower(solver.list)){
                    out.list$out.pearson$gene <- rownames(out.list$out.pearson)
                    rownames(out.list$out.pearson) <- NULL
                    names(out.list$out.pearson) <- c("pearson.coeff","gene")
@@ -174,7 +211,7 @@ setMethod("run", "EnsembleSolver",
                }
 
                #Spearman
-               if("spearman" %in% solver.list){
+               if("spearman" %in% tolower(solver.list)){
                    out.list$out.spearman$gene <- rownames(out.list$out.spearman)
                    rownames(out.list$out.spearman) <- NULL
                    names(out.list$out.spearman) <- c("spearman.coeff", "gene")
@@ -183,7 +220,7 @@ setMethod("run", "EnsembleSolver",
                }
 
                #LassoPV
-               if("lassopv" %in% solver.list){
+               if("lassopv" %in% tolower(solver.list)){
                    out.list$out.lassopv$gene <- rownames(out.list$out.lassopv)
                    rownames(out.list$out.lassopv) <- NULL
                    out.list$out.lassopv <- out.list$out.lassopv[, c("p.values","gene")]
@@ -194,7 +231,7 @@ setMethod("run", "EnsembleSolver",
                }
 
                #SqrtLasso
-               if("sqrtlasso" %in% solver.list){
+               if("sqrtlasso" %in% tolower(solver.list)){
                    out.list$out.sqrtlasso$gene <- rownames(out.list$out.sqrtlasso)
                    rownames(out.list$out.sqrtlasso) <- NULL
                    out.list$out.sqrtlasso <- out.list$out.sqrtlasso[, c("beta", "gene")]
@@ -204,7 +241,7 @@ setMethod("run", "EnsembleSolver",
                }
 
                #Ridge
-               if("ridge" %in% solver.list){
+               if("ridge" %in% tolower(solver.list)){
                    out.list$out.ridge$gene <- rownames(out.list$out.ridge)
                    out.list$out.ridge <- out.list$out.ridge[, c("beta","gene")]
                    rownames(out.list$out.ridge) <- NULL
@@ -285,14 +322,14 @@ setMethod("run", "EnsembleSolver",
 
                if("bayes.z" %in% names(tbl.scale)){
                    tbl.scale$bayes.z <- scale(tbl.scale$bayes.z,
-                                              center = bayesSpike.med,
-                                              scale = bayesSpike.scale)
+                                              center = bayesspike.med,
+                                              scale = bayesspike.scale)
                    }
 
                if("rf.score" %in% names(tbl.scale)){
                    tbl.scale$rf.score <- scale(tbl.scale$rf.score,
-                                               center = randomForest.med,
-                                               scale = randomForest.scale)
+                                               center = randomforest.med,
+                                               scale = randomforest.scale)
                }
 
                rownames(tbl.scale) <- tbl.all$gene
