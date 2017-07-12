@@ -7,20 +7,10 @@
 \alias{solve.BayesSpike}
 \title{Run the Bayes Spike Solver}
 \usage{
-\S4method{run}{BayesSpikeSolver}(obj, target.gene, tfs, tf.weights = rep(1,
-  length(tfs)), extraArgs = list())
+\S4method{run}{BayesSpikeSolver}(obj)
 }
 \arguments{
-\item{obj}{An object of the class Solver with "bayesSpike" as the solver string}
-
-\item{target.gene}{A designated target gene that should be part of the mtx.assay data}
-
-\item{tfs}{The designated set of transcription factors that could be associated with the target gene.}
-
-\item{tf.weights}{A set of weights on the transcription factors (default = rep(1, length(tfs)))}
-
-\item{extraArgs}{Modifiers to the Bayes Spike solver; this includes \code{n_orderings}, the
-number of random starts used by the solver}
+\item{obj}{An object of the class BayesSpikeSolver}
 }
 \value{
 A data frame containing the coefficients relating the target gene to each transcription factor,
@@ -29,19 +19,19 @@ plus other fit parameters
 \description{
 Given a TReNA object with Bayes Spike as the solver, use the \code{\link{vbsr}}
 function to estimate coefficients for each transcription factor as a predictor of the target
-gene's expression level. This method should be called using the \code{\link{solve}} method on an
-appropriate TReNA object.
+gene's expression level.
 }
 \examples{
 # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-trena <- TReNA(mtx.assay = mtx.sub, solver = "bayesSpike")
 target.gene <- "MEF2C"
 tfs <- setdiff(rownames(mtx.sub), target.gene)
-tbl <- solve(trena, target.gene, tfs)
+bayes.solver <- BayesSpikeSolver(mtx.sub, target.gene, tfs)
+tbl <- run(bayes.solver)
 
 # Solve the same Alzheimer's problem, but this time set the number of random starts to 100
-tbl <- solve(trena, target.gene, tfs, extraArgs = list("n_orderings" = 100))
+bayes.solver <- BayesSpikeSolver(mtx.sub, target.gene, tfs, nOrderings = 100)
+tbl <- run(bayes.solver)
 }
 \seealso{
 \code{\link{vbsr}}, \code{\link{BayesSpikeSolver}}

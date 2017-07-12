@@ -4,12 +4,30 @@
 \alias{SqrtLassoSolver}
 \title{Create a Solver class object using the Square Root LASSO solver}
 \usage{
-SqrtLassoSolver(mtx.assay = matrix(), quiet = TRUE)
+SqrtLassoSolver(mtx.assay = matrix(), targetGene, candidateRegulators,
+  regulatorWeights = rep(1, length(candidateRegulators)),
+  lambda = numeric(0), nCores = 4, quiet = TRUE)
 }
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
 
+\item{candidateRegulators}{The designated set of transcription factors that could be associated
+with the target gene}
+
+\item{regulatorWeights}{A set of weights on the transcription factors
+(default = rep(1, length(tfs)))}
+
+\item{lambda}{A tuning parameter that determines the severity of the penalty function imposed
+on the elastic net regression. If unspecified, lambda will be determined via
+permutation testing (default = numeric(0)).}
+
+\item{nCores}{An integer specifying the number of computational cores to devote to this
+square root LASSO solver. This solver is generally quite slow and is greatly sped up when using
+multiple cores (default = 4)}
+
 \item{quiet}{A logical denoting whether or not the solver should print output}
+
+\item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 }
 \value{
 A Solver class object with Square Root LASSO as the solver

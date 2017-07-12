@@ -7,19 +7,10 @@
 \alias{solve.Pearson}
 \title{Run the Pearson Solver}
 \usage{
-\S4method{run}{PearsonSolver}(obj, target.gene, tfs, tf.weights = rep(1,
-  length(tfs)), extraArgs = list())
+\S4method{run}{PearsonSolver}(obj)
 }
 \arguments{
-\item{obj}{An object of class Solver with "pearson" as the solver string}
-
-\item{target.gene}{A designated target gene that should be part of the mtx.assay data}
-
-\item{tfs}{The designated set of transcription factors that could be associated with the target gene.}
-
-\item{tf.weights}{A set of weights on the transcription factors (default = rep(1, length(tfs)))}
-
-\item{extraArgs}{Modifiers to the Pearson solver}
+\item{obj}{An object of class PearsonSolver}
 }
 \value{
 The set of Pearson Correlation Coefficients between each transcription factor and the target gene.
@@ -27,16 +18,15 @@ The set of Pearson Correlation Coefficients between each transcription factor an
 \description{
 Given a TReNA object with Pearson as the solver, use the \code{\link{cor}} function
 to estimate coefficients for each transcription factor as a perdictor of the target gene's
-expression level. This method should be called using the \code{\link{solve}} method on an
-appropriate TReNA object.
+expression level.
 }
 \examples{
 # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-trena <- TReNA(mtx.assay = mtx.sub, solver = "pearson")
 target.gene <- "MEF2C"
 tfs <- setdiff(rownames(mtx.sub), target.gene)
-tbl <- solve(trena, target.gene, tfs)
+pearson.solver <- PearsonSolver(mtx.sub, target.gene, tfs)
+tbl <- run(pearson.solver)
 }
 \seealso{
 \code{\link{cor}}, \code{\link{PearsonSolver}}

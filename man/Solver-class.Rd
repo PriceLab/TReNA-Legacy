@@ -7,16 +7,26 @@
 \alias{Solver}
 \alias{Solver}
 \alias{getAssayData,Solver-method}
+\alias{getTarget,Solver-method}
+\alias{getRegulators,Solver-method}
 \title{Define an object of class Solver}
 \usage{
-Solver(mtx.assay = matrix(), quiet = TRUE)
+Solver(mtx.assay = matrix(), targetGene, candidateRegulators, quiet = TRUE)
 
 \S4method{getAssayData}{Solver}(obj)
+
+\S4method{getTarget}{Solver}(obj)
+
+\S4method{getRegulators}{Solver}(obj)
 }
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
 
 \item{quiet}{A logical indicating whether or not the Solver object should print output}
+
+\item{obj}{An object of class Solver}
+
+\item{obj}{An object of class Solver}
 
 \item{obj}{An object of class Solver}
 }
@@ -32,6 +42,10 @@ is achieved using the \code{\link{solve}} method on a TReNA object.
 \section{Methods (by generic)}{
 \itemize{
 \item \code{getAssayData}: Retrieve the assay matrix of gene expression data
+
+\item \code{getTarget}: Retrieve the target gene for a Solver
+
+\item \code{getRegulators}: Retrieve the candidate regulators for a Solver
 }}
 
 \examples{
@@ -44,6 +58,16 @@ solver <- Solver(mtx)
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 solver <- Solver(mtx.sub)
 mtx <- getAssayData(solver)
+
+# Create a Solver object using the included Alzheimer's data and retrieve the matrix
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+solver <- Solver(mtx.sub)
+mtx <- getTarget(solver)
+
+# Create a Solver object using the included Alzheimer's data and retrieve the matrix
+load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+solver <- Solver(mtx.sub)
+mtx <- getRegulators(solver)
 }
 \seealso{
 \code{\link{getAssayData}}, \code{\link{TReNA}}, \code{\link{solve}}
