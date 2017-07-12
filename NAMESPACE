@@ -1,16 +1,16 @@
 exportClasses(
-    TReNA,    
-    VarianceFilter,    
-    MotifMatcher,    
-    FootprintFilter,    
-    NullFilter,    
-    HumanDHSFilter,    
-    GeneOntologyFilter,    
+    TReNA,
+    VarianceFilter,
+    MotifMatcher,
+    FootprintFilter,
+    NullFilter,
+    HumanDHSFilter,
+    GeneOntologyFilter,
     RandomForestSolver)
 
 
 export(
-    TReNA,    
+    TReNA,
     Solver,
     BayesSpikeSolver,
     EnsembleSolver,
@@ -35,7 +35,7 @@ export(
     getVariants,
     getGenome,
     getMinid,
-    run    
+    run
 )
 
 exportMethods(
@@ -76,8 +76,7 @@ import(
     randomForest,
     vbsr,
     GenomicRanges,
-    BSgenome.Hsapiens.UCSC.hg38,
-    BSgenome.Hsapiens.UCSC.hg19
+    BSgenome
 )
 
 importFrom(RSQLite, SQLite)
