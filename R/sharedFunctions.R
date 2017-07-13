@@ -50,7 +50,7 @@
        if( keep.metrics == TRUE ) return( list( mtx.beta = mtx.beta , lambda = NA , r2 = cor.target.feature^2 ) )
      }
 
-     if( is.null(lambda) ) {
+     if( length(lambda) == 0  ) {
 
          # Run Permutation testing to find lambda
          if( alpha != 0 )

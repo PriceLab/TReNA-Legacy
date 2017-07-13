@@ -7,19 +7,10 @@
 \alias{solve.Ridge}
 \title{Run the Ridge Regression Solver}
 \usage{
-\S4method{run}{RidgeSolver}(obj, target.gene, tfs, tf.weights = rep(1,
-  length(tfs)), extraArgs = list())
+\S4method{run}{RidgeSolver}(obj)
 }
 \arguments{
-\item{obj}{An object of class Solver with "ridge" as the solver string}
-
-\item{target.gene}{A designated target gene that should be part of the mtx.assay data}
-
-\item{tfs}{The designated set of transcription factors that could be associated with the target gene.}
-
-\item{tf.weights}{A set of weights on the transcription factors (default = rep(1, length(tfs)))}
-
-\item{extraArgs}{Modifiers to the Ridge Regression solver}
+\item{obj}{An object of class RidgeSolver}
 }
 \value{
 A data frame containing the coefficients relating the target gene to each
@@ -29,15 +20,14 @@ transcription factor, plus other fit parameters.
 Given a TReNA object with Ridge Regression as the solver,
 use the \code{\link{glmnet}} function to estimate coefficients
 for each transcription factor as a predictor of the target gene's expression level.
-This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 }
 \examples{
 # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-trena <- TReNA(mtx.assay = mtx.sub, solver = "ridge")
 target.gene <- "MEF2C"
 tfs <- setdiff(rownames(mtx.sub), target.gene)
-tbl <- solve(trena, target.gene, tfs)
+ridge.solver <- LassoSolver(mtx.sub, target.gene, tfs)
+tbl <- run(ridge.solver)
 }
 \seealso{
 \code{\link{glmnet}}, , \code{\link{RidgeSolver}}

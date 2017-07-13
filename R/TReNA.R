@@ -61,7 +61,7 @@ setGeneric("getSolverObject", signature="obj", function(obj) standardGeneric ("g
 #' @description
 #' Class \code{TReNA} defines a TReNA object and contains an assay matrix, which contains expression data over a set of
 #' samples for a group of genes, and a string representing the name of a chosen solver.
-#' 
+#'
 #' @name TReNA-class
 #' @rdname TReNA-class
 #' @export
@@ -86,24 +86,35 @@ setGeneric("getSolverObject", signature="obj", function(obj) standardGeneric ("g
 #'
 #' @seealso \code{\link{solve}}, \code{\link{Solver}}, \code{\link{getSolverName}}, \code{\link{getSolverObject}}
 
-TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
+TReNA <- function(mtx.assay=matrix(), solverName="lasso", quiet=TRUE)
 {
-    stopifnot(solver %in% c("lasso", "randomForest", "bayesSpike", "pearson",
-                            "spearman","sqrtlasso","lassopv","ridge","ensemble","naive"))
+    browser()
+    recognized.solvers <- c("lasso", "randomForest", "bayesSpike", "pearson",
+                            "spearman","sqrtlasso","lassopv","ridge", "naive", "ensemble")
 
-    solver <- switch(solver,
-                     "lasso" = LassoSolver(mtx.assay),
-                     "randomForest" = RandomForestSolver(mtx.assay),
-                     "bayesSpike" = BayesSpikeSolver(mtx.assay),
-                     "pearson" = PearsonSolver(mtx.assay),
-                     "spearman" = SpearmanSolver(mtx.assay),
-                     "sqrtlasso" = SqrtLassoSolver(mtx.assay),
-                     "lassopv" = LassoPVSolver(mtx.assay),
-                     "ridge" = RidgeSolver(mtx.assay),
-                     "naive" = NaiveSolver(mtx.assay),
-                     "ensemble" = EnsembleSolver(mtx.assay))
+       # the solverName may be simple (e.g., "lasso")
+       # or complex (e.g., "ensemble:lasso;ridge;randomForest")
+       # extract the root, use it to figure out which solver to construct
 
-    .TReNA(solver=solver, quiet=quiet)    
+    requested.solver.root <- strsplit(solverName, ":")[[1]][1]
+    recognized.solver.found <-
+       any(unlist(lapply(recognized.solvers, function(solverName) grepl(solverName, requested.solver.root))))
+
+    stopifnot(recognized.solver.found)
+
+    solver <- switch(requested.solver.root,
+                     "lasso" = LassoSolver(mtx.assay, solverName),
+                     "randomForest" = RandomForestSolver(mtx.assay, solverName),
+                     "bayesSpike" = BayesSpikeSolver(mtx.assay, solverName),
+                     "pearson" = PearsonSolver(mtx.assay, solverName),
+                     "spearman" = SpearmanSolver(mtx.assay, solverName),
+                     "sqrtlasso" = SqrtLassoSolver(mtx.assay, solverName),
+                     "lassopv" = LassoPVSolver(mtx.assay, solverName),
+                     "ridge" = RidgeSolver(mtx.assay, solverName),
+                     "naive" = NaiveSolver(mtx.assay, solverName),
+                     "ensemble" = EnsembleSolver(mtx.assay, solverName))
+
+    .TReNA(solver=solver, quiet=quiet)
 
 } # TReNA, the constructor
 #----------------------------------------------------------------------------------------------------
@@ -112,13 +123,13 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 #' A TReNA object contains an assay matrix with expression data for genes of interest and a string
 #' representing the chosen solver. The \code{solve} method runs the specified solver given a target
 #' gene and a designated set of transcription factors, returning a list of parameters that quantify
-#' the relationship between the transcription factors and the target gene. 
+#' the relationship between the transcription factors and the target gene.
 #'
 #' @rdname solve
 #' @aliases solve solve.TReNA
 #'
 #' @exportMethod solve
-#' 
+#'
 #' @param obj An object of class TReNA
 #' @param target.gene A designated target gene that should be part of the mtx.assay data
 #' @param tfs The designated set of transcription factors that could be associated with the target gene.
@@ -161,7 +172,7 @@ setMethod("getSolverName", "TReNA",
 
           function(obj){
               # Return the solver name stored in the object
-              return(class(obj@solver)[1])                
+              return(class(obj@solver)[1])
           })
 
 #----------------------------------------------------------------------------------------------------

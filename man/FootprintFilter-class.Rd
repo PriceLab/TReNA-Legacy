@@ -5,32 +5,10 @@
 \alias{FootprintFilter-class}
 \alias{.FootprintFilter}
 \alias{FootprintFilter}
-\alias{FootprintFilter}
 \title{Create a FootprintFilter object}
-\usage{
-FootprintFilter(mtx.assay = matrix(), quiet = TRUE)
-}
-\arguments{
-\item{mtx.assay}{An assay matrix of gene expression data}
-
-\item{quiet}{A logical denoting whether or not the filter should print output}
-}
-\value{
-An object of the FootprintFilter class
-}
 \description{
 A FootprintFilter object allows for filtering based on gene footprinting databases. Using its
 associated \code{getCandidates} method and URIs for both a genome database and project database,
 a FootprintFilter object can be used to filter a list of possible transcription factors to those
 that match footprint motifs for a supplied target gene.
-}
-\examples{
-load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-footprint.filter <- FootprintFilter(mtx.assay = mtx.sub)
-}
-\seealso{
-\code{\link{getCandidates-FootprintFilter}}, \code{\link{getFilterAssayData}}
-
-Other Filtering Objects: \code{\link{NullFilter-class}},
-  \code{\link{VarianceFilter-class}}
 }

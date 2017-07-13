@@ -7,19 +7,10 @@
 \alias{solve.LassoPV}
 \title{Run the LASSO P-Value Solver}
 \usage{
-\S4method{run}{LassoPVSolver}(obj, target.gene, tfs, tf.weights = rep(1,
-  length(tfs)), extraArgs = list())
+\S4method{run}{LassoPVSolver}(obj)
 }
 \arguments{
-\item{obj}{An object of class Solver with "lassopv" as the solver string}
-
-\item{target.gene}{A designated target gene that should be part of the mtx.assay data}
-
-\item{tfs}{The designated set of transcription factors that could be associated with the target gene.}
-
-\item{tf.weights}{A set of weights on the transcription factors (default = rep(1, length(tfs)))}
-
-\item{extraArgs}{Modifiers to the Lasso P-Value solver}
+\item{obj}{An object of class LassoPVSolver}
 }
 \value{
 A data frame containing the p-values for each transcription factor pertaining to the target gene
@@ -28,16 +19,15 @@ plus the Pearson correlations between each transcription factor and the target g
 \description{
 Given a TReNA object with LASSO P-Value as the solver, use the \code{\link{lassopv}}
 function to estimate coefficients for each transcription factor as a predictor of the target
-gene's expression level. This method should be called using the \code{\link{solve}} method on an
-appropriate TReNA object.
+gene's expression level.
 }
 \examples{
 # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-trena <- TReNA(mtx.assay = mtx.sub, solver = "lassopv")
 target.gene <- "MEF2C"
 tfs <- setdiff(rownames(mtx.sub), target.gene)
-tbl <- solve(trena, target.gene, tfs)
+lassopv.solver <- LassoPVSolver(mtx.sub, target.gene, tfs)
+tbl <- run(lassopv.solver)
 }
 \seealso{
 \code{\link{lassopv}}, , \code{\link{LassoPVSolver}}

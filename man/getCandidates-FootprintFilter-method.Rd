@@ -6,7 +6,7 @@
 \alias{getCandidates-FootprintFilter}
 \title{Get candidate genes using the variance filter}
 \usage{
-\S4method{getCandidates}{FootprintFilter}(obj, extraArgs)
+\S4method{getCandidates}{FootprintFilter}(obj)
 }
 \arguments{
 \item{obj}{An object of class FootprintFilter}

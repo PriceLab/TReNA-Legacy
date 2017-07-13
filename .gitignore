@@ -1,2 +1,4 @@
 .Rhistory
-inst/doc
+*.RData
+.DS_Store
+

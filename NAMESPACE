@@ -1,8 +1,13 @@
 exportClasses(
     TReNA,
-    NullFilter,
     VarianceFilter,
-    FootprintFilter)
+    MotifMatcher,
+    FootprintFilter,
+    NullFilter,
+    HumanDHSFilter,
+    GeneOntologyFilter,
+    RandomForestSolver)
+
 
 export(
     TReNA,
@@ -17,16 +22,28 @@ export(
     SpearmanSolver,
     SqrtLassoSolver,
     CandidateFilter,
+    MotifMatcher,
     FootprintFilter,
+    HumanDHSFilter,
     NullFilter,
     VarianceFilter,
-    FootprintFinder
+    GeneOntologyFilter,
+    FootprintFinder,
+    getTargetGene,
+    getCandidateFilterSpec,
+    getSolverSpec,
+    getVariants,
+    getGenome,
+    getMinid,
+    run
 )
 
 exportMethods(
     closeDatabaseConnections,
     getCandidates,
     getAssayData,
+    getTarget,
+    getRegulators,
     getFilterAssayData,
     getChromLoc,
     getFootprintsForGene,
@@ -39,7 +56,13 @@ exportMethods(
     getSolverObject,
     mapMotifsToTFsMergeIntoTable,
     rescalePredictorWeights,
-    solve
+    solve,
+    getSequence,
+    getEncodeRegulatoryTableNames,
+    getRegulatoryRegions,
+    geneSymbolToTSS,
+    getPfms,
+    findMatchesByChromosomalRegion
 )
 
 import(
@@ -51,10 +74,13 @@ import(
     lassopv,
     methods,
     randomForest,
-    vbsr
+    vbsr,
+    GenomicRanges,
+    BSgenome
 )
 
 importFrom(RSQLite, SQLite)
 importFrom(RPostgreSQL, PostgreSQL)
-importFrom(GenomicRanges, makeGRangesFromDataFrame)
+importFrom(RMySQL, MySQL)
 importFrom(utils, head)
+importFrom(stringr, str_match)

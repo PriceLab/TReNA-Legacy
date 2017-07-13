@@ -7,19 +7,10 @@
 \alias{solve.SqrtLasso}
 \title{Run the Square Root LASSO Solver}
 \usage{
-\S4method{run}{SqrtLassoSolver}(obj, target.gene, tfs, tf.weights = rep(1,
-  length(tfs)), extraArgs = list())
+\S4method{run}{SqrtLassoSolver}(obj)
 }
 \arguments{
 \item{obj}{An object of class Solver with "sqrtlasso" as the solver string}
-
-\item{target.gene}{A designated target gene that should be part of the mtx.assay data}
-
-\item{tfs}{The designated set of transcription factors that could be associated with the target gene.}
-
-\item{tf.weights}{A set of weights on the transcription factors (default = rep(1, length(tfs)))}
-
-\item{extraArgs}{Modifiers to the Square Root LASSO solver}
 }
 \value{
 A data frame containing the coefficients relating the target gene to
@@ -33,12 +24,15 @@ This method should be called using the \code{\link{solve}} method on an appropri
 }
 \examples{
 # Load included Alzheimer's data, create a TReNA object with Square Root LASSO as solver, and solve
-# Use 4 cores with the extraArgs argument
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-trena <- TReNA(mtx.assay = mtx.sub, solver = "sqrtlasso")
 target.gene <- "MEF2C"
 tfs <- setdiff(rownames(mtx.sub), target.gene)
-tbl <- solve(trena, target.gene, tfs, extraArgs = list("num.cores" = 4))
+sqrt.solver <- SqrtLassoSolver(mtx.sub, target.gene, tfs)
+tbl <- run(sqrt.solver)
+
+# Solve the same problem but use 8 cores
+sqrt.solver <- SqrtLassoSolver(mtx.sub, target.gene, tfs, nCores = 8)
+tbl <- run(sqrt.solver)
 }
 \seealso{
 \code{\link{slim}}, \code{\link{SqrtLassoSolver}}

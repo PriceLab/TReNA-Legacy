@@ -9,16 +9,16 @@
 \alias{getFilterAssayData,CandidateFilter-method}
 \title{CandidateFilter}
 \usage{
-CandidateFilter(mtx.assay = matrix(), quiet = TRUE)
+CandidateFilter(quiet = TRUE)
 
 \S4method{getFilterAssayData}{CandidateFilter}(obj)
 }
 \arguments{
-\item{mtx.assay}{An assay matrix of gene expression data}
-
 \item{quiet}{A logical denoting whether or not the CandidateFilter object should print output}
 
 \item{obj}{An object of a CandidateFilter class}
+
+\item{mtx.assay}{An assay matrix of gene expression data}
 }
 \value{
 An object of the Candidate filter class
