@@ -89,7 +89,7 @@ setGeneric("getSolverObject", signature="obj", function(obj) standardGeneric ("g
 TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
 {
     stopifnot(solver %in% c("lasso", "randomForest", "bayesSpike", "pearson",
-                            "spearman","sqrtlasso","lassopv","ridge", "ensemble"))
+                            "spearman","sqrtlasso","lassopv","ridge","ensemble","naive"))
 
     solver <- switch(solver,
                      "lasso" = LassoSolver(mtx.assay),
@@ -100,6 +100,7 @@ TReNA <- function(mtx.assay=matrix(), solver="lasso", quiet=TRUE)
                      "sqrtlasso" = SqrtLassoSolver(mtx.assay),
                      "lassopv" = LassoPVSolver(mtx.assay),
                      "ridge" = RidgeSolver(mtx.assay),
+                     "naive" = NaiveSolver(mtx.assay),
                      "ensemble" = EnsembleSolver(mtx.assay))
 
     .TReNA(solver=solver, quiet=quiet)    

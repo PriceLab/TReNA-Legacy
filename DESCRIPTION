@@ -46,6 +46,7 @@ Collate:
     'FootprintFinder.R'
     'LassoPVSolver.R'
     'LassoSolver.R'
+    'NaiveSolver.R'
     'NullFilter.R'
     'PearsonSolver.R'
     'RandomForestSolver.R'
