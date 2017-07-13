@@ -47,8 +47,12 @@ Collate:
     'HumanDHSFilter.R'
     'LassoPVSolver.R'
     'LassoSolver.R'
+<<<<<<< Updated upstream
     'MotifMatcher.R'
     'NullFilter.R'
+=======
+    'NaiveSolver.R'
+>>>>>>> Stashed changes
     'PearsonSolver.R'
     'RandomForestSolver.R'
     'Recipe.R'
