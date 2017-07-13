@@ -31,6 +31,6 @@ null.filter <- NullFilter(mtx.assay = mtx.sub)
 \seealso{
 \code{\link{getCandidates-NullFilter}}, \code{\link{getFilterAssayData}}
 
-Other Filtering Objects: \code{\link{FootprintFilter-class}},
+Other Filtering Objects: \code{\link{FootprintFilter}},
   \code{\link{VarianceFilter-class}}
 }

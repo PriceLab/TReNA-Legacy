@@ -11,15 +11,7 @@
   length(tfs)), extraArgs = list())
 }
 \arguments{
-\item{obj}{An object of class Solver with "spearman" as the solver string}
-
-\item{target.gene}{A designated target gene that should be part of the mtx.assay data}
-
-\item{tfs}{The designated set of transcription factors that could be associated with the target gene.}
-
-\item{tf.weights}{A set of weights on the transcription factors (default = rep(1, length(tfs)))}
-
-\item{extraArgs}{Modifiers to the Spearman solver}
+\item{obj}{An object of class SpearmanSolver}
 }
 \value{
 The set of Spearman Correlation Coefficients between each transcription factor and the target gene.
@@ -28,15 +20,14 @@ The set of Spearman Correlation Coefficients between each transcription factor a
 Given a TReNA object with Spearman as the solver, use the \code{\link{cor}}
 function with \code{method = "spearman"} to esimate coefficients for each transcription factor
 as a predictor of the target gene's expression level.
-This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 }
 \examples{
 # Load included Alzheimer's data, create a TReNA object with Bayes Spike as solver, and solve
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-trena <- TReNA(mtx.assay = mtx.sub, solver = "pearson")
 target.gene <- "MEF2C"
 tfs <- setdiff(rownames(mtx.sub), target.gene)
-tbl <- solve(trena, target.gene, tfs)
+spearman.solver <- SpearmanSolver(mtx.sub, target.gene, tfs)
+tbl <- run(spearman.solver)
 }
 \seealso{
 \code{\link{cor}}, \code{\link{SpearmanSolver}}

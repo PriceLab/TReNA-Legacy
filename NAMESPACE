@@ -1,18 +1,16 @@
 exportClasses(
-   TReNA,
-   VarianceFilter,
-   MotifMatcher,
-   FootprintFilter,
-   NullFilter,
-   HumanDHSFilter,
-   GeneOntologyFilter,
-   RandomForestSolver,
-   Recipe,
-   Cook,
-   TReNA.Viz)
+    TReNA,
+    VarianceFilter,
+    MotifMatcher,
+    FootprintFilter,
+    NullFilter,
+    HumanDHSFilter,
+    GeneOntologyFilter,
+    RandomForestSolver)
+
 
 export(
-   TReNA,
+    TReNA,
     Solver,
     BayesSpikeSolver,
     EnsembleSolver,
@@ -31,38 +29,21 @@ export(
     VarianceFilter,
     GeneOntologyFilter,
     FootprintFinder,
-    Recipe,
-    getRecipeName,
     getTargetGene,
     getCandidateFilterSpec,
     getSolverSpec,
     getVariants,
     getGenome,
     getMinid,
-    Cook,
-    run,
-    TReNA.Viz,
-    geneRegulatoryModelToGraph,
-    addGraph,
-    loadStyle,
-    addBedTrackFromDataFrame,
-    addBedTrackFromHostedFile,
-    showGenomicRegion,
-    getGenomicRegion,
-    fit,
-    fitSelected,
-    selectNodes,
-    getSelectedNodes,
-    clearSelection,
-    sfn,
-    layoutStrategies,
-    layout
-    )
+    run
+)
 
 exportMethods(
     closeDatabaseConnections,
     getCandidates,
     getAssayData,
+    getTarget,
+    getRegulators,
     getFilterAssayData,
     getChromLoc,
     getFootprintsForGene,
@@ -79,7 +60,6 @@ exportMethods(
     getSequence,
     getEncodeRegulatoryTableNames,
     getRegulatoryRegions,
-    createModelsFromRecipes,
     geneSymbolToTSS,
     getPfms,
     findMatchesByChromosomalRegion
@@ -96,11 +76,9 @@ import(
     randomForest,
     vbsr,
     GenomicRanges,
-    BSgenome.Hsapiens.UCSC.hg38,
-    BSgenome.Hsapiens.UCSC.hg19
+    BSgenome
 )
 
-import(jsonlite)
 importFrom(RSQLite, SQLite)
 importFrom(RPostgreSQL, PostgreSQL)
 importFrom(RMySQL, MySQL)

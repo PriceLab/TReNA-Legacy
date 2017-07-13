@@ -98,7 +98,7 @@ TReNA <- function(mtx.assay=matrix(), solverName="lasso", quiet=TRUE)
 
     requested.solver.root <- strsplit(solverName, ":")[[1]][1]
     recognized.solver.found <-
-       any(unlist(lapply(recognized.solvers, function(solverName) grepl(solverName, solver.root))))
+       any(unlist(lapply(recognized.solvers, function(solverName) grepl(solverName, requested.solver.root))))
 
     stopifnot(recognized.solver.found)
 

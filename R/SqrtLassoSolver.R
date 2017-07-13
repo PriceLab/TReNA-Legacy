@@ -10,11 +10,27 @@
 #' 
 #' @name SqrtLassoSolver-class
 
-.SqrtLassoSolver <- setClass ("SqrtLassoSolver", contains="Solver")
+.SqrtLassoSolver <- setClass ("SqrtLassoSolver",
+                              contains="Solver",
+                              slots = c(regulatorWeights="numeric",
+                                        lambda = "numeric",
+                                        nCores = "numeric")
+                              )
 #----------------------------------------------------------------------------------------------------
 #' Create a Solver class object using the Square Root LASSO solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
+#' @param target.gene A designated target gene that should be part of the mtx.assay data
+#' @param candidateRegulators The designated set of transcription factors that could be associated
+#' with the target gene
+#' @param regulatorWeights A set of weights on the transcription factors
+#' (default = rep(1, length(tfs)))
+#' @param lambda A tuning parameter that determines the severity of the penalty function imposed
+#' on the elastic net regression. If unspecified, lambda will be determined via
+#' permutation testing (default = numeric(0)).
+#' @param nCores An integer specifying the number of computational cores to devote to this
+#' square root LASSO solver. This solver is generally quite slow and is greatly sped up when using
+#' multiple cores (default = 4)
 #' @param quiet A logical denoting whether or not the solver should print output
 #' 
 #' @return A Solver class object with Square Root LASSO as the solver
@@ -28,9 +44,25 @@
 #' @examples
 #' solver <- SqrtLassoSolver()
 
-SqrtLassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
+SqrtLassoSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulators,
+                            regulatorWeights = rep(1, length(candidateRegulators)),
+                            lambda = numeric(0), nCores = 4, quiet=TRUE)
 {
-    obj <- .SqrtLassoSolver(Solver(mtx.assay=mtx.assay, quiet=quiet))
+    if(any(grepl(targetGene, candidateRegulators)))
+      candidateRegulators <- candidateRegulators[-grep(targetGene, candidateRegulators)]
+
+    candidateRegulators <- intersect(candidateRegulators, rownames(mtx.assay))
+    
+    stopifnot(length(candidateRegulators) > 0)    
+
+    obj <- .SqrtLassoSolver(mtx.assay=mtx.assay,                        
+                        quiet=quiet,                        
+                        targetGene=targetGene,                        
+                        candidateRegulators=candidateRegulators,                        
+                        regulatorWeights=regulatorWeights,                        
+                        lambda = lambda,                        
+                        nCores = nCores                        
+                       )
 
     # Send a warning if there's a row of zeros
     if(!is.na(max(mtx.assay)) & any(rowSums(mtx.assay) == 0))
@@ -39,6 +71,23 @@ SqrtLassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
     obj
 
 } # SqrtLassoSolver, the constructor
+#----------------------------------------------------------------------------------------------------
+setMethod('show', 'SqrtLassoSolver',
+
+    function(obj) {
+       regulator.count <- length(getRegulators(obj))
+       if(regulator.count > 10){
+          regulatorString <- paste(getRegulators(obj)[1:10], collapse=",")
+          regulatorString <- sprintf("%s...", regulatorString);
+          }
+       else
+          regulatorString <- paste(getRegulators(obj), collapse=",")
+
+       msg = sprintf("SqrtLassoSolver with mtx.assay (%d, %d), targetGene %s, %d candidate regulators %s,  with %d cores",
+                     nrow(getAssayData(obj)), ncol(getAssayData(obj)),
+                     getTarget(obj), regulator.count, regulatorString, obj@nCores)
+       cat (msg, '\n', sep='')
+    })
 #----------------------------------------------------------------------------------------------------
 #' Run the Square Root LASSO Solver
 #'
@@ -51,10 +100,6 @@ SqrtLassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #' This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 #' 
 #' @param obj An object of class Solver with "sqrtlasso" as the solver string
-#' @param target.gene A designated target gene that should be part of the mtx.assay data
-#' @param tfs The designated set of transcription factors that could be associated with the target gene.
-#' @param tf.weights A set of weights on the transcription factors (default = rep(1, length(tfs)))
-#' @param extraArgs Modifiers to the Square Root LASSO solver
 #'
 #' @return A data frame containing the coefficients relating the target gene to
 #' each transcription factor, plus other fit parameters.
@@ -65,37 +110,34 @@ SqrtLassoSolver <- function(mtx.assay=matrix(), quiet=TRUE)
 #'
 #' @examples
 #' # Load included Alzheimer's data, create a TReNA object with Square Root LASSO as solver, and solve
-#' # Use 4 cores with the extraArgs argument
 #' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-#' trena <- TReNA(mtx.assay = mtx.sub, solver = "sqrtlasso")
 #' target.gene <- "MEF2C"
 #' tfs <- setdiff(rownames(mtx.sub), target.gene)
-#' tbl <- solve(trena, target.gene, tfs, extraArgs = list("num.cores" = 4))
+#' sqrt.solver <- SqrtLassoSolver(mtx.sub, target.gene, tfs)
+#' tbl <- run(sqrt.solver)
+#'
+#' # Solve the same problem but use 8 cores
+#' sqrt.solver <- SqrtLassoSolver(mtx.sub, target.gene, tfs, nCores = 8)
+#' tbl <- run(sqrt.solver)
 
 setMethod("run", "SqrtLassoSolver",
 
-          function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
+          function (obj){
+
+              mtx <- getAssayData(obj)
+              target.gene <- getTarget(obj)
+              tfs <- getRegulators(obj)
+              lambda <- obj@lambda
+              nCores <- obj@nCores
               
               if(length(tfs) == 0)                  
                   return(data.frame())              
 
               # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
-              if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){
-
+              if(rowMeans(mtx)[target.gene] < stats::quantile(rowMeans(mtx), probs = 0.1)){
                   warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
                   }
-       
-              # Set default lambda and number of cores
-              lambda <- NULL
-              num.cores <- NULL
-                    
-              if("lambda" %in% names(extraArgs))                  
-                  lambda <- extraArgs[["lambda"]]
 
-              # Set default number of cores
-              if("num.cores" %in% names(extraArgs))
-                  num.cores <- extraArgs[["num.cores"]]
-              
               # we don't try to handle tf self-regulation              
               deleters <- grep(target.gene, tfs)              
               if(length(deleters) > 0){                  
@@ -105,8 +147,7 @@ setMethod("run", "SqrtLassoSolver",
               }
               
               if( length(tfs) == 0 ) return( data.frame() )
-              
-              mtx <- getAssayData(obj)              
+                           
               stopifnot(target.gene %in% rownames(mtx))             
               stopifnot(all(tfs %in% rownames(mtx)))              
               stopifnot(class(lambda) %in% c("NULL","numeric"))              
@@ -123,18 +164,14 @@ setMethod("run", "SqrtLassoSolver",
               }
 
               # If no lambda, run a binary search for the best lasso using permutation of the data set
-              if(is.null(lambda)){
-                  #set.seed(101010)
+              if(length(lambda) == 0){
+
                   target.mixed <- sample(target)
                   threshold <- 1E-15
                   lambda.change <- 10^(-4)
                   lambda <- 1
-
-                  # Do this in parallel if possible
-                  if(is.null(num.cores))                      
-                      num.cores <- parallel::detectCores()/2
                   
-                  cl <- parallel::makeCluster(num.cores)
+                  cl <- parallel::makeCluster(nCores)
                   doParallel::registerDoParallel(cl)
                   
                   lambda.list <- foreach::foreach(i = 1:30) %dopar% {
@@ -158,12 +195,11 @@ setMethod("run", "SqrtLassoSolver",
                       }
                       lambda
                   }
-                  
-              }
-
-              lambda.list <- unlist(lambda.list)
-              parallel::stopCluster(cl)
-              lambda <- mean(lambda.list) + (stats::sd(lambda.list)/sqrt(length(lambda.list)))
+                  # Grab the lambdas and average them
+                  lambda.list <- unlist(lambda.list)                  
+                  parallel::stopCluster(cl)                  
+                  lambda <- mean(lambda.list) + (stats::sd(lambda.list)/sqrt(length(lambda.list)))                                 
+              }              
 
               # Run square root lasso and return an object of class "slim"              
               fit <- slim(features, target, method = "lq", lambda = lambda, verbose=FALSE)

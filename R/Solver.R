@@ -7,6 +7,8 @@
 
 .Solver <- setClass ("Solver",
                      slots = c(mtx.assay="matrix",
+                               targetGene="character",
+                               candidateRegulators="character",
                                quiet="logical",
                                state="environment")
                      )
@@ -36,7 +38,61 @@ setGeneric("getAssayData",    signature="obj", function(obj) standardGeneric ("g
 setGeneric("run",             signature="obj", function(obj, target.gene, tfs, tf.weights, extraArgs=list()) standardGeneric ("run"))
 #' @export
 setGeneric("rescalePredictorWeights",
-                              signature="obj", function(obj, rawValue.min, rawValue.max, rawValues) standardGeneric ("rescalePredictorWeights"))
+           signature="obj", function(obj, rawValue.min, rawValue.max, rawValues) standardGeneric ("rescalePredictorWeights"))
+
+#' Retrieve the target gene from a Solver object
+#'
+#' @rdname getTarget
+#' @aliases getTarget
+#'
+#' @param obj An object of class Solver
+#'
+#' @return The target gene associated with a Solver object
+#'
+#' @examples
+#' # Create a Solver object using the included Alzheimer's data and retrieve the target gene
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' solver <- Solver(mtx.sub)
+#' mtx <- getTarget(solver) 
+
+#' @export
+setGeneric("getTarget", signature = "obj", function(obj) standardGeneric("getTarget"))
+
+#' Retrieve the target gene from a Solver object
+#'
+#' @rdname getTarget
+#' @aliases getTarget
+#'
+#' @param obj An object of class Solver
+#'
+#' @return The target gene associated with a Solver object
+#'
+#' @examples
+#' # Create a Solver object using the included Alzheimer's data and retrieve the regulators
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' solver <- Solver(mtx.sub)
+#' mtx <- getRegulators(solver) 
+
+#' @export
+setGeneric("getRegulators", signature = "obj", function(obj) standardGeneric("getRegulators"))
+
+#' Show a Solver object
+#'
+#' @rdname show
+#' @aliases show
+#'
+#' @param obj An object of class Solver
+#'
+#' @return The names of the top 10 candidate regulators, plus statistics on the assay matrix, the
+#' target gene, and the total number of candidate regulators
+#'
+#' @examples
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' tfs <- setdiff(rownames(mtx.sub),"MEF2C")
+#' pearson.solver <- PearsonSolver(mtx.sub, "MEF2C", tfs)
+#' show(pearson.solver)
+
+setGeneric("show", signature = "obj", function(obj) standardGeneric("show"))
 #----------------------------------------------------------------------------------------------------
 #' Define an object of class Solver
 #'
@@ -64,7 +120,7 @@ setGeneric("rescalePredictorWeights",
 #'
 #' @family Solver class objects
 
-Solver <- function(mtx.assay=matrix(), quiet=TRUE)
+Solver <- function(mtx.assay=matrix(), targetGene, candidateRegulators, quiet=TRUE)
 {
     # If a matrix is supplied, check the distribution to see if it's too big
     if(!is.na(max(mtx.assay))){
@@ -74,8 +130,14 @@ Solver <- function(mtx.assay=matrix(), quiet=TRUE)
             }
     }
 
+    
+
     env <- new.env(parent=emptyenv())
-   .Solver(mtx.assay=mtx.assay, quiet=quiet, state=env)
+    .Solver(mtx.assay=mtx.assay,
+            targetGene = targetGene,
+            candidateRegulators = candidateRegulators,
+            quiet=quiet,
+            state=env)
 
 } # Solver, the constructor
 #----------------------------------------------------------------------------------------------------
@@ -95,6 +157,41 @@ setMethod("getAssayData", "Solver",
    function (obj){
       obj@mtx.assay
       })
+#----------------------------------------------------------------------------------------------------
+#' @describeIn Solver Retrieve the target gene for a Solver
+#'
+#' @param obj An object of class Solver
+#' 
+#' @examples
+#'
+#' # Create a Solver object using the included Alzheimer's data and retrieve the matrix
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' solver <- Solver(mtx.sub)
+#' mtx <- getTarget(solver)
+
+setMethod("getTarget", "Solver",
+
+   function (obj){
+      obj@targetGene
+      })
+#----------------------------------------------------------------------------------------------------
+#' @describeIn Solver Retrieve the candidate regulators for a Solver
+#'
+#' @param obj An object of class Solver
+#' 
+#' @examples
+#'
+#' # Create a Solver object using the included Alzheimer's data and retrieve the matrix
+#' load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+#' solver <- Solver(mtx.sub)
+#' mtx <- getRegulators(solver)
+
+setMethod("getRegulators", "Solver",
+
+   function (obj){
+      obj@candidateRegulators
+   })
+
 #----------------------------------------------------------------------------------------------------
 #' Rescale the Predictor Weights
 #'

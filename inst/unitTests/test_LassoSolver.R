@@ -9,6 +9,9 @@ runTests <- function()
    test_developAndFitDummyTestData()
    test_fitDummyData()   
    test_ampAD.mef2c.154tfs.278samples.lasso()
+   test_alpha.lasso()
+   test_lambda.lasso()
+   test_keep.metrics.lasso()
    test_scalePredictorPenalties.lasso()
    
 } # runTests
@@ -16,10 +19,14 @@ runTests <- function()
 test_LassoSolverConstructor <- function()
 {
    printf("--- test_LassoSolverConstructor")
-   #solver <- LassoSolver()
-   solver <- TReNA(matrix(), solver = "lasso")
-   checkEquals(getSolverName(solver), "LassoSolver")
-   #checkTrue(all(c("LassoSolver", "TReNA") %in% is(solver)))
+
+   mtx <- matrix(1:9,nrow=3)   
+   rownames(mtx) <- c("gene1","gene2","gene3")   
+   solver <- LassoSolver(mtx,targetGene = "gene1",
+                            candidateRegulators = c("gene2","gene3"))
+   
+   checkEquals(class(solver)[1], "LassoSolver")   
+   checkTrue(all(c("LassoSolver", "Solver") %in% is(solver)))   
 
 } # test_LassoSolverConstructor
 #----------------------------------------------------------------------------------------------------
@@ -95,20 +102,19 @@ test_fitDummyData <- function()
    target.gene <- x$correlated.target
    tfs <- x$tf.genes
 
-   trena <- TReNA(mtx.assay=mtx, solver="lasso", quiet=FALSE)
+   set.seed(49911)
+   lasso.solver <- LassoSolver(mtx, target.gene, tfs)
+   tbl.betas <- run(lasso.solver)
 
    tf1 <- x$correlated.tfs[1]
    tf2 <- x$correlated.tfs[2]
-   target.gene <- x$correlated.target
 
    target.values <- as.numeric(x$assay[target.gene,])
    tf1.values    <- as.numeric(x$assay[tf1,])
    tf2.values    <- as.numeric(x$assay[tf2,])
 
-     # we expect an intercept and a coef for tfs gene.02 and gene.03
-     # which predict the value of the target.gene
-
-   tbl.betas <- solve(trena, target.gene, tfs, extraArgs =list(alpha=1.0, lambda=NULL))
+   # we expect an intercept and a coef for tfs gene.02 and gene.03  
+   # which predict the value of the target.gene
    checkTrue(all(c(tf1,tf2) %in% rownames(tbl.betas)))
    checkEquals(colnames(tbl.betas), c("beta", "intercept", "gene.cor"))
    intercept <- tbl.betas[1, "intercept"]
@@ -117,7 +123,7 @@ test_fitDummyData <- function()
    predicted <- intercept + (coef.tf1 * mtx[tf1,]) + (coef.tf2 * mtx[tf2,])
    actual    <- mtx[target.gene, ]
 
-      # on average, the prediction should be reasonable
+   # on average, the prediction should be reasonable  
    checkEqualsNumeric(sum(actual - predicted), 0, tol=1e-8)
 
 } # test_fitDummyData
@@ -128,8 +134,9 @@ test_ampAD.mef2c.154tfs.278samples.lasso <- function()
 
    # Load matrix and transform via arcsinh
    load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-   target.gene <- "MEF2C"
    mtx.asinh <- asinh(mtx.sub)
+   target.gene <- "MEF2C"
+   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
    #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
    
    # check for expected non-sensical values
@@ -137,9 +144,9 @@ test_ampAD.mef2c.154tfs.278samples.lasso <- function()
    #checkTrue(min(tbl$beta) < -7)
    #checkTrue(max(tbl$beta) > 10)
 
-   trena <- TReNA(mtx.assay=mtx.asinh, solver="lasso", quiet=FALSE)
-   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
-   tbl <- solve(trena, target.gene, tfs)
+   set.seed(11512)
+   lasso.solver <- LassoSolver(mtx.asinh, target.gene, tfs)
+   tbl <- run(lasso.solver)
 
    # Check for empirical values
    checkTrue(min(tbl$beta) > -0.1)
@@ -147,6 +154,89 @@ test_ampAD.mef2c.154tfs.278samples.lasso <- function()
    checkTrue(c("SATB2") %in% rownames(subset(tbl, abs(beta) > 0.15)))
 
 } # test_ampAD.mef2c.154tfs.278samples.lasso
+#----------------------------------------------------------------------------------------------------
+test_alpha.lasso <- function()
+{
+   printf("--- test_alpha.lasso")
+
+   # Load matrix and transform via arcsinh
+   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+   mtx.asinh <- asinh(mtx.sub)
+   target.gene <- "MEF2C"
+   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
+   #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
+   
+   # check for expected non-sensical values
+   # I think this is now mostly unnecessary
+   #checkTrue(min(tbl$beta) < -7)
+   #checkTrue(max(tbl$beta) > 10)
+
+   set.seed(425)
+   lasso.solver <- LassoSolver(mtx.asinh, target.gene, tfs, alpha = 0.8)
+   tbl <- run(lasso.solver)
+
+   # Check for empirical values
+   checkTrue(min(tbl$beta) > -0.1)
+   checkTrue(max(tbl$beta) < 0.3)
+   checkTrue(c("SATB2") %in% rownames(subset(tbl, abs(beta) > 0.15)))
+
+} # test_alpha.lasso
+#----------------------------------------------------------------------------------------------------
+test_lambda.lasso <- function()
+{
+   printf("--- test_lambda.lasso")
+
+   # Load matrix and transform via arcsinh
+   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+   mtx.asinh <- asinh(mtx.sub)
+   target.gene <- "MEF2C"
+   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
+   #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
+   
+   # check for expected non-sensical values
+   # I think this is now mostly unnecessary
+   #checkTrue(min(tbl$beta) < -7)
+   #checkTrue(max(tbl$beta) > 10)
+
+   lasso.solver <- LassoSolver(mtx.asinh, target.gene, tfs, lambda = 0.1)
+   tbl <- run(lasso.solver)
+
+   # Check for empirical values
+   checkTrue(nrow(tbl) < 10)
+   checkTrue(min(tbl$beta) > -0.1)
+   checkTrue(max(tbl$beta) < 0.3)
+   checkTrue(c("SATB2") %in% rownames(subset(tbl, abs(beta) > 0.15)))
+
+} # test_lambda.lasso
+#----------------------------------------------------------------------------------------------------
+test_keep.metrics.lasso <- function()
+{
+   printf("--- test_keep.metrics.lasso")
+
+   # Load matrix and transform via arcsinh
+   load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
+   mtx.asinh <- asinh(mtx.sub)
+   target.gene <- "MEF2C"
+   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
+   #print(fivenum(mtx.asinh)  # [1] 0.000000 1.327453 3.208193 4.460219 7.628290)
+   
+   # check for expected non-sensical values
+   # I think this is now mostly unnecessary
+   #checkTrue(min(tbl$beta) < -7)
+   #checkTrue(max(tbl$beta) > 10)
+
+   set.seed(311)
+   lasso.solver <- LassoSolver(mtx.asinh, target.gene, tfs, keep.metrics=TRUE)
+   tbl <- run(lasso.solver)
+
+   # Check for empirical values
+   checkTrue(min(tbl$mtx.beta$beta) > -0.1)
+   checkTrue(max(tbl$mtx.beta$beta) < 0.3)
+   checkTrue(c("SATB2") %in% rownames(subset(tbl$mtx.beta, abs(beta) > 0.15)))
+   checkTrue(tbl$lambda < 0.1)
+   checkTrue(tbl$r2 > 0.95)
+
+} # test_keep.metrics.lasso
 #----------------------------------------------------------------------------------------------------
 # one possible source of down-weighting data from TFs is the frequency of their putative
 # binding sites across the genome.  the SP1-n family has a motif-in-footprint about every
@@ -158,7 +248,10 @@ test_scalePredictorPenalties.lasso <- function()
 {
    printf("--- test_scalePredictorPenalties.lasso")
    raw.values <-  c(241, 4739, 9854, 22215, 658334)
-   ls <- LassoSolver(matrix())
+   mtx <- matrix(1:9,nrow=3)   
+   rownames(mtx) <- c("gene1","gene2","gene3")   
+   ls <- LassoSolver(mtx,targetGene = "gene1",
+                            candidateRegulators = c("gene2","gene3"))
    min.observed <- 1        # just one footprint in the genome for some possible gene
    max.observed <- 658334   # max observed putative binding sites for SPx family of tfs
 

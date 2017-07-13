@@ -4,10 +4,22 @@
 \alias{EnsembleSolver}
 \title{Create a Solver class object using an ensemble of solvers}
 \usage{
-EnsembleSolver(mtx.assay = matrix(), quiet = TRUE)
+EnsembleSolver(mtx.assay = matrix(), targetGene, candidateRegulators,
+  solverNames = c("lasso", "lassopv", "pearson", "randomForest", "ridge",
+  "spearman"), geneCutoff = 0.1, alpha.lasso = 0.9, alpha.ridge = 0,
+  lambda.lasso = numeric(0), lambda.ridge = numeric(0),
+  lambda.sqrt = numeric(0), nCores.sqrt = 4, nOrderings.bayes = 10,
+  quiet = TRUE)
 }
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
+
+\item{targetGene}{A designated target gene that should be part of the mtx.assay data}
+
+\item{candidateRegulators}{The designated set of transcription factors that could be associated
+with the target gene}
+
+\item{solverNames}{A character vector of strings denoting}
 
 \item{quiet}{A logical denoting whether or not the solver should print output}
 }

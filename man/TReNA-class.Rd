@@ -11,7 +11,7 @@
 \alias{getSolverObject,TReNA-method}
 \title{Class TReNA}
 \usage{
-TReNA(mtx.assay = matrix(), solver = "lasso", quiet = TRUE)
+TReNA(mtx.assay = matrix(), solverName = "lasso", quiet = TRUE)
 
 \S4method{getSolverName}{TReNA}(obj)
 
@@ -19,6 +19,10 @@ TReNA(mtx.assay = matrix(), solver = "lasso", quiet = TRUE)
 }
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
+
+\item{quiet}{A logical denoting whether or not the TReNA object should print output}
+
+\item{obj}{An object of class TReNA}
 
 \item{solver}{A string matching the designated solver for relating a target gene to transcription factors.
 TReNA currently supports 9 solver strings (default = "lasso"):
@@ -33,10 +37,6 @@ TReNA currently supports 9 solver strings (default = "lasso"):
 \item{\link[=solve.Spearman]{"spearman"}}
 \item{\link[=solve.Ensemble]{"ensemble"}}
 }}
-
-\item{quiet}{A logical denoting whether or not the TReNA object should print output}
-
-\item{obj}{An object of class TReNA}
 }
 \value{
 An object of the TReNA class

@@ -4,12 +4,32 @@
 \alias{LassoSolver}
 \title{Create a Solver class object using the LASSO solver}
 \usage{
-LassoSolver(mtx.assay = matrix(), quiet = TRUE)
+LassoSolver(mtx.assay = matrix(), targetGene, candidateRegulators,
+  regulatorWeights = rep(1, length(candidateRegulators)), alpha = 0.9,
+  lambda = numeric(0), keep.metrics = FALSE, quiet = TRUE)
 }
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
 
+\item{candidateRegulators}{The designated set of transcription factors that could be associated
+with the target gene}
+
+\item{regulatorWeights}{A set of weights on the transcription factors
+(default = rep(1, length(tfs)))}
+
+\item{alpha}{A parameter from 0-1 that determines the proportion of LASSO to ridge used in the
+elastic net solver, with 0 being fully ridge and 1 being fully LASSO (default = 0.9)}
+
+\item{lambda}{A tuning parameter that determines the severity of the penalty function imposed
+on the elastic net regression. If unspecified, lambda will be determined via
+permutation testing (default = numeric(0)).}
+
+\item{keep.metrics}{A logical denoting whether or not to keep the initial supplied metrics
+versus determining new ones}
+
 \item{quiet}{A logical denoting whether or not the solver should print output}
+
+\item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 }
 \value{
 A Solver class object with LASSO as the solver

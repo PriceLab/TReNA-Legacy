@@ -7,20 +7,10 @@
 \alias{solve.Ensemble}
 \title{Run the Ensemble Solver}
 \usage{
-\S4method{run}{EnsembleSolver}(obj, target.gene, tfs, tf.weights = rep(1,
-  length(tfs)), extraArgs = list())
+\S4method{run}{EnsembleSolver}(obj)
 }
 \arguments{
 \item{obj}{An object of class Solver with "ensemble" as the solver string}
-
-\item{target.gene}{A designated target gene that should be part of the mtx.assay data}
-
-\item{tfs}{The designated set of transcription factors that could be associated with the target gene}
-
-\item{tf.weights}{A set of weights on the transcription factors (default = rep(1, length(tfs)))}
-
-\item{extraArgs}{Modifiers to the Ensemble solver, including "solver.list", "gene.cutoff", and solver-named
-arguments denoting extraArgs that correspond to a given solver (e.g. "lasso")}
 }
 \value{
 A data frame containing the scores for all solvers and two composite scores
@@ -40,19 +30,22 @@ method combine all specified solvers to create a composite score for each transc
 This method should be called using the \code{\link{solve}} method on an appropriate TReNA object.
 }
 \examples{
-# Load included Alzheimer's data, create a TReNA object with LASSO as solver, and solve
+# Load included Alzheimer's data, create an Ensemble object with default solvers, and solve
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
-trena <- TReNA(mtx.assay = mtx.sub, solver = "ensemble")
 target.gene <- "MEF2C"
 tfs <- setdiff(rownames(mtx.sub), target.gene)
-tbl <- solve(trena, target.gene, tfs)
+ensemble.solver <- EnsembleSolver(mtx.sub, target.gene, tfs)
+tbl <- run(ensemble.solver)
 
 # Solve the same problem, but supply extra arguments that change alpha for LASSO to 0.8 and also
 # Change the gene cutoff from 10\% to 20\%
-tbl <- solve(trena, target.gene, tfs, extraArgs = list("gene.cutoff" = 0.2, "lasso" = list("alpha" = 0.8)))
+ensemble.solver <- EnsembleSolve(mtx.sub, target.gene, tfs, gene.cutoff = 0.2, alpha.lasso = 0.8)))
+tbl <- run(ensemble.solver)
 
 # Solve the original problem with default cutoff and solver parameters, but use only 4 solvers
-tbl <- solve(trena, target.gene, tfs, extraArgs = list("solver.list" = c("lasso", "randomForest", "pearson", "bayesSpike")))
+ensemble.solver <- EnsembleSolver(mtx.sub, target.gene, tfs,
+solverNames = c("lasso", "randomForest", "pearson", "bayesSpike"))
+tbl <- run(ensemble.solver)
 }
 \seealso{
 \code{\link{EnsembleSolver}}

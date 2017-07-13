@@ -4,12 +4,21 @@
 \alias{RandomForestSolver}
 \title{Create a Solver class object using the Random Forest solver}
 \usage{
-RandomForestSolver(mtx.assay = matrix(), quiet = TRUE)
+RandomForestSolver(mtx.assay = matrix(), targetGene, candidateRegulators,
+  regulatorWeights = rep(1, length(candidateRegulators)), quiet = TRUE)
 }
 \arguments{
 \item{mtx.assay}{An assay matrix of gene expression data}
 
+\item{candidateRegulators}{The designated set of transcription factors that could be associated
+with the target gene}
+
+\item{regulatorWeights}{A set of weights on the transcription factors
+(default = rep(1, length(candidateRegulators)))}
+
 \item{quiet}{A logical denoting whether or not the solver should print output}
+
+\item{target.gene}{A designated target gene that should be part of the mtx.assay data}
 }
 \value{
 A Solver class object with Random Forest as the solver

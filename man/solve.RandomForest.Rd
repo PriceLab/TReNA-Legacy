@@ -7,17 +7,16 @@
 \alias{solve.RandomForest}
 \title{Run the Random Forest Solver}
 \usage{
-\S4method{run}{RandomForestSolver}(obj, target.gene, tfs, tf.weights = rep(1,
-  length(tfs), extraArgs = list()))
+\S4method{run}{RandomForestSolver}(obj)
 }
 \arguments{
-\item{obj}{An object of class Solver with "randomForest" as the solver string}
+\item{obj}{An object of class TReNA with "randomForest" as the solver string}
 
-\item{target.gene}{A designated target gene that should be part of the mtx.assay data}
+\item{targetGene}{A designated target gene that should be part of the mtx.assay data}
 
-\item{tfs}{The designated set of transcription factors that could be associated with the target gene.}
+\item{candidateRegulators}{The designated set of transcription factors that could be associated with the target gene.}
 
-\item{tf.weights}{A set of weights on the transcription factors (default = rep(1, length(tfs)))}
+\item{tf.weights}{A set of weights on the transcription factors (default = rep(1, length(candidateRegulators)))}
 
 \item{extraArgs}{Modifiers to the Random Forest solver}
 }
@@ -34,9 +33,9 @@ This method should be called using the \code{\link{solve}} method on an appropri
 # Load included Alzheimer's data, create a TReNA object with Random Forest as solver, and solve
 load(system.file(package="TReNA", "extdata/ampAD.154genes.mef2cTFs.278samples.RData"))
 trena <- TReNA(mtx.assay = mtx.sub, solver = "randomForest")
-target.gene <- "MEF2C"
-tfs <- setdiff(rownames(mtx.sub), target.gene)
-tbl <- solve(trena, target.gene, tfs)
+targetGene <- "MEF2C"
+candidateRegulators <- setdiff(rownames(mtx.sub), targetGene)
+tbl <- solve(trena, targetGene, candidateRegulators)
 }
 \seealso{
 \code{\link{randomForest}}, \code{\link{RandomForestSolver}}

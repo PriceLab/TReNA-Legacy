@@ -9,16 +9,19 @@
 
 .RandomForestSolver <- setClass ("RandomForestSolver",
                                  contains="Solver",
-                                 slots=c(targetGene="character",
-                                         candidateRegulators="character",
-                                         regulatorWeights="numeric")
+                                 slots=c(regulatorWeights="numeric")                                 
                                  )
 #----------------------------------------------------------------------------------------------------
 #' Create a Solver class object using the Random Forest solver
 #'
 #' @param mtx.assay An assay matrix of gene expression data
+#' @param target.gene A designated target gene that should be part of the mtx.assay data
+#' @param candidateRegulators The designated set of transcription factors that could be associated
+#' with the target gene
+#' @param regulatorWeights A set of weights on the transcription factors
+#' (default = rep(1, length(candidateRegulators)))
 #' @param quiet A logical denoting whether or not the solver should print output
-#'
+#' 
 #' @return A Solver class object with Random Forest as the solver
 #'
 #' @seealso  \code{\link{solve.RandomForest}}, \code{\link{getAssayData}}
@@ -40,7 +43,7 @@ RandomForestSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulato
    candidateRegulators <- intersect(candidateRegulators, rownames(mtx.assay))
    stopifnot(length(candidateRegulators) > 0)
 
-   obj <- .RandomForestSolver(Solver(mtx.assay=mtx.assay, quiet=quiet),
+   obj <- .RandomForestSolver(mtx.assay=mtx.assay, quiet=quiet,
                               targetGene=targetGene,
                               candidateRegulators=candidateRegulators,
                               regulatorWeights=regulatorWeights)
@@ -55,21 +58,20 @@ RandomForestSolver <- function(mtx.assay=matrix(), targetGene, candidateRegulato
 #----------------------------------------------------------------------------------------------------
 setMethod('show', 'RandomForestSolver',
 
-    function(object) {
-       regulator.count <- length(object@candidateRegulators)
+    function(obj) {
+       regulator.count <- length(getRegulators(obj))
        if(regulator.count > 10){
-          regulatorString <- paste(object@candidateRegulators[1:10], collapse=",")
+          regulatorString <- paste(getRegulators(obj)[1:10], collapse=",")
           regulatorString <- sprintf("%s...", regulatorString);
           }
        else
-          regulatorString <- paste(object@candidateRegulators, collapse=",")
+          regulatorString <- paste(getRegulators(obj), collapse=",")
 
        msg = sprintf("RandomForestSolver with mtx.assay (%d, %d), targetGene %s, %d candidate regulators %s",
-                     nrow(object@mtx.assay), ncol(object@mtx.assay),
-                     object@targetGene, regulator.count, regulatorString)
+                     nrow(getAssayData(obj)), ncol(getAssayData(obj)),
+                     getTarget(obj), regulator.count, regulatorString)
        cat (msg, '\n', sep='')
-       })
-
+    })
 #----------------------------------------------------------------------------------------------------
 #' Run the Random Forest Solver
 #'
@@ -106,27 +108,27 @@ setMethod("run", "RandomForestSolver",
 
   function (obj){
 
+      mtx <- getAssayData(obj)
+      target.gene <- getTarget(obj)
+      tfs <- getRegulators(obj)
+      
       # Check if target.gene is in the bottom 10% in mean expression; if so, send a warning
-      target.gene <- obj@targetGene
-      if(rowMeans(getAssayData(obj))[target.gene] < stats::quantile(rowMeans(getAssayData(obj)), probs = 0.1)){
+      if(rowMeans(mtx)[target.gene] < stats::quantile(rowMeans(mtx), probs = 0.1)){
           warning("Target gene mean expression is in the bottom 10% of all genes in the assay matrix")
-      }
+      }     
+      
+      stopifnot(target.gene %in% rownames(mtx))           
+      stopifnot(all(tfs %in% rownames(mtx)))      
+      if(length(tfs)==0) return(NULL)      
 
-     #mtx <- getAssayData(obj)
-     stopifnot(target.gene %in% rownames(mtx))
-     mtx <- obj@mtx.assay
-     stopifnot(all(obj@candidateRegulators %in% rownames(mtx)))
-     if(length(obj@candidateRegulators)==0) return(NULL)
-
-
-     x = t(mtx[obj@candidateRegulators,,drop=F])
-     y = as.vector(t(mtx[obj@targetGene,])) # Change y to a vector to avoid RF warning
+      x <- t(mtx[tfs,,drop=F])      
+      y <- as.vector(t(mtx[target.gene,])) # Change y to a vector to avoid RF warning      
 
      fit <- randomForest( x = x, y = y )
      edges = as.data.frame(fit$importance)
      pred.values = stats::predict(fit)
-     r2 = stats::cor(pred.values , mtx[obj@targetGene,])^2
-     gene.cor <- sapply(rownames(edges), function(tf) stats::cor(mtx[tf,], mtx[obj@targetGene,]))
+     r2 = stats::cor(pred.values , mtx[target.gene,])^2
+     gene.cor <- sapply(rownames(edges), function(tf) stats::cor(mtx[tf,], mtx[target.gene,]))
      edges$gene.cor <- gene.cor
      edges <- edges[order(edges$IncNodePurity, decreasing=TRUE),]
      return(list(edges = edges , r2 = r2))
