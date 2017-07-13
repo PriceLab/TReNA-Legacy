@@ -90,7 +90,7 @@ TReNA <- function(mtx.assay=matrix(), solverName="lasso", quiet=TRUE)
 {
     browser()
     recognized.solvers <- c("lasso", "randomForest", "bayesSpike", "pearson",
-                            "spearman","sqrtlasso","lassopv","ridge", "ensemble")
+                            "spearman","sqrtlasso","lassopv","ridge", "naive", "ensemble")
 
        # the solverName may be simple (e.g., "lasso")
        # or complex (e.g., "ensemble:lasso;ridge;randomForest")
@@ -111,6 +111,7 @@ TReNA <- function(mtx.assay=matrix(), solverName="lasso", quiet=TRUE)
                      "sqrtlasso" = SqrtLassoSolver(mtx.assay, solverName),
                      "lassopv" = LassoPVSolver(mtx.assay, solverName),
                      "ridge" = RidgeSolver(mtx.assay, solverName),
+                     "naive" = NaiveSolver(mtx.assay, solverName),
                      "ensemble" = EnsembleSolver(mtx.assay, solverName))
 
     .TReNA(solver=solver, quiet=quiet)

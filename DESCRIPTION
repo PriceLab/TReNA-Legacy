@@ -47,7 +47,7 @@ Collate:
     'HumanDHSFilter.R'
     'LassoPVSolver.R'
     'LassoSolver.R'
-    'MotifMatcher.R'
+    'NaiveSolver.R'
     'NullFilter.R'
     'PearsonSolver.R'
     'RandomForestSolver.R'
