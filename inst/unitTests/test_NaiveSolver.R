@@ -14,8 +14,13 @@ test_NaiveSolverConstructor <- function() {
   printf("--- test_NaiveSolverConstructor")
   
   # Construct solver & get name
-  solver <- TReNA(matrix(), solver = "naive")
-  checkEquals(getSolverName(solver), "NaiveSolver")
+  mtx <- matrix(1:9,nrow=3)   
+  rownames(mtx) <- c("gene1","gene2","gene3")    
+  solver <- NaiveSolver(mtx,targetGene = "gene1",                          
+                          candidateRegulators = c("gene2","gene3")) 
+  
+  checkEquals(class(solver)[1], "NaiveSolver")    
+  checkTrue(all(c("NaiveSolver", "Solver") %in% is(solver)))
 }
 #----------------------------------------------------------------------------------------------------
 # MEF2C Data Test
@@ -27,9 +32,9 @@ test_ampAD.mef2c.154tfs.278samples.naive <- function() {
   target.gene <- "MEF2C"
   mtx.asinh <- asinh(mtx.sub)
   
-  trena <- TReNA(mtx.assay=mtx.asinh, solver="naive", quiet=FALSE)
   tfs <- setdiff(rownames(mtx.asinh), "MEF2C")
-  tbl <- solve(trena, target.gene, tfs)
+  naive.solver <- NaiveSolver(mtx.asinh, target.gene, tfs)
+  tbl <- run(naive.solver)
   
   # Checks
   checkTrue(min(tbl$beta) > -0.3)

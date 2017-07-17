@@ -3,22 +3,57 @@
 # Be warned! This is known to function much better on "larger" data
 #----------------------------------------------------------------------------------------------------
 # solver class defintion
-.NaiveSolver <- setClass("NaiveSolver", contains = "Solver")
+.NaiveSolver <- setClass("NaiveSolver",
+                         contains = "Solver",
+                         slots = c(alpha = "numeric",
+                                   lambda = "numeric"))
 #----------------------------------------------------------------------------------------------------
 # solver constructor function
-NaiveSolver <- function(mtx.assay = matrix(), quiet = TRUE)
+NaiveSolver <- function(mtx.assay = matrix(), targetGene, candidateRegulators,
+                        alpha = 1, lambda = numeric(), quiet = TRUE)
 {
-  obj <- .NaiveSolver(Solver(mtx.assay = mtx.assay, quiet = quiet))
+  # Remove the targetGene from candidateRegulators
+  if(any(grepl(targetGene, candidateRegulators)))      
+    candidateRegulators <- candidateRegulators[-grep(targetGene, candidateRegulators)]    
+  
+  # Check to make sure the matrix contains some of the candidates
+  candidateRegulators <- intersect(candidateRegulators, rownames(mtx.assay))    
+  stopifnot(length(candidateRegulators) > 0)
+  
+  obj <- .NaiveSolver(mtx.assay = mtx.assay,targetGene = targetGene,
+                      candidateRegulators = candidateRegulators, alpha = alpha,
+                      lambda = lambda, quiet = quiet)
   
   obj
 }
 #----------------------------------------------------------------------------------------------------
+setMethod('show', 'NaiveSolver',
+          
+          function(obj) {
+            regulator.count <- length(getRegulators(obj))
+            if(regulator.count > 10){
+              regulatorString <- paste(getRegulators(obj)[1:10], collapse=",")
+              regulatorString <- sprintf("%s...", regulatorString);
+            }
+            else
+              regulatorString <- paste(getRegulators(obj), collapse=",")
+            
+            msg = sprintf("NaiveSolver with mtx.assay (%d, %d), targetGene %s, %d candidate regulators %s, alpha = %f",
+                          nrow(getAssayData(obj)), ncol(getAssayData(obj)),
+                          getTarget(obj), regulator.count, regulatorString, obj@alpha)
+            cat (msg, '\n', sep='')
+          })
+#----------------------------------------------------------------------------------------------------
 # run function
 setMethod("run", "NaiveSolver",
-          function (obj, target.gene, tfs, tf.weights=rep(1,length(tfs)), extraArgs=list()){
+          function (obj){
             
             # begin with a TReNA object and extract the slots/data
             mtx <- getAssayData(obj)
+            target.gene <- getTarget(obj)
+            tfs <- getRegulators(obj)
+            alpha <- obj@alpha
+            lambda <- obj@lambda
             
             # Check if target.gene is in bottom 10% mean expressions
             if(rowMeans(mtx)[target.gene] < stats::quantile(rowMeans(mtx), probs = 0.1)){
@@ -33,29 +68,22 @@ setMethod("run", "NaiveSolver",
             # We also have to make a few checks to determine the data is formatted/submitted properly
             stopifnot(target.gene %in% rownames(mtx))
             stopifnot(all(tfs %in% rownames(mtx)))
-            if (length(tfs) == 0) return(NULL)
+            if (length(tfs) == 0)
+              return(NULL)
             
             deleters <- grep(target.gene, tfs)
             if (length(deleters) > 0){
               tfs <- tfs[-deleters]
             }
-            if (length(tfs) == 0) return(NULL)
-            
-            # Default setting
-            alpha <- 1
-            lambda <- NULL
-            
-            if("alpha" %in% names(extraArgs))
-              alpha <- extraArgs[["alpha"]]
-            if("lambda" %in% names(extraArgs))
-              lambda <- extraArgs[["lambda"]]
+            if (length(tfs) == 0)
+              return(NULL)
             
             features <- t(mtx[tfs,,drop=FALSE])
             target <- as.numeric(mtx[target.gene,])
             tf.weights <- rep(1, length(tfs))
             
             # glmnet prep
-            if( is.null(lambda) ) {
+            if( length(lambda) == 0 ) {
               
               # Run Permutation testing to find lambda
               if( alpha != 0 )
@@ -107,7 +135,7 @@ setMethod("run", "NaiveSolver",
             nz.indices <- which(!(fit.coefs == 0))
             non.zeroes <- rownames(as.matrix(fit.coefs[nz.indices,,drop=FALSE]))[-1]
             non.zeroes <- append(non.zeroes, target.gene)
-            selected.matrix <- mtx.asinh[which(rownames(mtx.asinh) %in% non.zeroes),]
+            selected.matrix <- mtx[which(rownames(mtx) %in% non.zeroes),]
             
             # lm the new matrix
             selected.matrix <- as.data.frame(t(selected.matrix))
@@ -120,7 +148,7 @@ setMethod("run", "NaiveSolver",
                               p.value = coef.summary[,4])
             tbl <- tbl[-1,,drop=FALSE]
             tbl <- tbl[order(tbl$p.value),]
-            invisible(tbl)
+            return(tbl)
           })
 
 #----------------------------------------------------------------------------------------------------

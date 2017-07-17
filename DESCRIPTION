@@ -1,8 +1,8 @@
 Package: TReNA
 Type: Package
 Title: Fit transcriptional regulatory networks using gene expression, priors, machine learning
-Version: 0.99.128
-Date: 2017-07-12
+Version: 0.99.129
+Date: 2017-07-13
 Author: Seth Ament <seth.ament@systemsbiology.org>, Paul Shannon <pshannon@systemsbioloyg.org>, Matthew Richards <mrichard@systemsbiology.org>
 Maintainer: Matthew Richards <mrichard@systemsbiology.org>
 Imports:
@@ -47,12 +47,9 @@ Collate:
     'HumanDHSFilter.R'
     'LassoPVSolver.R'
     'LassoSolver.R'
-<<<<<<< Updated upstream
     'MotifMatcher.R'
     'NullFilter.R'
-=======
     'NaiveSolver.R'
->>>>>>> Stashed changes
     'PearsonSolver.R'
     'RandomForestSolver.R'
     'Recipe.R'
