@@ -21,6 +21,7 @@ export(
     RidgeSolver,
     SpearmanSolver,
     SqrtLassoSolver,
+    NaiveSolver,
     CandidateFilter,
     MotifMatcher,
     FootprintFilter,
