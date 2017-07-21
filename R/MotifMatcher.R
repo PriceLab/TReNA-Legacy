@@ -393,6 +393,8 @@ setMethod(".parseVariantString", "MotifMatcher",
           require(SNPlocs.Hsapiens.dbSNP144.GRCh38)
           snp.info <- as.data.frame(snpsById(SNPlocs.Hsapiens.dbSNP144.GRCh38, variantString))[1,]
           chrom <- as.character(snp.info$seqnames)
+          if(!grepl("ch", chrom))
+             chrom <- sprintf("chr%s", chrom)
           if(!grepl("chr", chrom))
              chrom <- sub("ch", "chr", chrom)
           start <- as.numeric(snp.info$pos)
