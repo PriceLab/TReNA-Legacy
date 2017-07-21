@@ -3,7 +3,6 @@ exportClasses(
     VarianceFilter,
     MotifMatcher,
     FootprintFilter,
-    NullFilter,
     HumanDHSFilter,
     GeneOntologyFilter,
     RandomForestSolver)
@@ -26,16 +25,9 @@ export(
     MotifMatcher,
     FootprintFilter,
     HumanDHSFilter,
-    NullFilter,
     VarianceFilter,
     GeneOntologyFilter,
     FootprintFinder,
-    getTargetGene,
-    getCandidateFilterSpec,
-    getSolverSpec,
-    getVariants,
-    getGenome,
-    getMinid,
     run
 )
 
@@ -63,7 +55,8 @@ exportMethods(
     getRegulatoryRegions,
     geneSymbolToTSS,
     getPfms,
-    findMatchesByChromosomalRegion
+    findMatchesByChromosomalRegion,
+    show
 )
 
 import(
