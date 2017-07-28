@@ -37,6 +37,5 @@ tfs <- getCandidates(variance.filter, argsList = list("target.gene" = target.gen
 \code{\link{VarianceFilter}}
 
 Other getCandidate Methods: \code{\link{getCandidates,FootprintFilter-method}},
-  \code{\link{getCandidates,NullFilter-method}},
   \code{\link{getCandidates}}
 }

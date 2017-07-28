@@ -20,10 +20,9 @@ runTests <- function()
    test_getCandidates.emptyRegion()
    test_getCandidates.vrk2.twoRegions()
    test_getCandidates.vrk2.rs13384219.variant()
-   test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants()
+   #test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants()
    test_getCandidates.twoAlternateAllelesInVariant()
 
-   test_apq4.5snps <- function()
    #test_getRegulatoryRegions_hardCase()
    #test_.matchForwardAndReverse()
    #test_.getScoredMotifs()
@@ -204,8 +203,8 @@ test_checkSampleOfEncodeTables <- function(quiet=TRUE)
 {
    printf("--- test_checkSampleOfEncodeTables")
 
-   #candidateFilterSpec <- create.vrk2.candidateFilterSpec()
-   candidateFilterSpec <- create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
+   candidateFilterSpec <- create.vrk2.candidateFilterSpec()
+   #candidateFilterSpec <- create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
 
    hdf <- with(candidateFilterSpec,
                HumanDHSFilter(genomeName,
@@ -657,7 +656,7 @@ test_getCandidates.vrk2.rs13384219.neighborhood.with.withoutVariants <- function
                                               regionsSpec=regionsSpec,
                                               geneCenteredSpec=geneCenteredSpec,
                                               variants=variants,
-                                              quiet=TRUE))
+                                              quiet=FALSE))
    x.mut <- getCandidates(hdf)
    checkEquals(sort(names(x.mut)), c("tbl", "tfs"))
    checkEquals(dim(x.mut$tbl), c(55, 13))

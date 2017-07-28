@@ -19,6 +19,5 @@ Get candidate genes using a CandidateFilter object
 }
 \seealso{
 Other getCandidate Methods: \code{\link{getCandidates,FootprintFilter-method}},
-  \code{\link{getCandidates,NullFilter-method}},
   \code{\link{getCandidates,VarianceFilter-method}}
 }
