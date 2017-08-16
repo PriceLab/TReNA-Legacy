@@ -6,11 +6,12 @@
 .NaiveSolver <- setClass("NaiveSolver",
                          contains = "Solver",
                          slots = c(alpha = "numeric",
-                                   lambda = "numeric"))
+                                   lambda = "numeric",
+                                   rfSelector = "logical"))
 #----------------------------------------------------------------------------------------------------
 # solver constructor function
 NaiveSolver <- function(mtx.assay = matrix(), targetGene, candidateRegulators,
-                        alpha = 1, lambda = numeric(), quiet = TRUE)
+                        alpha = 1, lambda = numeric(), rfSelector = FALSE, quiet = TRUE)
 {
   # Remove the targetGene from candidateRegulators
   if(any(grepl(targetGene, candidateRegulators)))      
@@ -22,7 +23,7 @@ NaiveSolver <- function(mtx.assay = matrix(), targetGene, candidateRegulators,
   
   obj <- .NaiveSolver(mtx.assay = mtx.assay,targetGene = targetGene,
                       candidateRegulators = candidateRegulators, alpha = alpha,
-                      lambda = lambda, quiet = quiet)
+                      lambda = lambda, rfSelector = rfSelector, quiet = quiet)
   
   obj
 }
@@ -54,6 +55,7 @@ setMethod("run", "NaiveSolver",
             tfs <- getRegulators(obj)
             alpha <- obj@alpha
             lambda <- obj@lambda
+            rfSelector <- obj@rfSelector
             
             # Check if target.gene is in bottom 10% mean expressions
             if(rowMeans(mtx)[target.gene] < stats::quantile(rowMeans(mtx), probs = 0.1)){
@@ -81,6 +83,30 @@ setMethod("run", "NaiveSolver",
             features <- t(mtx[tfs,,drop=FALSE])
             target <- as.numeric(mtx[target.gene,])
             tf.weights <- rep(1, length(tfs))
+            
+            if(rfSelector){
+            # RandomForest Filtering Method
+              # Solve with RF
+              solver <- RandomForestSolver(mtx,target.gene,tfs)
+              tbl <- run(solver)$edges
+              # Pull out threshold %
+              # Say threshold for now is 10%
+              threshold <- nrow(tbl) * 0.1
+              selected.names <- rownames(tbl[1:threshold,]) %>%
+                append(target.gene)
+              selected.matrix <- as.data.frame(t(mtx[which(rownames(mtx) %in% selected.names),]))
+              # run lm on that
+              lin.mod <- lm(paste0(target.gene,"~."),data = selected.matrix)
+              # return formatted betas/p.vals
+              coef.summary <- summary(lin.mod)$coefficients
+              tbl <- data.frame(row.names = rownames(coef.summary),
+                                beta = coef.summary[,1],
+                                p.value = coef.summary[,4])
+              tbl <- tbl[-1,,drop=FALSE]
+              tbl <- tbl[order(tbl$p.value),]
+              return(tbl)
+            }else{
+            # Lasso Filtering Method
             
             # glmnet prep
             if( length(lambda) == 0 ) {
@@ -149,6 +175,7 @@ setMethod("run", "NaiveSolver",
             tbl <- tbl[-1,,drop=FALSE]
             tbl <- tbl[order(tbl$p.value),]
             return(tbl)
-          })
+          }
+            })
 
 #----------------------------------------------------------------------------------------------------

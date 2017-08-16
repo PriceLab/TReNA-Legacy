@@ -178,7 +178,8 @@ setMethod("run", "EnsembleSolver",
                                    "spearman" = SpearmanSolver(mtx, target.gene, tfs),                                   
                                    "sqrtlasso" = SqrtLassoSolver(mtx, target.gene, tfs,
                                                                  lambda = obj@lambda.sqrt, nCores = obj@nCores.sqrt),             
-                                   "lassopv" = LassoPVSolver(mtx, target.gene, tfs),                           
+                                   "lassopv" = LassoPVSolver(mtx, target.gene, tfs),
+                                   "naive" = NaiveSolver(mtx, target.gene, tfs),
                                    "ridge" = RidgeSolver(mtx, target.gene, tfs,
                                                          alpha = obj@alpha.ridge, lambda = obj@lambda.ridge))
                   
@@ -186,7 +187,7 @@ setMethod("run", "EnsembleSolver",
                   out.list[[i]] <- run(solver)
                   names(out.list)[i] <- paste("out",tolower(solver.list[[i]]),sep=".")                  
               }
-
+              
                # Output lasso with beta
                if("lasso" %in% tolower(solver.list)){
                    out.list$out.lasso$gene <- rownames(out.list$out.lasso)
@@ -267,6 +268,17 @@ setMethod("run", "EnsembleSolver",
                    ridge.med <- stats::median(out.list$out.ridge$beta.ridge)
                    ridge.scale <- stats::mad(out.list$out.ridge$beta.ridge)
                }
+              
+              #Naive
+              if("naive" %in% tolower(solver.list)){
+                out.list$out.naive$gene <- rownames(out.list$out.naive)
+                out.list$out.naive <- out.list$out.naive[, c("beta","gene")]
+                rownames(out.list$out.naive) <- NULL
+                names(out.list$out.naive) <- c("beta.naive", "gene")
+                naive.med <- stats::median(out.list$out.naive$beta.naive)
+                naive.scale <- stats::mad(out.list$out.naive$beta.naive)
+              }
+              
 
                # Grab all genes for each solver to start with
                how.many <- length(tfs)
@@ -348,6 +360,12 @@ setMethod("run", "EnsembleSolver",
                    tbl.scale$rf.score <- scale(tbl.scale$rf.score,
                                                center = randomforest.med,
                                                scale = randomforest.scale)
+               }
+               
+               if("beta.naive" %in% names(tbl.scale)){
+                 tbl.scale$beta.naive <- scale(tbl.scale$beta.naive,
+                                               center = naive.med,
+                                               scale = naive.scale)
                }
 
                rownames(tbl.scale) <- tbl.all$gene
