@@ -99,7 +99,7 @@ setMethod('show', 'EnsembleSolver',
        msg = sprintf("EnsembleSolver with mtx.assay (%d, %d), targetGene %s, %d candidate regulators %s,  solvers: %s",
                      nrow(getAssayData(obj)), ncol(getAssayData(obj)),
                      getTarget(obj), regulator.count, regulatorString,
-                     paste(ensemble.solver@solverNames,collapse = ", "))
+                     paste(obj@solverNames,collapse = ", "))
        cat (msg, '\n', sep='')
     })
 #----------------------------------------------------------------------------------------------------
